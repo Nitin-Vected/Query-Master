@@ -1,0 +1,25 @@
+{
+    "name": "@types/randomstring",
+    "version": "1.3.0",
+    "description": "TypeScript definitions for randomstring",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/randomstring",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Isman Usoh",
+            "githubUsername": "isman-usoh",
+            "url": "https://github.com/isman-usoh"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/randomstring"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "834ea2a379472962ddac0ae60fd9bc76b3402678e8b12a9c2e942f4b406285c2",
+    "typeScriptVersion": "4.7"
+}
