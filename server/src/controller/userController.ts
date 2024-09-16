@@ -62,7 +62,7 @@ export const userLoginController = async (request: express.Request, response: ex
                 //     lastName: family_name,
                 //     email: email,
                 //     profileImg: picture,
-                //     role: 'user',
+                //     role: 'Student',
                 //     status: email_verified,
                 // });
                 // console.log('user has been registered successfully ..!', userData);
