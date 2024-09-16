@@ -1,6 +1,5 @@
-import AppleComponent from "./AppleLogin";
 import GoogleLogin from "./GoogleLogin";
-// import { useAuth0 } from "@auth0/auth0-react";
+
 function LoginComponent() {
     // const { loginWithRedirect } = useAuth0();
     return (

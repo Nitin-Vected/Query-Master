@@ -1,13 +1,9 @@
 // import { GoogleLogin } from "@react-oauth/google";
 import { useGoogleLogin } from '@react-oauth/google';
-import apple from '../assets/apple.png';
 import googleIcon from '../assets/google.png';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import jscookie from 'js-cookie';
-import AppleComponent from './AppleLogin';
-import { jwtDecode } from "jwt-decode";
-
 
 function GoogleLogin() {
   const navigate = useNavigate();

@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import LoginComponent from './components/LoginComponent.js';
 import HomeComponent from './components/HomeComponent.js';
-import LoginButton from './components/example.js';
 
 function App() {
   return <>
