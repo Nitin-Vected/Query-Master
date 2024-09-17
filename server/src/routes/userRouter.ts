@@ -1,5 +1,6 @@
 import express from 'express';
-import { userAddContactNumberController, userAuthenticateJWT, userLoginController, userRaiseQueryController, userViewProfileController } from '../controller/userController';
+import { userAddContactNumberController, userAuthenticateJWT, userAuthenticationController, userGetQueriesController, userRaiseQueryController, userViewMyQueriesController, userViewProfileController } from '../controller/userController';
+import { loginController } from '../controller/LoginController';
 const userRouter = express.Router();
 userRouter.get('/', (request: express.Request, response: express.Response) => {
     console.log('Welcome user ..!');
@@ -7,16 +8,15 @@ userRouter.get('/', (request: express.Request, response: express.Response) => {
 });
 
 
-userRouter.post("/userLogin", userLoginController);
-userRouter.get("/userViewProfile", userViewProfileController);
+userRouter.post("/userLogin", loginController);
+userRouter.get("/userAuthentication", userAuthenticationController);
 
 userRouter.use(userAuthenticateJWT);
+userRouter.get("/userViewProfile", userViewProfileController);
+userRouter.get("/userViewMyQueries", userViewMyQueriesController);
 userRouter.post('/userAddContactNumber', userAddContactNumberController)
 userRouter.post('/userRaiseQuery',userRaiseQueryController);
 
-
-
-
-
+userRouter.get("/userGetQueriesInRange", userGetQueriesController)
 
 export default userRouter;

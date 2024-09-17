@@ -1,201 +1,168 @@
 import express from 'express';
-import axios from 'axios';
-import { tokenGenerator, tokenVerifier } from '../utilities/jwt';
+import { tokenVerifier } from '../utilities/jwt';
 import { ADMIN_SECRET_KEY } from '../config';
 import queryModel from '../model/queryModel';
-import adminModel from '../model/adminModel';
+import userModel from '../model/userModel';
 
-interface TokenResponse {
-    access_token: string;
-}
 
-const verifyGoogleToken = async (tokenResponse: TokenResponse) => {
+export const adminViewProfileController = async (request: any, response: express.Response) => {
     try {
-        const result = await axios.get(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            {
-                headers: {
-                    Authorization: `Bearer ${tokenResponse.access_token}`,
-                },
-            }
-        );
-        console.log("result.data : ", result);
-        if (result.data) {
-            console.log("result.data : ", result.data);
-
-            return result.data;
-        }
-        return null;
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-export const adminLoginController = async (request: express.Request, response: express.Response) => {
-    try {
-        const { tokenResponse } = request.body
-        console.log("token : ", tokenResponse);
-        const decodedToken = await verifyGoogleToken(tokenResponse);
-        console.log('Decoded Token : ', decodedToken);
-
-        if (decodedToken) {
-            const { name, given_name, family_name, picture, email, email_verified } = decodedToken;
-            let adminData = await adminModel.findOne({ email: email });
-            console.log('adminData : ', adminData);
-            if (adminData) {
-                adminData.email = email;
-                adminData.name = name;
-                adminData.profileImg = picture;
-                adminData.firstName = given_name;
-                adminData.lastName = family_name;
-                adminData.status = email_verified;
-                await adminData.save();
-                console.log('User Data Updated')
-                const token = tokenGenerator({ email: adminData.email, role: adminData.role }, ADMIN_SECRET_KEY);
-                console.log('Admin Token inside adminController ==> ',token);
-                response.status(201).json({ userData: adminData, token: token, msg: "Logged in  Successfull ..!" });
-            }
-            else {
-                response.status(500).json({ msg: "Wrong Admin Credentials  ..!" });
-                // adminData = await adminModel.create({
-                //     name: name,
-                //     firstName: given_name,
-                //     lastName: family_name,
-                //     email: email,
-                //     profileImg: picture,
-                //     role: 'supportAdmin',
-                //     status: email_verified,
-                // });
-                // console.log('user has been registered successfully ..!', adminData);
-            }
-        }
-
-    } catch (error) {
-        console.log(error);
-        response.status(500).json({ msg: "Account Not Exist ..!" });
-    }
-}
-
-
-export const adminViewProfileController = async (request: express.Request, response: express.Response) => {
-    try {
-        const email = request.body.email;
+        const { email, role } = request.payload;
         if (!email) {
             response.status(404).json({ message: "Token not found" });
         } else {
-            const adminData = await adminModel.findOne({ email });
+            const adminData = await userModel.findOne({ email, role });
             if (adminData?.status) {
-                response.status(201).json({ adminData: adminData, msg: "This is your dersired data ..!" })
+                response.status(201).json({ adminData: adminData, message: "This is your dersired data ..!" })
             } else {
-                response.status(404).json({ adminData: null, msg: "The Account You are Trying to Acces has been Deactivated ..!" })
+                response.status(404).json({ adminData: null, message: "The Account You are Trying to Acces has been Deactivated ..!" })
             }
-            response.status(200).json({ adminData: adminData, msg: "Authenntication Successfull ..!" });
         }
     } catch (error) {
         console.log(error);
-        response.status(500).json({ msg: "Something went wrong ..!" });
+        response.status(500).json({ message: "Something went wrong ..!" });
     }
 }
 
 
 export const adminAddContactNumberController = async (request: any, response: express.Response) => {
     try {
-        const { adminEmail } = request.payload;
+        const { email, role } = request.payload;
         const { contactNumber } = request.body;
         console.log('Hello from adminAddContactNumberController ..!');
-        if (!adminEmail) {
+        if (!email || !role) {
             response.status(404).json({ message: "Token not found" });
         } else {
-            const adminData = await adminModel.findOneAndUpdate(
-                { email:adminEmail },
+            const adminData = await userModel.findOneAndUpdate(
+                { email, role },
                 { contactNumber },
                 { new: true }
             );
             if (adminData?.status) {
-                return response.status(201).json({ adminData: adminData, msg: "Contact number updated successfully!" });
+                console.log('Contact Number added successfully ..!')
+                return response.status(201).json({ adminData: adminData, message: "Contact number updated successfully!" });
             } else {
-                return response.status(404).json({ adminData: null, msg: "The account you are trying to access has been deactivated!" });
+                return response.status(404).json({ adminData: null, message: "The account you are trying to access has been deactivated!" });
             }
         }
     } catch (error) {
         console.log(error);
-        response.status(500).json({ msg: "Something went wrong ..!" });
+        response.status(500).json({ message: "Something went wrong ..!" });
 
     }
 }
-
 
 export const adminViewRaisedQueryListController = async (request: express.Request, response: express.Response) => {
     try {
         const raisedQueries = await queryModel.find();
         console.log(`RaisedQuery by  ${raisedQueries} : `);
         if (raisedQueries) {
-            return response.status(201).json({ raisedQueries: raisedQueries, msg: "Contact number updated successfully!" });
+            return response.status(201).json({ raisedQueries: raisedQueries, message: "These are the recently raised queries ..!" });
         } else {
             throw new Error('Queries not found ..!')
         }
     } catch (error) {
         console.log('Error occure in userRaiseQueryController : ', error)
-        response.status(500).json({ msg: "Something went wrong ..!" });
+        response.status(500).json({ message: "Something went wrong ..!" });
     }
 }
 
-export const adminAddResponseToParticularQueryController = async (request: express.Request, response: express.Response) => {
+export const adminRaiseQueryController = async (request: any, response: express.Response) => {
     try {
-        console.log('Hello from adminAddResponseToParticularQueryController');
-        
-        // const { userEmail, adminResponse } = request.body;
-        const { queryId, adminResponse } = request.body;
-        const updatedRaisedQuery = await queryModel.findOneAndUpdate(
-            { _id: Object(`${queryId}`) },
-            {
-                $set: {
-                    adminResponse: adminResponse,
-                    status: 'Resolved',
-                    respondedAt: new Date().toLocaleString(),
-                },
-            },
-            { new: true }
-        );
-        if (!updatedRaisedQuery) {
-            return response.status(404).json({ msg: "Something Went Wrong ..!" });
+        const { email, role } = request.payload;
+        const { subject, message } = request.body;
+
+        const similaryExistingQuery = await queryModel.findOne({ userEmail: email, userRole: role, subject, message });
+        if (!similaryExistingQuery) {
+            const updatedQuery = await queryModel.create({
+                userEmail: email,
+                userRole: role,
+                subject,
+                message,
+                conversation: [{
+                    sender: email,
+                    message: message,
+                    role: role,
+                    timestamp: new Date()
+                }]
+            });
+            return response.status(201).json({ updatedQuery, message: "Your query has been successfully published ..!" });
+        } else {
+            return response.status(400).json({ message: "A similar query has already been added by you ..!" });
         }
-        console.log(`Query responded by admin: ${updatedRaisedQuery}`);
-        response.status(200).json({ msg: "Response added successfully", updatedRaisedQuery });
+
     } catch (error) {
-        console.log('Error occurred in adminAddResponseToParticularQueryController:', error);
-        response.status(500).json({ msg: "Something went wrong..!" });
+        console.log(error);
+        response.status(500).json({ error: 'Failed to create query' });
     }
 };
+
+
+export const adminResponseController = async (request: any, response: express.Response) => {
+    try {
+        const { queryId } = request.params;
+        const { sender, message } = request.body;
+        console.log('QueryId : ', queryId);
+
+        // Find the query by its _id
+        const query = await queryModel.findOne({ _id: Object(queryId) }); // No need to wrap in Object()
+        if (!query) {
+            return response.status(404).json({ error: 'Query not found' });
+        } else if (query?.status === "Open") {
+            query.conversation.push({
+                sender,
+                message,
+                role: request.payload?.role,
+                timestamp: new Date()
+            });
+            await query.save();
+            response.status(201).json({ query, message: "Your response has been sent to the Inquirer successfully!" });
+        } else {
+            response.status(500).json({ error: 'Query has been closed by the user!' });
+        }
+        console.log('Query in adminResponseController : ', query);
+
+
+        // You can proceed with other logic after the query is found
+        // Example:
+        // response.status(200).json({ query });
+
+    } catch (error) {
+        response.status(500).json({ error: 'Failed to find query' });
+    }
+};
+
+
 
 
 export const adminAuthenticationController = async (request: express.Request, response: express.Response) => {
     try {
-        const token = request.body.candidate_token;
-        if (!token) {
-            response.status(404).json({ message: "Token not found" });
-        } else {
-            const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
-            console.log('Payload --> ', payload);
-            var result = await adminModel.findOne({ email: payload.userEmail });
-            console.log('Authenntication Successfull ..!', result)
-            response.status(200).json({ adminData: result, token: token, msg: "Authenntication Successfull ..!" });
+        const authHeader = request.headers['authorization'];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return response.status(401).json({ message: 'Authorization token is missing or invalid' });
         }
+        const token = authHeader.split(' ')[1];
+        console.log('Token : ', token);
+        const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
+        const adminData = await userModel.findOne({ email: payload.email, role: payload.role });
+        console.log('userData : ', adminData, '  token in adminAuthenticationController : ', token)
+        response.status(201).json({ userData: adminData, token: token, message: "Authenntication Successfull ..!" });
     } catch (err) {
         console.log("Error while user authentication Controller", err);
-        response.status(203).json({ message: 'Token Not verify please login then try to access ..!' });
+        response.status(500).json({ message: 'Token Not verify please login then try to access ..!' });
     }
 };
 
+
 // for backend
 export const adminAuthenticateJWT = async (request: any, response: express.Response, next: Function) => {
-    const token = request.query.adminToken;
-    console.log('Token inside adminAuthenticateJWT ==> ',request.query.adminToken);
-    // console.log('candidate token --> ',token);
-    if (!token) {
-        return response.status(401).json({ message: "Token not found" });
-    }
     try {
+        const authHeader = request.headers['authorization'];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return response.status(401).json({ message: 'Authorization token is missing or invalid' });
+        }
+        const token = authHeader.split(' ')[1];
+        console.log('Token : ', token);
         const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
         request.payload = payload;
         next();
