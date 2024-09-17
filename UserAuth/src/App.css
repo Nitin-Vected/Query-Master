@@ -55,6 +55,10 @@ h3 {
   margin-bottom: 10px;
 }
 
+.logo {
+  font-size: 1.5rem;
+}
+
 .header ul {
   display: flex;
   align-items: center;

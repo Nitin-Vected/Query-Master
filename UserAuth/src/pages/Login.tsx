@@ -1,66 +1,54 @@
-import React, { useState } from "react";
+import React from "react";
 import { FaSignInAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
-import axios from "axios";
 import Spinner from "../components/Spinner";
 import googleIcon from "../assets/google.png";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../app/store";
+import { setUserData, setLoading } from "../app/authSlice";
+import { loginWithGoogle as loginWithGoogleApi } from "../utility/utility"; // Import the API utility function
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState<boolean>(false); // Loading state with TypeScript
+  const dispatch: AppDispatch = useDispatch();
+  const loading = useSelector((state: RootState) => state.auth.loading);
 
   const loginWithGoogle = useGoogleLogin({
-    onSuccess: async (response: any) => {
-      setLoading(true); // Set loading to true when API call starts
+    onSuccess: async ({ access_token }: { access_token: string }) => {
+      dispatch(setLoading(true));
 
       try {
-        console.log("result.data : ", response);
+        if (access_token) {
+          const { data } = await loginWithGoogleApi(access_token);
 
-        if (response.access_token) {
-          const loginResult = await axios.post(
-            "http://localhost:3001/user/userLogin",
-            { tokenResponse: response }
-          );
+          const { userData, token } = data;
 
-          if (
-            loginResult.status === 201 &&
-            loginResult.data.userData.role === "Student"
-          ) {
-            localStorage.setItem("user_email", loginResult.data.userData.email);
-            localStorage.setItem("user_name", loginResult.data.userData.name);
-            localStorage.setItem("user_token", loginResult.data.token);
+          const userDataObj = {
+            email: userData.email,
+            name: userData.name,
+            token,
+            role: userData.role,
+          };
 
-            window.dispatchEvent(new Event("storage"));
-            navigate("/", {
-              state: { userData: loginResult.data.userData },
-            });
-          } else {
-            localStorage.removeItem("user_email");
-            localStorage.setItem(
-              "admin_email",
-              loginResult.data.userData.email
-            );
-            localStorage.setItem("admin_token", loginResult.data.token);
-            window.dispatchEvent(new Event("storage"));
-      
-            navigate("/", {
-              state: { userData: loginResult.data.userData },
-            });
-          }
+          dispatch(setUserData(userDataObj));
+          navigate("/");
         }
       } catch (error) {
-        console.log(error);
+        console.error("Login error:", error);
       } finally {
-        setLoading(false); // Set loading to false when API call completes
+        dispatch(setLoading(false));
       }
+    },
+    onError: (error) => {
+      console.error("Google OAuth error:", error);
     },
   });
 
   return (
     <>
       {loading ? (
-        <Spinner /> // Show spinner if loading
+        <Spinner />
       ) : (
         <section className="heading">
           <h1>

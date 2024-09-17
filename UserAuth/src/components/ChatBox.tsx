@@ -1,11 +1,13 @@
-// src/components/ChatBox.tsx
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../app/store";
 
 interface MessageType {
   _id: string;
-  text: string;
-  createdAt: string;
-  isStaff: boolean;
+  sender: string;
+  message: string;
+  timestamp: string;
+  role: string;
 }
 
 interface ChatBoxProps {
@@ -15,9 +17,12 @@ interface ChatBoxProps {
 const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
+  const currentUserEmail = useSelector(
+    (state: RootState) => state.auth.userData?.email
+  );
   useEffect(() => {
     if (endOfMessagesRef.current) {
-      endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+      endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
@@ -26,10 +31,17 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
       {messages.map((message) => (
         <div
           key={message._id}
-          className={`message ${message.isStaff ? 'staff' : 'user'}`}
+          className={`message ${
+            message.sender === currentUserEmail ? "user" : "staff"
+          }`}
         >
-          <p>{message.text}</p>
-          <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
+          {message.sender !== currentUserEmail && (
+            <p>
+              <strong>Support Admin</strong>
+            </p>
+          )}
+          <p>{message.message}</p>
+          <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
         </div>
       ))}
       <div ref={endOfMessagesRef} />

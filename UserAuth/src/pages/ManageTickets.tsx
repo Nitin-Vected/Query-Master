@@ -3,11 +3,11 @@ import BackButton from "../components/BackButton";
 import TicketItem from "../components/TicketItem";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../app/store";
-import { fetchQueries } from "../utility/utility";
+import { adminfetchQueries } from "../utility/utility";
 import { setQueries, Query } from "../app/querySlice";
 import Spinner from "../components/Spinner";
 
-const Tickets: React.FC = () => {
+const ManageTickets: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const dispatch: AppDispatch = useDispatch();
@@ -20,8 +20,10 @@ const Tickets: React.FC = () => {
     const getQueries = async () => {
       setLoading(true);
       try {
-        const response = await fetchQueries(token);
-        const fetchedQueries: Query[] = response.data.myQueries.map(
+        const response = await adminfetchQueries(token);
+
+        // Assuming the API gives a direct array of queries like the one shared
+        const fetchedQueries: Query[] = response.data.raisedQueries.map(
           (query: any) => ({
             _id: query._id,
             userEmail: query.userEmail,
@@ -71,4 +73,4 @@ const Tickets: React.FC = () => {
   );
 };
 
-export default Tickets;
+export default ManageTickets;

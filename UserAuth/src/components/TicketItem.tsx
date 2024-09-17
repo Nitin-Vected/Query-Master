@@ -1,29 +1,35 @@
 import React from "react";
+import { Query, selectTicket } from "../app/querySlice";
 import { Link } from "react-router-dom";
-
-// Define the interface for the ticket prop
-interface Ticket {
-  _id: string;
-  createdAt: string;
-  product: string;
-  status: "open" | "new" | "closed" | "in-progress"; // Adjust statuses according to your needs
-}
+import { useDispatch } from "react-redux";
 
 interface TicketItemProps {
-  ticket: Ticket;
+  query: Query;
 }
 
-const TicketItem: React.FC<TicketItemProps> = ({ ticket }) => {
+const TicketItem: React.FC<TicketItemProps> = ({ query }) => {
+  const dispatch = useDispatch();
+
+  const handleClick = () => {
+    dispatch(selectTicket(query._id));
+  };
+
   return (
     <div className="ticket">
-      <div>{new Date(ticket.createdAt).toLocaleString("en-US")}</div>
-      <div>{ticket.product}</div>
-      <div className={`status status-${ticket.status}`}>{ticket.status}</div>
-      <Link to={`/ticket/${ticket._id}`} className="btn btn-reverse btn-sm">
+      <div className="ticket-date">
+        {new Date(query.createdAt).toLocaleDateString()}
+      </div>
+      <div className="ticket-subject">{query.subject}</div>
+      <div className={`status status-${query.status.toLowerCase()}`}>{query.status}</div>
+      <Link
+        to={`/ticket/${query._id}`}
+        className="btn btn-reverse btn-sm"
+        onClick={handleClick}
+      >
         View
       </Link>
     </div>
   );
-}
+};
 
 export default TicketItem;

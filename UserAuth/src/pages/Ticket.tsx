@@ -1,88 +1,112 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import BackButton from "../components/BackButton";
 import Spinner from "../components/Spinner";
 import ChatBox from "../components/ChatBox";
 import MessageInput from "../components/MessageInput";
 import { toast } from "react-toastify";
-
-interface TicketType {
-  _id: string;
-  status: string;
-  createdAt: string;
-  product: string;
-  description: string;
-}
+import { RootState, AppDispatch } from "../app/store";
+import { updateQuery } from "../app/querySlice";
 
 interface MessageType {
   _id: string;
-  text: string;
-  createdAt: string;
-  isStaff: boolean;
+  sender: string;
+  message: string;
+  timestamp: string;
+  role: string;
 }
 
 const Ticket: React.FC = () => {
-  const navigate = useNavigate();
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
 
-  const ticket: TicketType = {
-    _id: "T123456",
-    status: "closed",
-    createdAt: "2024-09-15T12:34:56Z",
-    product: "Example Product",
-    description:
-      "This is a detailed description of the issue reported by the user. It outlines the problem and any relevant information that could help in resolving the ticket.",
-  };
+  const currentUserEmail = useSelector(
+    (state: RootState) => state.auth.userData?.email
+  );
+  const currentUserRole = useSelector(
+    (state: RootState) => state.auth.userData?.role
+  );
 
-  // Simulate fetching messages (Replace with actual API call)
+  const selectedTicketId = useSelector(
+    (state: RootState) => state.queries.selectedTicketId
+  );
+
+  const query = useSelector((state: RootState) =>
+    state.queries.queries.find((q) => q._id === selectedTicketId)
+  );
+
   useEffect(() => {
-    setTimeout(() => {
-      setMessages([
-        {
-          _id: "M123456",
-          text: "Initial message from staff.",
-          createdAt: "2024-09-15T14:20:00Z",
-          isStaff: true,
-        },
-        {
-          _id: "M123457",
-          text: "Initial message from user.",
-          createdAt: "2024-09-16T09:10:00Z",
-          isStaff: false,
-        },
-      ]);
+    if (query) {
+      setMessages(
+        query.conversation.map((msg) => ({
+          _id: msg._id,
+          sender: msg.sender,
+          message: msg.message,
+          timestamp: msg.timestamp,
+          role: msg.role,
+        }))
+      );
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [query]);
 
   const onSendMessage = (text: string) => {
-    // Handle sending the message (e.g., call API or WebSocket)
+    if (!currentUserEmail || !currentUserRole) {
+      toast.error("Unable to send message. User data is missing.");
+      return;
+    }
+
     const newMessage: MessageType = {
       _id: `M${Date.now()}`,
-      text,
-      createdAt: new Date().toISOString(),
-      isStaff: false, // Assuming it's a message from the user
+      sender: currentUserEmail,
+      message: text,
+      timestamp: new Date().toISOString(),
+      role: currentUserRole,
     };
+
     setMessages([...messages, newMessage]);
+
+    if (query) {
+      dispatch(
+        updateQuery({
+          ...query,
+          conversation: [...query.conversation, newMessage],
+        })
+      );
+    }
   };
 
   const onTicketClose = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     toast.success("Ticket Closed Successfully");
-    navigate("/tickets");
+    navigate(
+      currentUserRole === "SupportAdmin" ? "/manage-tickets" : "/tickets"
+    );
   };
 
   if (loading) {
     return <Spinner />;
   }
 
+  if (!query) {
+    return <div>Ticket not found</div>;
+  }
+
   return (
     <div className="ticket-page">
       <header className="ticket-header">
-        <div style={{display:'flex', justifyContent:"space-between"}}>
-          <BackButton url="/tickets" />
-          {ticket.status !== "closed" && (
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <BackButton
+            url={
+              currentUserRole === "SupportAdmin"
+                ? "/manage-tickets"
+                : "/tickets"
+            }
+          />
+          {query.status !== "closed" && (
             <button
               className="btn btn-close-ticket btn-danger"
               onClick={onTicketClose}
@@ -93,21 +117,21 @@ const Ticket: React.FC = () => {
         </div>
 
         <h2>
-          Ticket ID: {ticket._id}
-          <span className={`status status-${ticket.status}`}>
-            {ticket.status}
+          Ticket ID: {query._id}
+          <span className={`status status-${query.status.toLowerCase()}`}>
+            {query.status}
           </span>
         </h2>
         <h3>
-          Date Submitted: {new Date(ticket.createdAt).toLocaleString("en-IN")}
+          Date Submitted: {new Date(query.createdAt).toLocaleString("en-IN")}
         </h3>
-        <h3>Product : {ticket.product}</h3>
+        <h3>Subject : {query.subject}</h3>
         <hr />
         <div className="ticket-desc">
           <h3>Description of Issue</h3>
-          <p>{ticket.description}</p>
+          <p>{query.subject}</p>
         </div>
-        <h2>Notes</h2>
+        <h2>Comments</h2>
       </header>
 
       {messages.length > 0 ? <ChatBox messages={messages} /> : <Spinner />}
