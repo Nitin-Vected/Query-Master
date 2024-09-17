@@ -1,21 +1,53 @@
-import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import BackButton from "../components/BackButton";
-// import { toast } from "react-toastify";
-// import Spinner from "../components/Spinner";
+import { AppDispatch, RootState } from "../app/store";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "../app/authSlice";
+import { createQuery } from "../utility/utility";
+import { useNavigate } from "react-router-dom";
+import {toast} from 'react-toastify'
+
+
+const validationSchema = Yup.object({
+  email: Yup.string().email("Invalid email address").required("Required"),
+  subject: Yup.string().required("Required"),
+  description: Yup.string().required("Required"),
+});
+
+const initialValues = {
+  email: "",
+  subject: "",
+  description: "",
+};
 
 const NewTicket: React.FC = () => {
-  const [description, setDescription] = useState<string>("");
+  const navigate = useNavigate();
+  const dispatch: AppDispatch = useDispatch();
+  const userEmail = useSelector((state: RootState) => state.auth.userData?.email || '');
+  const token = useSelector((state: RootState) => state.auth.userData?.token || ''); // Fetch token from Redux store
 
-  // const navigate = useNavigate();
-
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // const loginResult = await axios.post(
-    //   "http://localhost:3001/user/userRaiseQuery"
-    //   // { userEmail:  }
-    // );
-  };
+  const formik = useFormik({
+    initialValues: {
+      email: userEmail,
+      subject: "",
+      description: "",
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      dispatch(setLoading(true));
+      try {
+        const response = await createQuery(values.subject, values.description, token);
+        toast.success("Query created successfully!"); 
+        navigate("/");
+      } catch (error) {
+        toast.error("Failed to create query. Please try again."); 
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+  });
 
   return (
     <>
@@ -26,26 +58,38 @@ const NewTicket: React.FC = () => {
       </section>
 
       <section className="form">
-        <div className="form-group">
-          <label htmlFor="email">User Email</label>
-          <input
-            type="text"
-            className="form-control"
-            name="email"
-            id="email"
-            disabled
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="subject">Subject</label>
-          <input
-            type="text"
-            className="form-control"
-            name="subject"
-            id="subject"
-          />
-        </div>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={formik.handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">User Email</label>
+            <input
+              type="text"
+              className="form-control"
+              name="email"
+              id="email"
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              disabled
+            />
+            {formik.touched.email && formik.errors.email ? (
+              <div className="error">{formik.errors.email}</div>
+            ) : null}
+          </div>
+          <div className="form-group">
+            <label htmlFor="subject">Subject</label>
+            <input
+              type="text"
+              className="form-control"
+              name="subject"
+              id="subject"
+              value={formik.values.subject}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {formik.touched.subject && formik.errors.subject ? (
+              <div className="error">{formik.errors.subject}</div>
+            ) : null}
+          </div>
           <div className="form-group">
             <label htmlFor="description">Description of the issue</label>
             <textarea
@@ -53,9 +97,13 @@ const NewTicket: React.FC = () => {
               id="description"
               className="form-control"
               placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={formik.values.description}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
             ></textarea>
+            {formik.touched.description && formik.errors.description ? (
+              <div className="error">{formik.errors.description}</div>
+            ) : null}
           </div>
           <div className="form-group">
             <button className="btn btn-block" type="submit">

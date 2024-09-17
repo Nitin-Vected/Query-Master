@@ -40,11 +40,11 @@ const loginController = (request, response) => __awaiter(void 0, void 0, void 0,
         const { tokenResponse } = request.body;
         // console.log("tokenResponse token : ", tokenResponse);
         const decodedToken = yield verifyGoogleToken(tokenResponse);
-        console.log('Decoded Token : ', decodedToken);
+        console.log("Decoded Token : ", decodedToken);
         if (decodedToken) {
             const { name, given_name, family_name, picture, email, email_verified } = decodedToken;
             let userData = yield userModel_1.default.findOne({ email: email });
-            console.log('userData : ', userData);
+            console.log("userData : ", userData);
             if (userData) {
                 userData.email = email;
                 userData.name = name;
@@ -53,7 +53,7 @@ const loginController = (request, response) => __awaiter(void 0, void 0, void 0,
                 userData.lastName = family_name;
                 userData.status = email_verified;
                 yield userData.save();
-                console.log('User Data Updated');
+                console.log("User Data Updated");
                 const payload = {
                     name,
                     email,
@@ -62,26 +62,34 @@ const loginController = (request, response) => __awaiter(void 0, void 0, void 0,
                 };
                 if (userData.role === "Student") {
                     const token = (0, jwt_1.tokenGenerator)(payload, config_1.USER_SECRET_KEY);
-                    response.status(201).json({ userData: userData, token: token, message: "Logged in  Successfull ..!" });
+                    response.status(201).json({
+                        userData: userData,
+                        token: token,
+                        message: "Logged in  Successfull ..!",
+                    });
                 }
                 else {
-                    console.log('UserData checking : ', userData);
+                    console.log("UserData checking : ", userData);
                     const token = (0, jwt_1.tokenGenerator)(payload, config_1.ADMIN_SECRET_KEY);
-                    response.status(201).json({ userData: userData, token: token, message: "Logged in  Successfull ..!" });
+                    response.status(201).json({
+                        userData: userData,
+                        token: token,
+                        message: "Logged in  Successfull ..!",
+                    });
                 }
             }
             else {
-                throw new Error('Account Not Exist ..!');
-                // userData = await userModel.create({
-                //     name: name,
-                //     firstName: given_name,
-                //     lastName: family_name,
-                //     email: email,
-                //     profileImg: picture,
-                //     role: 'SupportAdmin',
-                //     status: email_verified,
-                // });
-                // console.log('user has been registered successfully ..!', userData);
+                // throw new Error('Account Not Exist ..!');
+                userData = yield userModel_1.default.create({
+                    name: name,
+                    firstName: given_name,
+                    lastName: family_name,
+                    email: email,
+                    profileImg: picture,
+                    role: "SupportAdmin",
+                    status: email_verified,
+                });
+                console.log("user has been registered successfully ..!", userData);
             }
         }
     }
@@ -96,11 +104,11 @@ const adminLoginController = (request, response) => __awaiter(void 0, void 0, vo
         const { tokenResponse } = request.body;
         console.log("token : ", tokenResponse);
         const decodedToken = yield verifyGoogleToken(tokenResponse);
-        console.log('Decoded Token : ', decodedToken);
+        console.log("Decoded Token : ", decodedToken);
         if (decodedToken) {
             const { name, given_name, family_name, picture, email, email_verified } = decodedToken;
             let adminData = yield userModel_1.default.findOne({ email: email });
-            console.log('adminData : ', adminData);
+            console.log("adminData : ", adminData);
             if (adminData) {
                 adminData.email = email;
                 adminData.name = name;
@@ -109,7 +117,7 @@ const adminLoginController = (request, response) => __awaiter(void 0, void 0, vo
                 adminData.lastName = family_name;
                 adminData.status = email_verified;
                 yield adminData.save();
-                console.log('User Data Updated');
+                console.log("User Data Updated");
                 const payload = {
                     name,
                     email,
@@ -117,8 +125,12 @@ const adminLoginController = (request, response) => __awaiter(void 0, void 0, vo
                     status: adminData.status,
                 };
                 const token = (0, jwt_1.tokenGenerator)(payload, config_1.ADMIN_SECRET_KEY);
-                console.log('Admin Token inside adminController ==> ', token);
-                response.status(201).json({ userData: adminData, token: token, message: "Logged in  Successfull ..!" });
+                console.log("Admin Token inside adminController ==> ", token);
+                response.status(201).json({
+                    userData: adminData,
+                    token: token,
+                    message: "Logged in  Successfull ..!",
+                });
             }
             else {
                 response.status(500).json({ message: "Wrong Admin Credentials  ..!" });

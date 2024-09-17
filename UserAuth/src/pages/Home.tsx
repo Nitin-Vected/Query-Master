@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { FaQuestionCircle, FaTicketAlt } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
+import { useSelector } from 'react-redux';
+import { RootState } from '../app/store'; // Import the RootState type
 
 interface UserData {
   userName: string | null;
@@ -9,25 +11,29 @@ interface UserData {
 
 const Home: React.FC = () => {
   const location = useLocation();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  
+  const userData = useSelector((state: RootState) => state.auth.userData);
 
-  useEffect(() => {
-    // Check if userData is available in location.state or localStorage
-    const storedUserData = location.state?.userData || {
-      userName: localStorage.getItem("user_name"),
-      role: "Student", // or "Admin" based on your app logic
-    };
-
-    setUserData(storedUserData);
-  }, [location.state]);
+  const displayUserData: UserData = {
+    userName: userData?.name || location.state?.userData?.name || null,
+    role: userData?.role || location.state?.userData?.role || "Student",
+  };
 
   return (
     <>
       <section className="heading">
-        {userData && userData.userName ? (
+        {displayUserData.userName ? (
           <>
-            <h1>Welcome back, {userData.userName}!</h1>
-            <p>What do you need help with today?</p>
+            <h1>Welcome back, {displayUserData.userName}!</h1>
+            {displayUserData.role === "Student" ? (
+              <p>What do you need help with today?</p>
+            ) : displayUserData.role === "SupportAdmin" ? (
+              <p>
+                As a Support Admin, you can manage queries and assist users.
+              </p>
+            ) : (
+              <p>Welcome! How can we assist you today?</p>
+            )}
           </>
         ) : (
           <>
@@ -37,13 +43,29 @@ const Home: React.FC = () => {
         )}
       </section>
 
-      <Link to="/new-ticket" className="btn btn-reverse btn-block">
-        <FaQuestionCircle /> Create New Ticket
-      </Link>
+      {displayUserData.role === "Student" && (
+        <>
+          <Link to="/new-ticket" className="btn btn-reverse btn-block">
+            <FaQuestionCircle /> Create New Ticket
+          </Link>
 
-      <Link to="/tickets" className="btn btn-block">
-        <FaTicketAlt /> View Your Tickets
-      </Link>
+          <Link to="/tickets" className="btn btn-block">
+            <FaTicketAlt /> View Your Tickets
+          </Link>
+        </>
+      )}
+
+      {displayUserData.role === "SupportAdmin" && (
+        <>
+          <Link to="/manage-tickets" className="btn btn-reverse btn-block">
+            <FaTicketAlt /> Manage Queries
+          </Link>
+
+          <Link to="/user-management" className="btn btn-block">
+            <FaQuestionCircle /> User Management
+          </Link>
+        </>
+      )}
     </>
   );
 };
