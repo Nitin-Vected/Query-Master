@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 // Conversation interface
 interface Conversation {
   sender: string;
+  email: string;
   message: string;
   timestamp: Date;
   role: string;
@@ -21,6 +22,10 @@ interface Query extends Document {
 // Conversation Schema
 const ConversationSchema: Schema = new Schema({
   sender: { 
+    type: String, 
+    required: true 
+  },
+  email: { 
     type: String, 
     required: true 
   },

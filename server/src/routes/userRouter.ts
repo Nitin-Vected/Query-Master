@@ -1,5 +1,5 @@
 import express from 'express';
-import { userAddContactNumberController, userAuthenticateJWT, userAuthenticationController, userGetQueriesController, userRaiseQueryController, userViewMyQueriesController, userViewProfileController } from '../controller/userController';
+import { userAddCommentController, userAddContactNumberController, userAuthenticateJWT, userAuthenticationController, userGetQueriesController, userRaiseQueryController, userViewMyQueriesController, userViewProfileController } from '../controller/userController';
 import { loginController } from '../controller/LoginController';
 const userRouter = express.Router();
 userRouter.get('/', (request: express.Request, response: express.Response) => {
@@ -16,6 +16,10 @@ userRouter.get("/userViewProfile", userViewProfileController);
 userRouter.get("/userViewMyQueries", userViewMyQueriesController);
 userRouter.post('/userAddContactNumber', userAddContactNumberController)
 userRouter.post('/userRaiseQuery',userRaiseQueryController);
+
+userRouter.post("/userAddCommentToQuery/:queryId",userAddCommentController);
+
+// userRouter.get("/userCloseQuery", userCloseQueryController);
 
 userRouter.get("/userGetQueriesInRange", userGetQueriesController)
 

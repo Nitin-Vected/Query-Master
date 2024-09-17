@@ -27,9 +27,6 @@ adminRouter.get("/adminViewProfile", adminViewProfileController);
 adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
 adminRouter.post("/adminRaiseQuery", adminRaiseQueryController);
-adminRouter.post(
-  "/adminAddResponseToQuery/:queryId/conversation",
-  adminResponseController
-);
+adminRouter.post("/adminAddResponseToQuery/:queryId",adminResponseController);
 
 export default adminRouter;

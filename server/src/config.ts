@@ -7,3 +7,16 @@ export const COMPANY_EMAIL: string = process.env.COMPANY_EMAIL as string;
 export const COMPANY_PASS: string = process.env.COMPANY_PASS as string;
 export const USER_SECRET_KEY: string = process.env.USER_SECRET_KEY as string;
 export const ADMIN_SECRET_KEY: string = process.env.ADMIN_SECRET_KEY as string;
+
+export const StatusCodes = {
+    OK: 200,
+    CREATED: 201,
+    NO_CONTENT: 204,
+    ALREADY_EXIST: 409,
+    BAD_REQUEST: 400,
+    UNAUTHORIZED: 401,
+    FORBIDDEN: 403,
+    NOT_FOUND: 404,
+    INTERNAL_SERVER_ERROR: 500,
+    SERVICE_UNAVAILABLE: 503,
+};

@@ -42,8 +42,8 @@ const Login: React.FC = () => {
               loginResult.data.userData.email
             );
             localStorage.setItem("admin_token", loginResult.data.token);
-
             window.dispatchEvent(new Event("storage"));
+      
             navigate("/", {
               state: { userData: loginResult.data.userData },
             });
