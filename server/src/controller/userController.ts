@@ -56,11 +56,11 @@ export const userRaiseQueryController = async (request: any, response: express.R
         const { subject, message } = request.body;
 
         const similaryExistingQuery = await queryModel.findOne({ userEmail: email, userRole: role, subject, message });
-        console.log('email',email)
-        console.log('role',role)
-        console.log('subject',subject)
-        console.log('message',message)
-        console.log('similaryExistingQuery',similaryExistingQuery)
+        console.log('email', email)
+        console.log('role', role)
+        console.log('subject', subject)
+        console.log('message', message)
+        console.log('similaryExistingQuery', similaryExistingQuery)
 
         if (!similaryExistingQuery) {
             console.log('Inside if block of userRaiseQueryController ..!')
@@ -134,6 +134,65 @@ export const userViewMyQueriesController = async (request: any, response: expres
     }
 }
 
+export const userAddCommentController = async (request: any, response: express.Response) => {
+    try {
+        const { name, email, role } = request.payload;
+        const { queryId } = request.params;
+        const { message } = request.body;
+        console.log('QueryId : ', queryId);
+
+        // Find the query by its _id
+        const query = await queryModel.findOne({ _id: Object(queryId) }); 
+        if (!query) {
+            return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found' });
+        } else if (query.status === "Open") {
+            console.log('Query ', query);
+            query.conversation.push({
+                sender: name,
+                email: email,
+                message,
+                role: role,
+                timestamp: new Date()
+            });
+            await query.save();
+            response.status(StatusCodes.CREATED).json({ query, message: "Your response has been sent to the trail successfully!" });
+        } else {
+            response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query has been closed by the user ..!' });
+        }
+        console.log('Query in userAddCommentController : ', query);
+
+    } catch (error) {
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
+    }
+};
+
+export const userManageQueryStatusController = async (request: any, response: express.Response) => {
+    try {
+        const { name, email, role } = request.payload;
+        const { queryId, status } = request.params;
+        console.log('query id : ',queryId,'   query status : ',status)
+        if (!queryId || !status) {
+            return response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query ID and status are required' });
+        }
+
+        const query = await queryModel.findOneAndUpdate(
+            { _id: Object(queryId), userEmail: email }, 
+            { status: status }, 
+            { new: true } 
+        );
+        console.log('Query Status :',query?.status)
+
+        if (!query) {
+            return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found or email mismatch' });
+        }
+
+        console.log('Query status updated successfully');
+        response.status(StatusCodes.CREATED).json({ message: "Query status updated to Closed successfully", query });
+    } catch (error) {
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
+    }
+};
+
 export const userAuthenticationController = async (request: any, response: express.Response) => {
     try {
         const authHeader = request.headers['authorization'];
@@ -151,44 +210,6 @@ export const userAuthenticationController = async (request: any, response: expre
         response.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token Not verify please login then try to access ..!' });
     }
 };
-
-export const userAddCommentController = async (request: any, response: express.Response) => {
-    try {
-        const { name, email, role } = request.payload;
-        const { queryId } = request.params;
-        const { message } = request.body;
-        console.log('QueryId : ', queryId);
-
-        // Find the query by its _id
-        const query = await queryModel.findOne({ _id: Object(queryId) }); // No need to wrap in Object()
-        if (!query) {
-            return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found' });
-        } else if (query?.status === "Open") {
-            console.log('Query ',query);
-            query.conversation.push({
-                sender:name,
-                email:email,
-                message,
-                role: role,
-                timestamp: new Date()
-            });
-            await query.save();
-            response.status(StatusCodes.CREATED).json({ query, message: "Your response has been sent to the trail successfully!" });
-        } else {
-            response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Query has been closed by the user!' });
-        }
-        console.log('Query in userAddCommentController : ', query);
-
-
-        // You can proceed with other logic after the query is found
-        // Example:
-        // response.status(200).json({ query });
-
-    } catch (error) {
-        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
-    }
-};
-
 
 // for backend
 export const userAuthenticateJWT = async (request: any, response: express.Response, next: Function) => {

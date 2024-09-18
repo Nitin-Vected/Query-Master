@@ -3,10 +3,13 @@ import {
   adminAddContactNumberController,
   adminAuthenticateJWT,
   adminAuthenticationController,
+  adminManageQueryStatusController,
+  adminManageStudentStatusController,
   adminRaiseQueryController,
   adminResponseController,
   adminViewProfileController,
   adminViewRaisedQueryListController,
+  adminViewStudentListController,
 } from "../controller/adminController";
 
 const adminRouter = express.Router();
@@ -24,9 +27,13 @@ adminRouter.get("/adminAuthentication", adminAuthenticationController);
 
 adminRouter.use(adminAuthenticateJWT);
 adminRouter.get("/adminViewProfile", adminViewProfileController);
-adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
+adminRouter.get("/adminViewStudentList", adminViewStudentListController);
+adminRouter.get('/adminManageQueryStatus/:queryId/:status',adminManageQueryStatusController);
+adminRouter.get('/adminManageStudentStatus/:studentId/:action',adminManageStudentStatusController);
+
 adminRouter.post("/adminRaiseQuery", adminRaiseQueryController);
 adminRouter.post("/adminAddResponseToQuery/:queryId",adminResponseController);
+adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 
 export default adminRouter;
