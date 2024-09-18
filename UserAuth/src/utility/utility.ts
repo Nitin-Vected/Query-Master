@@ -66,3 +66,31 @@ export const adminUpdateStudentStatus = async (
     }
   );
 };
+
+export const sendMessageApi = async (
+  queryId: string,
+  message: string,
+  token: string,
+  role: string
+) => {
+  let URL = `${ADMIN_API_URL}/adminAddResponseToQuery`;
+  if (role !== "SupportAdmin") {
+    URL = `${USER_API_URL}/userAddCommentToQuery`;
+  }
+  console.log(role, URL);
+
+  try {
+    const response = await axios.post(
+      `${URL}/${queryId}`,
+      { message },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to send message");
+  }
+};

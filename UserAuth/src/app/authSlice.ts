@@ -8,12 +8,17 @@ interface UserData {
 }
 
 interface AuthState {
-  userData: UserData | null;
+  userData: UserData;
   loading: boolean;
 }
 
 const initialState: AuthState = {
-  userData: null,
+  userData: {
+    email: "",
+    name: "",
+    token: "",
+    role: "",
+  },
   loading: false,
 };
 
@@ -28,7 +33,7 @@ const authSlice = createSlice({
       state.loading = action.payload;
     },
     clearUserData(state) {
-      state.userData = null;
+      state.userData = initialState.userData;
     },
   },
 });

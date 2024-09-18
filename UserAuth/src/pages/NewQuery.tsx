@@ -16,13 +16,7 @@ const validationSchema = Yup.object({
   description: Yup.string().required("Required"),
 });
 
-const initialValues = {
-  email: "",
-  subject: "",
-  description: "",
-};
-
-const NewTicket: React.FC = () => {
+const NewQuery: React.FC = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const userEmail = useSelector((state: RootState) => state.auth.userData?.email || '');
@@ -38,7 +32,7 @@ const NewTicket: React.FC = () => {
     onSubmit: async (values) => {
       dispatch(setLoading(true));
       try {
-        const response = await createQuery(values.subject, values.description, token);
+        await createQuery(values.subject, values.description, token);
         toast.success("Query created successfully!"); 
         navigate("/");
       } catch (error) {
@@ -53,7 +47,7 @@ const NewTicket: React.FC = () => {
     <>
       <section className="section heading">
         <BackButton url="/" />
-        <h1>Create New Ticket</h1>
+        <h1>Create New Query</h1>
         <p>Please fill out the form below</p>
       </section>
 
@@ -116,4 +110,4 @@ const NewTicket: React.FC = () => {
   );
 };
 
-export default NewTicket;
+export default NewQuery;

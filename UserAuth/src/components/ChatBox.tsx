@@ -5,6 +5,7 @@ import { RootState } from "../app/store";
 interface MessageType {
   _id: string;
   sender: string;
+  email: string;
   message: string;
   timestamp: string;
   role: string;
@@ -20,6 +21,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
   const currentUserEmail = useSelector(
     (state: RootState) => state.auth.userData?.email
   );
+
   useEffect(() => {
     if (endOfMessagesRef.current) {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
@@ -32,14 +34,23 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
         <div
           key={message._id}
           className={`message ${
-            message.sender === currentUserEmail ? "user" : "staff"
+            message.email === currentUserEmail ? "user" : "staff"
           }`}
         >
-          {message.sender !== currentUserEmail && (
-            <p>
-              <strong>Support Admin</strong>
-            </p>
+          {message.email !== currentUserEmail && (
+            <>
+              {message.role === "SupportAdmin" ? (
+                <p>
+                  <strong>Support Admin</strong>
+                </p>
+              ) : (
+                <p>
+                  <strong>{message.sender}</strong>
+                </p>
+              )}
+            </>
           )}
+
           <p>{message.message}</p>
           <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
         </div>

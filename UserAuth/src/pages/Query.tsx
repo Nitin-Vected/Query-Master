@@ -12,30 +12,29 @@ import { updateQuery } from "../app/querySlice";
 interface MessageType {
   _id: string;
   sender: string;
+  email:string;
   message: string;
   timestamp: string;
   role: string;
 }
 
-const Ticket: React.FC = () => {
+const Query: React.FC = () => {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
-  const currentUserEmail = useSelector(
-    (state: RootState) => state.auth.userData?.email
+  const currentUser = useSelector(
+    (state: RootState) => state.auth.userData
   );
-  const currentUserRole = useSelector(
-    (state: RootState) => state.auth.userData?.role
-  );
+  const {email, name, role} = currentUser
 
-  const selectedTicketId = useSelector(
-    (state: RootState) => state.queries.selectedTicketId
+  const selectedQueryId = useSelector(
+    (state: RootState) => state.queries.selectedQueryId
   );
 
   const query = useSelector((state: RootState) =>
-    state.queries.queries.find((q) => q._id === selectedTicketId)
+    state.queries.queries.find((q) => q._id === selectedQueryId)
   );
 
   useEffect(() => {
@@ -44,6 +43,7 @@ const Ticket: React.FC = () => {
         query.conversation.map((msg) => ({
           _id: msg._id,
           sender: msg.sender,
+          email:msg.email,
           message: msg.message,
           timestamp: msg.timestamp,
           role: msg.role,
@@ -54,17 +54,18 @@ const Ticket: React.FC = () => {
   }, [query]);
 
   const onSendMessage = (text: string) => {
-    if (!currentUserEmail || !currentUserRole) {
+    if (!email || !role) {
       toast.error("Unable to send message. User data is missing.");
       return;
     }
 
     const newMessage: MessageType = {
       _id: `M${Date.now()}`,
-      sender: currentUserEmail,
+      sender: name,
+      email:email,
       message: text,
       timestamp: new Date().toISOString(),
-      role: currentUserRole,
+      role: role,
     };
 
     setMessages([...messages, newMessage]);
@@ -79,11 +80,11 @@ const Ticket: React.FC = () => {
     }
   };
 
-  const onTicketClose = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const onQueryClose = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    toast.success("Ticket Closed Successfully");
+    toast.success("Query Closed Successfully");
     navigate(
-      currentUserRole === "SupportAdmin" ? "/manage-tickets" : "/tickets"
+      role === "SupportAdmin" ? "/manage-queries" : "/queries"
     );
   };
 
@@ -92,32 +93,32 @@ const Ticket: React.FC = () => {
   }
 
   if (!query) {
-    return <div>Ticket not found</div>;
+    return <div>Query not found</div>;
   }
 
   return (
-    <div className="ticket-page">
-      <header className="ticket-header">
+    <div className="query-page">
+      <header className="query-header">
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <BackButton
             url={
-              currentUserRole === "SupportAdmin"
-                ? "/manage-tickets"
-                : "/tickets"
+              role === "SupportAdmin"
+                ? "/manage-queries"
+                : "/queries"
             }
           />
           {query.status !== "closed" && (
             <button
-              className="btn btn-close-ticket btn-danger"
-              onClick={onTicketClose}
+              className="btn btn-close-query btn-danger"
+              onClick={onQueryClose}
             >
-              Close Ticket
+              Close Query
             </button>
           )}
         </div>
 
         <h2>
-          Ticket ID: {query._id}
+          Query ID: {query._id}
           <span className={`status status-${query.status.toLowerCase()}`}>
             {query.status}
           </span>
@@ -127,7 +128,7 @@ const Ticket: React.FC = () => {
         </h3>
         <h3>Subject : {query.subject}</h3>
         <hr />
-        <div className="ticket-desc">
+        <div className="query-desc">
           <h3>Description of Issue</h3>
           <p>{query.subject}</p>
         </div>
@@ -136,9 +137,9 @@ const Ticket: React.FC = () => {
 
       {messages.length > 0 ? <ChatBox messages={messages} /> : <Spinner />}
 
-      <MessageInput onSend={onSendMessage} />
+      <MessageInput onSend={onSendMessage} queryId={query._id} />
     </div>
   );
 };
 
-export default Ticket;
+export default Query;

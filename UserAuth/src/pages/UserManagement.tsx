@@ -3,12 +3,12 @@ import BackButton from "../components/BackButton";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../app/store";
 import Spinner from "../components/Spinner";
-import { adminGetStudentsList, adminUpdateStudentStatus } from "../utility/utility"; // Import your API functions
+import { adminGetStudentsList, adminUpdateStudentStatus } from "../utility/utility";
 
 const UserManagement: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [students, setStudents] = useState<any[]>([]); // Adjust type according to your data structure
+  const [students, setStudents] = useState<any[]>([]);
   const dispatch: AppDispatch = useDispatch();
   const token = useSelector(
     (state: RootState) => state.auth.userData?.token || ""
@@ -18,8 +18,8 @@ const UserManagement: React.FC = () => {
     const getStudents = async () => {
       setLoading(true);
       try {
-        const response = await adminGetStudentsList(token); // Fetch students from API
-        setStudents(response.data); // Adjust according to your response structure
+        const response = await adminGetStudentsList(token);
+        setStudents(response.data);
       } catch (error) {
         console.error("Error fetching students:", error);
         setError("Failed to load students");
@@ -36,7 +36,7 @@ const UserManagement: React.FC = () => {
 
     setLoading(true);
     try {
-      await adminUpdateStudentStatus(studentId, newStatus, token); // Update student status
+      await adminUpdateStudentStatus(studentId, newStatus, token);
       setStudents(students.map(student =>
         student._id === studentId ? { ...student, status: newStatus } : student
       ));

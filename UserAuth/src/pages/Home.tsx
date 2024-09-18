@@ -45,19 +45,19 @@ const Home: React.FC = () => {
 
       {displayUserData.role === "Student" && (
         <>
-          <Link to="/new-ticket" className="btn btn-reverse btn-block">
-            <FaQuestionCircle /> Create New Ticket
+          <Link to="/new-query" className="btn btn-reverse btn-block">
+            <FaQuestionCircle /> Create New Query
           </Link>
 
-          <Link to="/tickets" className="btn btn-block">
-            <FaTicketAlt /> View Your Tickets
+          <Link to="/queries" className="btn btn-block">
+            <FaTicketAlt /> View Your Queries
           </Link>
         </>
       )}
 
       {displayUserData.role === "SupportAdmin" && (
         <>
-          <Link to="/manage-tickets" className="btn btn-reverse btn-block">
+          <Link to="/manage-queries" className="btn btn-reverse btn-block">
             <FaTicketAlt /> Manage Queries
           </Link>
 

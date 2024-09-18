@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface Conversation {
   _id: string;
   sender: string;
+  email: string;
   message: string;
   timestamp: string;
   role: string;
@@ -21,12 +22,12 @@ export interface Query {
 
 interface QueryState {
   queries: Query[];
-  selectedTicketId: string | null;  // Add this line
+  selectedQueryId: string | null;  // Add this line
 }
 
 const initialState: QueryState = {
   queries: [],
-  selectedTicketId: null,  // Add this line
+  selectedQueryId: null,  // Add this line
 };
 
 const querySlice = createSlice({
@@ -49,12 +50,12 @@ const querySlice = createSlice({
         query.conversation.push(message);
       }
     },
-    selectTicket(state, action: PayloadAction<string | null>) {
-      state.selectedTicketId = action.payload;
+    selectQuery(state, action: PayloadAction<string | null>) {
+      state.selectedQueryId = action.payload;
     },
   },
 });
 
-export const { setQueries, updateQuery, addConversationMessage, selectTicket } = querySlice.actions;
+export const { setQueries, updateQuery, addConversationMessage, selectQuery } = querySlice.actions;
 
 export default querySlice.reducer;

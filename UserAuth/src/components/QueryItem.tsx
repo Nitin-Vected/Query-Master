@@ -1,28 +1,28 @@
 import React from "react";
-import { Query, selectTicket } from "../app/querySlice";
+import { Query, selectQuery } from "../app/querySlice";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
-interface TicketItemProps {
+interface QueryItemProps {
   query: Query;
 }
 
-const TicketItem: React.FC<TicketItemProps> = ({ query }) => {
+const QueryItem: React.FC<QueryItemProps> = ({ query }) => {
   const dispatch = useDispatch();
 
   const handleClick = () => {
-    dispatch(selectTicket(query._id));
+    dispatch(selectQuery(query._id));
   };
 
   return (
-    <div className="ticket">
-      <div className="ticket-date">
+    <div className="query">
+      <div className="query-date">
         {new Date(query.createdAt).toLocaleDateString()}
       </div>
-      <div className="ticket-subject">{query.subject}</div>
+      <div className="query-subject">{query.subject}</div>
       <div className={`status status-${query.status.toLowerCase()}`}>{query.status}</div>
       <Link
-        to={`/ticket/${query._id}`}
+        to={`/query/${query._id}`}
         className="btn btn-reverse btn-sm"
         onClick={handleClick}
       >
@@ -32,4 +32,4 @@ const TicketItem: React.FC<TicketItemProps> = ({ query }) => {
   );
 };
 
-export default TicketItem;
+export default QueryItem;

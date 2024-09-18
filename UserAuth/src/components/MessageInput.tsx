@@ -1,17 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { sendMessageApi } from "../utility/utility";
+import { RootState } from "../app/store";
+import { useSelector } from "react-redux";
 
 interface MessageInputProps {
   onSend: (text: string) => void;
+  queryId: string;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
-  const [text, setText] = useState('');
+const MessageInput: React.FC<MessageInputProps> = ({ onSend, queryId }) => {
+  const currentUser = useSelector((state: RootState) => state.auth.userData);
+  const { token, role } = currentUser;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [text, setText] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("inside handleSubmit");
+
     if (text.trim()) {
       onSend(text);
-      setText('');
+      try {
+        await sendMessageApi(queryId, text, token, role);
+        setText("");
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
     }
   };
 
