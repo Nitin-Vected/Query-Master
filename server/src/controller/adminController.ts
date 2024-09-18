@@ -122,12 +122,12 @@ export const adminResponseController = async (request: any, response: express.Re
             });
             await query.save();
             console.log('After conversation.push:', query.conversation);
+            // added new changes
             response.status(StatusCodes.CREATED).json({ query, message: "Your response has been sent to the Inquirer successfully!" });
         } else {
             response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Query has been closed by the user!' });
         }
         console.log('Query in adminResponseController : ', query);
-
 
     } catch (error) {
         console.log(error);
