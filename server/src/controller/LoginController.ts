@@ -2,7 +2,7 @@ import express from 'express';
 import axios from 'axios';
 import userModel from '../model/userModel';
 import { tokenGenerator, tokenVerifier } from '../utilities/jwt';
-import { ADMIN_SECRET_KEY, USER_SECRET_KEY } from '../config';
+import { ADMIN_SECRET_KEY, StatusCodes, USER_SECRET_KEY } from '../config';
 interface TokenResponse {
     access_token: string;
 }
@@ -48,19 +48,28 @@ export const loginController = async (request: express.Request, response: expres
                 userData.status = email_verified;
                 await userData.save();
                 console.log('User Data Updated');
-                const payload = {
-                    name,
-                    email,
-                    role: userData.role,
-                    status: userData.status,
-                }
-                if(userData.role === "Student"){
-                    const token = tokenGenerator(payload, USER_SECRET_KEY);
-                    response.status(201).json({ userData: userData, token: token, message: "Logged in  Successfull ..!" });
-                }else{
-                    console.log('UserData checking : ',userData);
-                    const token = tokenGenerator(payload, ADMIN_SECRET_KEY);
-                    response.status(201).json({ userData: userData, token: token, message: "Logged in  Successfull ..!" });
+                if (userData.status === 'true') {
+                    const payload = {
+                        name,
+                        email,
+                        role: userData.role,
+                        status: userData.status,
+                    };
+
+                    let token;
+                    if (userData.role === "Student") {
+                        token = tokenGenerator(payload, USER_SECRET_KEY);
+                    } else {
+                        token = tokenGenerator(payload, ADMIN_SECRET_KEY);
+                    }
+
+                    response.status(201).json({
+                        userData: userData,
+                        token: token,
+                        message: "Login Successful!"
+                    });
+                } else {
+                    response.status(StatusCodes.UNAUTHORIZED).json({ message: "Account not verified. Please verify your account to login." });
                 }
             }
             else {

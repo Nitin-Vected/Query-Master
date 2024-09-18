@@ -24,6 +24,75 @@ export const adminViewProfileController = async (request: any, response: express
     }
 }
 
+export const adminViewRaisedQueryListController = async (request: express.Request, response: express.Response) => {
+    try {
+        const raisedQueries = await queryModel.find();
+        console.log(`RaisedQuery by  ${raisedQueries} : `);
+        if (raisedQueries) {
+            return response.status(StatusCodes.CREATED).json({ raisedQueries: raisedQueries, message: "These are the recently raised queries ..!" });
+        } else {
+            throw new Error('Queries not found ..!')
+        }
+    } catch (error) {
+        console.log('Error occure in userRaiseQueryController : ', error)
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
+    }
+}
+
+export const adminViewStudentListController = async (request: express.Request, response: express.Response) => {
+    try {
+        const studentList = await userModel.find({ role: "Student" });
+        const totalNumberOfStudents = await userModel.countDocuments({ role: "Student" });
+        console.log(`studentList: ${studentList}`);
+        console.log(`Total number of students: ${totalNumberOfStudents}`);
+
+        if (studentList && studentList.length > 0) {
+            response.status(StatusCodes.OK).json({
+                studentList: studentList,
+                totalNumberOfStudents: totalNumberOfStudents,
+                message: "These are the registered students!"
+            });
+        } else {
+            response.status(StatusCodes.NOT_FOUND).json({ message: "Student list not found!" });
+        }
+
+    } catch (error) {
+        console.log('Error occure in userRaiseQueryController : ', error)
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
+    }
+}
+
+export const adminManageStudentStatusController = async (request: any, response: express.Response) => {
+    try {
+        const { studentId, action } = request.params;
+        console.log('student id : ', studentId, '  action : ', action)
+        if (!studentId || !action) {
+            return response.status(StatusCodes.BAD_REQUEST).json({ error: 'Student ID and action are required' });
+        }
+
+        const status = (action === 'true') ? true : (action === 'false') ? false : null;
+        if (status === null) {
+            return response.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid action. Use true or false.' });
+        }
+
+        const studentData = await userModel.findOneAndUpdate(
+            { _id: Object(studentId), role: "Student" },
+            { status: action },
+            { new: true }
+        );
+        // const studentData = await userModel.findOne({ _id: Object(studentId) })
+        if (studentData) {
+            console.log('Student Status updated  :', studentData?.status)
+            const studentList = await userModel.find({ role: "Student" });
+            response.status(StatusCodes.CREATED).json({ studentList: studentList, studentData: studentData, message: "Student status updated successfully here is the Student List" });
+        } else {
+            return response.status(StatusCodes.NOT_FOUND).json({ error: 'Student not found or _id mismatch' });
+        }
+    } catch (error) {
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
+    }
+};
+
 
 export const adminAddContactNumberController = async (request: any, response: express.Response) => {
     try {
@@ -52,26 +121,15 @@ export const adminAddContactNumberController = async (request: any, response: ex
     }
 }
 
-export const adminViewRaisedQueryListController = async (request: express.Request, response: express.Response) => {
-    try {
-        const raisedQueries = await queryModel.find();
-        console.log(`RaisedQuery by  ${raisedQueries} : `);
-        if (raisedQueries) {
-            return response.status(StatusCodes.CREATED).json({ raisedQueries: raisedQueries, message: "These are the recently raised queries ..!" });
-        } else {
-            throw new Error('Queries not found ..!')
-        }
-    } catch (error) {
-        console.log('Error occure in userRaiseQueryController : ', error)
-        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
-    }
-}
 
 export const adminRaiseQueryController = async (request: any, response: express.Response) => {
     try {
-        const { email, role } = request.payload;
+        const { name, email, role } = request.payload;
         const { subject, message } = request.body;
 
+        if (!subject || !message) {
+            return response.status(StatusCodes.BAD_REQUEST).json({ message: "Subject and Message are required  ..!" });
+        }
         const similaryExistingQuery = await queryModel.findOne({ userEmail: email, userRole: role, subject, message });
         if (!similaryExistingQuery) {
             const updatedQuery = await queryModel.create({
@@ -80,7 +138,8 @@ export const adminRaiseQueryController = async (request: any, response: express.
                 subject,
                 message,
                 conversation: [{
-                    sender: email,
+                    sender: name,
+                    email: email,
                     message: message,
                     role: role,
                     timestamp: new Date()
@@ -88,7 +147,7 @@ export const adminRaiseQueryController = async (request: any, response: express.
             });
             return response.status(StatusCodes.CREATED).json({ updatedQuery, message: "Your query has been successfully published ..!" });
         } else {
-            return response.status(400).json({ message: "A similar query has already been added by you ..!" });
+            return response.status(StatusCodes.ALREADY_EXIST).json({ message: "A similar query has already been added by you ..!" });
         }
 
     } catch (error) {
@@ -110,30 +169,69 @@ export const adminResponseController = async (request: any, response: express.Re
         if (!query) {
             return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found' });
         } else if (query.status === "Open") {
-            console.log('Name ==> ',request.payload.name);
-            console.log('Email ==> ',request.payload.email);
+            console.log('Name ==> ', request.payload.name);
+            console.log('Email ==> ', request.payload.email);
             console.log('Query ', query);
             query.conversation.push({
                 sender: name,
                 email: email,
                 message,
-                role:role,
+                role: role,
                 timestamp: new Date()
             });
             await query.save();
             console.log('After conversation.push:', query.conversation);
-            response.status(StatusCodes.CREATED).json({ query, message: "Your response has been sent to the Inquirer successfully!" });
+
+            // student's should not see the admin's email or role instead "Support Admin" will be shown in sender and email
+            const queryResponse = query.toObject();
+            queryResponse.conversation = queryResponse.conversation.map((conv: any) => ({
+                sender: conv.role === "SupportAdmin" ? "Support Admin" : conv.sender,
+                email: conv.role === "SupportAdmin" ? "Support Admin" : conv.email,
+                message: conv.message,
+                role: conv.role,
+                timestamp: conv.timestamp
+            }));
+
+            response.status(StatusCodes.CREATED).json({ query: queryResponse, message: "Your response has been sent to the Inquirer successfully!" });
         } else {
-            response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Query has been closed by the user!' });
+            response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query has been closed by the user!' });
         }
         console.log('Query in adminResponseController : ', query);
-
 
     } catch (error) {
         console.log(error);
         response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
     }
 };
+
+export const adminManageQueryStatusController = async (request: any, response: express.Response) => {
+    try {
+        const { name, email, role } = request.payload;
+        const { queryId, status } = request.params;
+        console.log('query id : ', queryId, '   query status : ', status)
+        if (!queryId || !status) {
+            return response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query ID and status are required' });
+        }
+
+        const query = await queryModel.findOneAndUpdate(
+            { _id: Object(queryId), userEmail: email },
+            { status: status },
+            { new: true }
+        );
+        console.log('Query Status :', query?.status)
+
+        if (!query) {
+            return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found or email mismatch' });
+        }
+
+        console.log('Query status updated successfully');
+        response.status(StatusCodes.CREATED).json({ message: "Query status updated to Closed successfully", query });
+    } catch (error) {
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
+    }
+};
+
+
 
 export const adminAuthenticationController = async (request: express.Request, response: express.Response) => {
     try {
