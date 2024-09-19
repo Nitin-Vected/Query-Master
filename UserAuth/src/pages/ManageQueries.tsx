@@ -5,7 +5,12 @@ import { RootState, AppDispatch } from "../app/store";
 import { adminfetchQueries } from "../utility/utility";
 import { setQueries, Query } from "../app/querySlice";
 import Spinner from "../components/Spinner";
-import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridCellParams,
+  GridColDef,
+  GridRenderCellParams,
+} from "@mui/x-data-grid";
 import { Button } from "@mui/material";
 import { Link } from "react-router-dom";
 
@@ -50,35 +55,38 @@ const ManageQueries: React.FC = () => {
   const handleClick = (id: string) => {
     dispatch({ type: "queries/selectQuery", payload: id });
   };
-  const formatDate = (dateString: string | undefined) => {
-    console.log(dateString);
-    
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? "Invalid Date" : date.toLocaleDateString();
-  };
 
   const columns: GridColDef[] = [
     {
       field: "createdAt",
-      headerName: "Date",
-      minWidth: 150,
+      headerName: "Date - Time",
+      minWidth: 200,
       flex: 1,
-      valueFormatter: (params) =>
-        formatDate(params),
+      valueFormatter: (params) => {
+        const date = new Date(params);
+        return `${date.toLocaleDateString()} - ${date.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        })}`;
+      },
     },
+    { field: "email", headerName: "Email", minWidth: 250, flex: 1 },
     { field: "subject", headerName: "Subject", minWidth: 200, flex: 1 },
     {
       field: "status",
       headerName: "Status",
-      minWidth: 150,
+      minWidth: 120,
       flex: 1,
+      cellClassName: (params: GridCellParams) =>
+        `status-color-${(params.value as string).toLowerCase()}`,
     },
-    { field: "userRole", headerName: "User Role", minWidth: 150, flex: 1 },
+    { field: "userRole", headerName: "User Role", minWidth: 120, flex: 1 },
     {
       field: "action",
       headerName: "Action",
-      minWidth: 150,
+      minWidth: 100,
       renderCell: (params: GridRenderCellParams) => (
         <Button
           component={Link}
@@ -102,11 +110,12 @@ const ManageQueries: React.FC = () => {
     <>
       <BackButton url="/" />
       <h1>Queries</h1>
-      <div style={{ height: 400, width: "100%" }}>
+      <div style={{ height: 420, width: "100%" }}>
         <DataGrid
           rows={queries.map((query) => ({
             id: query._id,
             createdAt: query.createdAt,
+            email: query.userEmail,
             subject: query.subject,
             status: query.status,
             userRole: query.userRole,

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaSignInAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -13,10 +13,12 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const loading = useSelector((state: RootState) => state.auth.loading);
+  const [error, setError] = useState<string | null>(null); // State for managing error
 
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async ({ access_token }: { access_token: string }) => {
       dispatch(setLoading(true));
+      setError(null); // Clear any previous error
 
       try {
         if (access_token) {
@@ -34,14 +36,19 @@ const Login: React.FC = () => {
           dispatch(setUserData(userDataObj));
           navigate("/");
         }
-      } catch (error) {
-        console.error("Login error:", error);
+      } catch (err: any) {
+        if (err.response && err.response.data && err.response.data.message) {
+          setError(err.response.data.message);
+        } else {
+          setError("An unexpected error occurred. Please try again.");
+        }
       } finally {
         dispatch(setLoading(false));
       }
     },
-    onError: (error) => {
-      console.error("Google OAuth error:", error);
+    onError: (err) => {
+      console.error("Google OAuth error:", err);
+      setError("Google authentication failed. Please try again.");
     },
   });
 
@@ -55,6 +62,7 @@ const Login: React.FC = () => {
             <FaSignInAlt /> Login
           </h1>
           <p>Please login to get support</p>
+
           <button
             style={{
               marginTop: "20px",
@@ -73,6 +81,12 @@ const Login: React.FC = () => {
             />
             &nbsp;Login With Google
           </button>
+
+          {error && (
+            <p style={{ color: "red", marginTop: "10px", fontSize: "1rem" }}>
+              {error}
+            </p>
+          )}
         </section>
       )}
     </>

@@ -26,9 +26,9 @@ const App: React.FC = () => {
         <Route element={<PrivateRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/new-query" element={<NewQuery />} />
-          <Route path="/Queries" element={<Queries />} />
+          <Route path="/queries" element={<Queries />} />
           <Route path="/query/:queryId" element={<Query />} />
-          <Route path="/manage-Queries" element={<ManageQueries />} />
+          <Route path="/manage-queries" element={<ManageQueries />} />
           <Route path="/student-management" element={<StudentManagement />} />
         </Route>
       </Routes>

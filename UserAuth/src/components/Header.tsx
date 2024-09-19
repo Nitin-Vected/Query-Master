@@ -20,13 +20,17 @@ function Header(): JSX.Element {
         <Link to="/">Support Desk</Link>
       </div>
       <ul>
-        
         {userData ? (
-          <li>
-            <button className="btn" onClick={onLogOut}>
-              <FaSignOutAlt /> Log Out
-            </button>
-          </li>
+          <>
+            <li>
+              <span>Role: {userData.role}</span> {/* Display user role */}
+            </li>
+            <li>
+              <button className="btn" onClick={onLogOut}>
+                <FaSignOutAlt /> Log Out
+              </button>
+            </li>
+          </>
         ) : (
           ""
         )}

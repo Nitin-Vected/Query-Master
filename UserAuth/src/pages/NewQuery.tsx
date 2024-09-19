@@ -34,7 +34,7 @@ const NewQuery: React.FC = () => {
       try {
         await createQuery(values.subject, values.description, token);
         toast.success("Query created successfully!"); 
-        navigate("/");
+        navigate("/queries");
       } catch (error) {
         toast.error("Failed to create query. Please try again."); 
       } finally {

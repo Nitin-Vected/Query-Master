@@ -90,6 +90,14 @@ const StudentManagement: React.FC = () => {
       headerName: "Contact Number",
       minWidth: 150,
       flex: 1,
+      align: 'center',
+      headerAlign:'center'
+    },
+    {
+      field: "role",
+      headerName: "Role",
+      minWidth: 150,
+      flex: 1,
     },
     {
       field: "status",
@@ -124,7 +132,8 @@ const StudentManagement: React.FC = () => {
               id: student._id,
               name: student.name,
               email: student.email,
-              contactNumber: student.contactNumber,
+              contactNumber: student.contactNumber ? student.contactNumber : "-",
+              role: student.role,
               status: student.status,
             }))}
             columns={columns}

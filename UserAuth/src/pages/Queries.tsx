@@ -5,7 +5,7 @@ import { RootState, AppDispatch } from "../app/store";
 import { fetchQueries } from "../utility/utility";
 import { setQueries, Query } from "../app/querySlice";
 import Spinner from "../components/Spinner";
-import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { DataGrid, GridCellParams, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { Link } from "react-router-dom";
 import { Button } from "@mui/material";
 
@@ -56,11 +56,18 @@ const Queries: React.FC = () => {
   const columns: GridColDef[] = [
     {
       field: "createdAt",
-      headerName: "Date",
-      minWidth: 150,
+      headerName: "Date - Time",
+      minWidth: 200,
       flex: 1,
-      valueFormatter: (params) =>
-        new Date(params).toLocaleDateString(),
+      valueFormatter: (params) => {
+        const date = new Date(params);
+        return `${date.toLocaleDateString()} - ${date.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        })}`;
+      },                                                                                                                                                                        
     },
     { field: "subject", headerName: "Subject", minWidth: 200, flex: 1 },
     {
@@ -68,11 +75,8 @@ const Queries: React.FC = () => {
       headerName: "Status",
       minWidth: 150,
       flex: 1,
-      renderCell: (params: GridRenderCellParams) => (
-        <span className={`status status-${(params.value as string).toLowerCase()}`}>
-          {params.value}
-        </span>
-      ),
+      cellClassName: (params: GridCellParams) =>
+        `status-color-${(params.value as string).toLowerCase()}`,
     },
     { field: "userRole", headerName: "User Role", minWidth: 150, flex: 1 },
     {

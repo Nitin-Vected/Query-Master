@@ -49,6 +49,9 @@ const Query: React.FC = () => {
     state.queries.queries.find((q) => q._id === selectedQueryId)
   );
 
+  // const param = useParams();
+  // const queryId = param.queryId;
+
   useEffect(() => {
     if (query) {
       setMessages(
@@ -107,7 +110,12 @@ const Query: React.FC = () => {
     }
     setLoading(true);
     try {
-      const response = await manageQueryStatus(query._id, query.userEmail, token, role);
+      const response = await manageQueryStatus(
+        query._id,
+        query.userEmail,
+        token,
+        role
+      );
 
       if (response.status === 201) {
         toast.success("Query Closed Successfully");
@@ -140,46 +148,72 @@ const Query: React.FC = () => {
 
   return (
     <div className="query-page">
-      <header className="query-header">
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <BackButton
-            url={role === "SupportAdmin" ? "/manage-queries" : "/queries"}
-          />
-          {query.status.toLowerCase() !== "closed" && (
-            <button
-              className="btn btn-close-query btn-danger"
-              onClick={handleOpenModal}
+      <div className="split-container">
+        {/* Left side: Query details */}
+        <div className="query-details">
+          <header className="query-header">
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "20px",
+              }}
             >
-              Close Query
-            </button>
-          )}
+              <BackButton
+                url={role === "SupportAdmin" ? "/manage-queries" : "/queries"}
+              />
+              {query.status.toLowerCase() !== "closed" && (
+                <button
+                  className="btn btn-close-query btn-danger"
+                  onClick={handleOpenModal}
+                >
+                  Close Query
+                </button>
+              )}
+            </div>
+
+            <h3
+              style={{ marginBottom: "10px" }}
+              className={`status-color-${query.status.toLowerCase()}`}
+            >
+              Status: {query.status}
+            </h3>
+
+            <table className="query-info-table">
+              <tbody>
+                <tr>
+                  <th>Query ID</th>
+                  <td>{query._id}</td>
+                </tr>
+                <tr>
+                  <th>Date</th>
+                  <td>{new Date(query.createdAt).toLocaleString("en-IN")}</td>
+                </tr>
+                <tr>
+                  <th>Subject</th>
+                  <td>{query.subject}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div className="query-desc">
+              <h3>Description of Issue</h3>
+              <p>{query.subject}</p>
+            </div>
+          </header>
         </div>
 
-        <h2>
-          Query ID: {query._id}
-          <span className={`status status-${query.status.toLowerCase()}`}>
-            {query.status}
-          </span>
-        </h2>
-        <h3>
-          Date Submitted: {new Date(query.createdAt).toLocaleString("en-IN")}
-        </h3>
-        <h3>Subject : {query.subject}</h3>
-        <hr />
-        <div className="query-desc">
-          <h3>Description of Issue</h3>
-          <p>{query.subject}</p>
+        {/* Right side: Chat system */}
+        <div className="query-chat">
+          {/* <h2>Comments</h2> */}
+          {messages.length > 0 ? <ChatBox messages={messages} /> : <Spinner />}
+          <MessageInput
+            onSend={onSendMessage}
+            queryId={query._id}
+            status={query.status.toLowerCase() === "closed"}
+          />
         </div>
-        <h2>Comments</h2>
-      </header>
-
-      {messages.length > 0 ? <ChatBox messages={messages} /> : <Spinner />}
-
-      <MessageInput
-        onSend={onSendMessage}
-        queryId={query._id}
-        status={query.status.toLowerCase() === "closed"}
-      />
+      </div>
 
       {/* Modal for confirmation */}
       <Dialog
