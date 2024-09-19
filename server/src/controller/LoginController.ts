@@ -1,7 +1,7 @@
 import express from 'express';
 import axios from 'axios';
 import userModel from '../model/userModel';
-import { tokenGenerator, tokenVerifier } from '../utilities/jwt';
+import { tokenGenerator } from '../utilities/jwt';
 import { ADMIN_SECRET_KEY, StatusCodes, USER_SECRET_KEY } from '../config';
 interface TokenResponse {
     access_token: string;

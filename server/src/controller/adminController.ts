@@ -42,14 +42,9 @@ export const adminViewRaisedQueryListController = async (request: express.Reques
 export const adminViewStudentListController = async (request: express.Request, response: express.Response) => {
     try {
         const studentList = await userModel.find({ role: "Student" });
-        const totalNumberOfStudents = await userModel.countDocuments({ role: "Student" });
-        console.log(`studentList: ${studentList}`);
-        console.log(`Total number of students: ${totalNumberOfStudents}`);
-
         if (studentList && studentList.length > 0) {
             response.status(StatusCodes.OK).json({
                 studentList: studentList,
-                totalNumberOfStudents: totalNumberOfStudents,
                 message: "These are the registered students!"
             });
         } else {
@@ -58,6 +53,47 @@ export const adminViewStudentListController = async (request: express.Request, r
 
     } catch (error) {
         console.log('Error occure in userRaiseQueryController : ', error)
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
+    }
+}
+
+export const adminViewSupportAdminListController = async (request: express.Request, response: express.Response) => {
+    try {
+        const adminList = await userModel.find({ role: "SupportAdmin" });
+        if (adminList && adminList.length > 0) {
+            response.status(StatusCodes.OK).json({
+                adminList: adminList,
+                message: "These are the registered support admins ..!"
+            });
+        } else {
+            response.status(StatusCodes.NOT_FOUND).json({ message: "Student list not found!" });
+        }
+
+    } catch (error) {
+        console.log('Error occure in userRaiseQueryController : ', error)
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
+    }
+}
+
+export const adminViewUserListController = async (request: express.Request, response: express.Response) => {
+    try {
+        const userList = await userModel.find();
+        const totalNumberOfUser = await userModel.countDocuments();
+        // console.log(`userList: ${userList}`);
+        console.log(`Total number of user: ${totalNumberOfUser}`);
+
+        if (userList && userList.length > 0) {
+            response.status(StatusCodes.OK).json({
+                userList: userList,
+                totalNumberOfUser: totalNumberOfUser,
+                message: "These are the registered Users ..!"
+            });
+        } else {
+            response.status(StatusCodes.NOT_FOUND).json({ message: "User list not found ..!" });
+        }
+
+    } catch (error) {
+        console.log('Error occure in adminViewUserListController : ', error)
         response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
     }
 }
@@ -93,6 +129,32 @@ export const adminManageStudentStatusController = async (request: any, response:
     }
 };
 
+export const adminManageQueryStatusController = async (request: any, response: express.Response) => {
+    try {
+        const { name, email, role } = request.payload;
+        const { queryId, status } = request.params;
+        console.log('query id : ', queryId, '   query status : ', status)
+        if (!queryId || !status) {
+            return response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query ID and status are required' });
+        }
+
+        const query = await queryModel.findOneAndUpdate(
+            { _id: Object(queryId), userEmail: email },
+            { status: status },
+            { new: true }
+        );
+        console.log('Query Status :', query?.status)
+
+        if (!query) {
+            return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found or email mismatch' });
+        }
+
+        console.log('Query status updated successfully');
+        response.status(StatusCodes.CREATED).json({ message: "Query status updated to Closed successfully", query });
+    } catch (error) {
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
+    }
+};
 
 export const adminAddContactNumberController = async (request: any, response: express.Response) => {
     try {
@@ -204,32 +266,7 @@ export const adminResponseController = async (request: any, response: express.Re
     }
 };
 
-export const adminManageQueryStatusController = async (request: any, response: express.Response) => {
-    try {
-        const { name, email, role } = request.payload;
-        const { queryId, status } = request.params;
-        console.log('query id : ', queryId, '   query status : ', status)
-        if (!queryId || !status) {
-            return response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query ID and status are required' });
-        }
 
-        const query = await queryModel.findOneAndUpdate(
-            { _id: Object(queryId), userEmail: email },
-            { status: status },
-            { new: true }
-        );
-        console.log('Query Status :', query?.status)
-
-        if (!query) {
-            return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found or email mismatch' });
-        }
-
-        console.log('Query status updated successfully');
-        response.status(StatusCodes.CREATED).json({ message: "Query status updated to Closed successfully", query });
-    } catch (error) {
-        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
-    }
-};
 
 
 

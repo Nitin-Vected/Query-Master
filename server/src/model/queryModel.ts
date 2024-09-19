@@ -11,6 +11,7 @@ interface Conversation {
 
 // Query interface extending mongoose Document
 interface Query extends Document {
+  // queryId : string;
   userEmail: string;
   subject: string;
   message: string;
@@ -45,6 +46,11 @@ const ConversationSchema: Schema = new Schema({
 
 // Query Schema
 const QuerySchema: Schema = new Schema({
+  // queryId : {
+  //   type: String,
+  //   required: true,
+  //   unique: true
+  // },
   userEmail: {
     type: String,
     required: true

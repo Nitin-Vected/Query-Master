@@ -20,3 +20,4 @@ export const StatusCodes = {
     INTERNAL_SERVER_ERROR: 500,
     SERVICE_UNAVAILABLE: 503,
 };
+

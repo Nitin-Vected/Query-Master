@@ -21,7 +21,6 @@ const ManageQueries: React.FC = () => {
       setLoading(true);
       try {
         const response = await adminfetchQueries(token);
-
         const fetchedQueries: Query[] = response.data.raisedQueries.map(
           (query: Query) => ({
             _id: query._id,
@@ -34,8 +33,6 @@ const ManageQueries: React.FC = () => {
             conversation: query.conversation || [],
           })
         );
-
-        // Dispatch action to update the Redux store
         dispatch(setQueries(fetchedQueries));
       } catch (error) {
         console.error("Error fetching queries:", error);

@@ -2,7 +2,8 @@ import express from 'express';
 import userModel from '../model/userModel';
 import { tokenVerifier } from '../utilities/jwt';
 import { StatusCodes, USER_SECRET_KEY } from '../config';
-import queryModel from '../model/queryModel';;
+import queryModel from '../model/queryModel';import { request } from 'http';
+;
 
 export const userViewProfileController = async (request: any, response: express.Response) => {
     try {
@@ -89,35 +90,6 @@ export const userRaiseQueryController = async (request: any, response: express.R
     }
 };
 
-// according to pagination page = current Page Number, limit = number of Documents
-export const userGetQueriesController = async (request: any, response: express.Response) => {
-    try {
-        const { email, role } = request.payload;
-        const page = parseInt(request.query.page) || 1;
-        const limit = parseInt(request.query.limit) || 4;
-
-        const numberOfDocsToSkip = (page - 1) * limit;
-        const total = await queryModel.countDocuments(); // 3
-        const myQueries = await queryModel.find({ userEmail: email, userRole: role }).skip(numberOfDocsToSkip).limit(limit);
-        console.log('My Queries : ', myQueries);
-        console.log('Page  : ', page);
-        console.log('limit : ', limit);
-        console.log('Total Queries : ', total);
-
-        response.json({
-            page,
-            limit,
-            total,
-            myQueries: myQueries
-        });
-
-    } catch (error) {
-        console.log(error);
-        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to create query' });
-    }
-};
-
-
 export const userViewMyQueriesController = async (request: any, response: express.Response) => {
     try {
         const { email, role } = request.payload;
@@ -142,7 +114,7 @@ export const userAddCommentController = async (request: any, response: express.R
         console.log('QueryId : ', queryId);
 
         // Find the query by its _id
-        const query = await queryModel.findOne({ _id: Object(queryId) }); 
+        const query = await queryModel.findOne({ _id: Object(queryId) });
         if (!query) {
             return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found' });
         } else if (query.status === "Open") {
@@ -170,17 +142,17 @@ export const userManageQueryStatusController = async (request: any, response: ex
     try {
         const { name, email, role } = request.payload;
         const { queryId, status } = request.params;
-        console.log('query id : ',queryId,'   query status : ',status)
+        console.log('query id : ', queryId, '   query status : ', status)
         if (!queryId || !status) {
             return response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query ID and status are required' });
         }
 
         const query = await queryModel.findOneAndUpdate(
-            { _id: Object(queryId), userEmail: email }, 
-            { status: status }, 
-            { new: true } 
+            { _id: Object(queryId), userEmail: email },
+            { status: status },
+            { new: true }
         );
-        console.log('Query Status :',query?.status)
+        console.log('Query Status :', query?.status)
 
         if (!query) {
             return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found or email mismatch' });
@@ -210,6 +182,71 @@ export const userAuthenticationController = async (request: any, response: expre
         response.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token Not verify please login then try to access ..!' });
     }
 };
+
+// according to pagination page = current Page Number, limit = number of Documents
+// export const userGetQueriesController = async (request: any, response: express.Response) => {
+//     try {
+//         const { email, role } = request.payload;
+//         const page = parseInt(request.query.page) || 1;
+//         const limit = parseInt(request.query.limit) || 4;
+
+//         const numberOfDocsToSkip = (page - 1) * limit;
+//         const total = await queryModel.countDocuments(); // 3
+//         const myQueries = await queryModel.find({ userEmail: email, userRole: role }).skip(numberOfDocsToSkip).limit(limit);
+//         console.log('My Queries : ', myQueries);
+//         console.log('Page  : ', page);
+//         console.log('limit : ', limit);
+//         console.log('Total Queries : ', total);
+
+//         response.json({
+//             page,
+//             limit,
+//             total,
+//             myQueries: myQueries
+//         });
+
+//     } catch (error) {
+//         console.log(error);
+//         response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to create query' });
+//     }
+// };
+
+export const userGetQueriesInRange = async (req: any, res: any) => {
+    try {
+        console.log('Hello from userGetQueriesController ..!');
+        const { page = 1, limit = 10 } = req.params; // Default to page 1 and limit 10
+        const pageNum = parseInt(page as string);
+        const limitNum = parseInt(limit as string);
+
+        // Calculate skip and limit for pagination
+        const skip = (pageNum - 1) * limitNum; 
+
+        // Get the total count of documents (for total pages)
+        const totalQueries = await queryModel.countDocuments();
+
+        // Fetch the queries based on the skip and limit
+        const queryList = await queryModel.find({userEmail: req.payload.email})
+            .skip(skip)
+            .limit(limitNum)
+            .sort({ createdAt: -1 }); // Optionally sort by creation date
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalQueries / limitNum);
+        console.log('QueryList : ', queryList)
+        // Return paginated data and metadata
+        res.status(200).json({
+            queryList,
+            currentPage: pageNum,
+            totalPages,
+            totalQueries
+        });
+    } catch (error) {
+        console.error('Error fetching paginated queries:', error);
+        res.status(500).json({ message: 'Error fetching paginated queries' });
+    }
+};
+
+
 
 // for backend
 export const userAuthenticateJWT = async (request: any, response: express.Response, next: Function) => {
