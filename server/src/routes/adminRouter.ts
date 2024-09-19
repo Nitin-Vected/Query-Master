@@ -3,6 +3,7 @@ import {
   adminAddContactNumberController,
   adminAuthenticateJWT,
   adminAuthenticationController,
+  adminGetQueryDataController,
   adminManageQueryStatusController,
   adminManageStudentStatusController,
   adminRaiseQueryController,
@@ -32,6 +33,7 @@ adminRouter.use(adminAuthenticateJWT);
 adminRouter.get("/adminViewProfile", adminViewProfileController);
 adminRouter.get("/adminViewStudentList", adminViewStudentListController);
 adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
+adminRouter.get('/adminGetQueryData/:queryId',adminGetQueryDataController);
 
 adminRouter.get("/adminViewSupportAdminList", adminViewSupportAdminListController);
 adminRouter.get("/adminViewUserList", adminViewUserListController);

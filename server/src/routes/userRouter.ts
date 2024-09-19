@@ -1,6 +1,15 @@
-import express from 'express';
-import { userAddCommentController, userAddContactNumberController, userAuthenticateJWT, userAuthenticationController, userGetQueriesInRange, userManageQueryStatusController, userRaiseQueryController, userViewMyQueriesController, userViewProfileController } from '../controller/userController';
+import express, { Request } from 'express';
+import { userAddCommentController, userAddContactNumberController, userAuthenticateJWT, userAuthenticationController, userGetQueryDataController, userManageQueryStatusController, userRaiseQueryController, userViewMyQueriesController, userViewProfileController } from '../controller/userController';
 import { loginController } from '../controller/LoginController';
+
+interface CustomRequest extends Request {
+    payload: {
+        email: string;
+        role: string;
+        token: string;
+    };
+}
+
 const userRouter = express.Router();
 userRouter.get('/', (request: express.Request, response: express.Response) => {
     console.log('Welcome user ..!');
@@ -12,8 +21,12 @@ userRouter.post("/userLogin", loginController);
 userRouter.get("/userAuthentication", userAuthenticationController);
 
 userRouter.use(userAuthenticateJWT);
-userRouter.get("/userViewProfile", userViewProfileController);
+userRouter.get("/userViewProfile", (req, res, next) => {
+    userViewProfileController(req as CustomRequest, res, next);
+});
 userRouter.get("/userViewMyQueries", userViewMyQueriesController);
+userRouter.get('/userGetQueryData/:queryId',userGetQueryDataController);
+
 userRouter.post('/userAddContactNumber', userAddContactNumberController)
 userRouter.post('/userRaiseQuery',userRaiseQueryController);
 
@@ -22,9 +35,5 @@ userRouter.post(
     userManageQueryStatusController
   );
 userRouter.post("/userAddCommentToQuery/:queryId",userAddCommentController);
-
-// userRouter.get("/userCloseQuery", userCloseQueryController);
-
-userRouter.get("/userGetQueriesInRange/:page/:limit", userGetQueriesInRange)
 
 export default userRouter;
