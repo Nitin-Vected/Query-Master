@@ -20,6 +20,7 @@ function Header(): JSX.Element {
         <Link to="/">Support Desk</Link>
       </div>
       <ul>
+        
         {userData ? (
           <li>
             <button className="btn" onClick={onLogOut}>

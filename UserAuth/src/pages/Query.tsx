@@ -12,7 +12,7 @@ import { updateQuery } from "../app/querySlice";
 interface MessageType {
   _id: string;
   sender: string;
-  email:string;
+  email: string;
   message: string;
   timestamp: string;
   role: string;
@@ -24,10 +24,12 @@ const Query: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
-  const currentUser = useSelector(
-    (state: RootState) => state.auth.userData
-  );
-  const {email, name, role} = currentUser
+  const currentUser = useSelector((state: RootState) => state.auth.userData);
+
+  // Add a null check for currentUser before accessing email, name, and role
+  const email = currentUser?.email;
+  const name = currentUser?.name;
+  const role = currentUser?.role;
 
   const selectedQueryId = useSelector(
     (state: RootState) => state.queries.selectedQueryId
@@ -43,7 +45,7 @@ const Query: React.FC = () => {
         query.conversation.map((msg) => ({
           _id: msg._id,
           sender: msg.sender,
-          email:msg.email,
+          email: msg.email,
           message: msg.message,
           timestamp: msg.timestamp,
           role: msg.role,
@@ -61,8 +63,8 @@ const Query: React.FC = () => {
 
     const newMessage: MessageType = {
       _id: `M${Date.now()}`,
-      sender: name,
-      email:email,
+      sender: name || "Unknown",
+      email: email,
       message: text,
       timestamp: new Date().toISOString(),
       role: role,
@@ -83,9 +85,7 @@ const Query: React.FC = () => {
   const onQueryClose = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     toast.success("Query Closed Successfully");
-    navigate(
-      role === "SupportAdmin" ? "/manage-queries" : "/queries"
-    );
+    navigate(role === "SupportAdmin" ? "/manage-queries" : "/queries");
   };
 
   if (loading) {
@@ -101,11 +101,7 @@ const Query: React.FC = () => {
       <header className="query-header">
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <BackButton
-            url={
-              role === "SupportAdmin"
-                ? "/manage-queries"
-                : "/queries"
-            }
+            url={role === "SupportAdmin" ? "/manage-queries" : "/queries"}
           />
           {query.status !== "closed" && (
             <button

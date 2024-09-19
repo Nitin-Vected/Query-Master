@@ -8,17 +8,12 @@ interface UserData {
 }
 
 interface AuthState {
-  userData: UserData;
+  userData: UserData | null;
   loading: boolean;
 }
 
 const initialState: AuthState = {
-  userData: {
-    email: "",
-    name: "",
-    token: "",
-    role: "",
-  },
+  userData: null,
   loading: false,
 };
 

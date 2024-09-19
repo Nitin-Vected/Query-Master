@@ -42,8 +42,6 @@ const StudentManagement: React.FC = () => {
   ) => {
     const newStatus = currentStatus === "true" ? "false" : "true";
     setLoading(true);
-    console.log(studentId);
-
     try {
       await adminUpdateStudentStatus(studentId, newStatus, token);
       setStudents(
@@ -62,9 +60,9 @@ const StudentManagement: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "Id", minWidth: 150, flex: 1 }, // Set minWidth or flex
-    { field: "name", headerName: "Name", minWidth: 200, flex: 1 }, // Adjust the minWidth
-    { field: "email", headerName: "Email", minWidth: 250, flex: 1 }, // Make it wide enough for long emails
+    { field: "id", headerName: "Id", minWidth: 150, flex: 1 },
+    { field: "name", headerName: "Name", minWidth: 200, flex: 1 },
+    { field: "email", headerName: "Email", minWidth: 250, flex: 1 },
     {
       field: "contactNumber",
       headerName: "Contact Number",
@@ -74,9 +72,8 @@ const StudentManagement: React.FC = () => {
     {
       field: "status",
       headerName: "Status",
-      minWidth: 150, // Set a minimum width
+      minWidth: 150,
       flex: 1,
-      sortable: true,
       renderCell: (params) => (
         <Button
           variant="contained"
@@ -99,24 +96,27 @@ const StudentManagement: React.FC = () => {
       <BackButton url="/" />
       <h1>Students</h1>
       <div style={{ height: 400, width: "100%" }}>
-        <DataGrid
-          rows={students.map((student) => ({
-            id: student._id,
-            name: student.name,
-            email: student.email,
-            contactNumber: student.contactNumber,
-            status: student.status,
-          }))}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
+        {/* Use a div with explicit overflow styles */}
+        <div style={{ width: "100%", overflowX: "auto" }}>
+          <DataGrid
+            rows={students.map((student) => ({
+              id: student._id,
+              name: student.name,
+              email: student.email,
+              contactNumber: student.contactNumber,
+              status: student.status,
+            }))}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
               },
-            },
-          }}
-          disableRowSelectionOnClick
-        />
+            }}
+            disableRowSelectionOnClick
+          />
+        </div>
       </div>
     </>
   );

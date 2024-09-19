@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { sendMessageApi } from "../utility/utility";
 import { RootState } from "../app/store";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 interface MessageInputProps {
   onSend: (text: string) => void;
@@ -10,13 +11,17 @@ interface MessageInputProps {
 
 const MessageInput: React.FC<MessageInputProps> = ({ onSend, queryId }) => {
   const currentUser = useSelector((state: RootState) => state.auth.userData);
-  const { token, role } = currentUser;
-
   const [text, setText] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("inside handleSubmit");
+
+    if (!currentUser) {
+      toast.error("User not authenticated");
+      return;
+    }
+
+    const { token, role } = currentUser;
 
     if (text.trim()) {
       onSend(text);

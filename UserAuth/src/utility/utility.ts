@@ -44,7 +44,7 @@ export const adminfetchQueries = async (token: string) => {
 };
 
 export const adminGetStudentsList = async (token: string) => {
-  return axios.get(`${ADMIN_API_URL}/adminGetStudentsList`, {
+  return axios.get(`${ADMIN_API_URL}/adminViewStudentList`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -53,12 +53,11 @@ export const adminGetStudentsList = async (token: string) => {
 
 export const adminUpdateStudentStatus = async (
   studentId: string,
-  status: "active" | "inactive",
+  newStatus: "true" | "false",
   token: string
 ) => {
-  return axios.patch(
-    `${ADMIN_API_URL}/student/${studentId}`,
-    { status },
+  return axios.get(
+    `${ADMIN_API_URL}/adminManageStudentStatus/${studentId}/${newStatus}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -77,7 +76,6 @@ export const sendMessageApi = async (
   if (role !== "SupportAdmin") {
     URL = `${USER_API_URL}/userAddCommentToQuery`;
   }
-  console.log(role, URL);
 
   try {
     const response = await axios.post(

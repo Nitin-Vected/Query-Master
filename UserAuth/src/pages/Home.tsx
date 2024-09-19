@@ -61,8 +61,8 @@ const Home: React.FC = () => {
             <FaTicketAlt /> Manage Queries
           </Link>
 
-          <Link to="/user-management" className="btn btn-block">
-            <FaQuestionCircle /> User Management
+          <Link to="/student-management" className="btn btn-block">
+            <FaQuestionCircle /> Student Management
           </Link>
         </>
       )}

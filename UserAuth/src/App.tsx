@@ -11,7 +11,7 @@ import Queries from "./pages/Queries";
 import ManageQueries from "./pages/ManageQueries";
 import Query from "./pages/Query";
 import "./App.css";
-import UserManagement from "./pages/UserManagement";
+import StudentManagement from "./pages/StudentManagement";
 
 const App: React.FC = () => {
   return (
@@ -27,7 +27,7 @@ const App: React.FC = () => {
           <Route path="/Queries" element={<Queries />} />
           <Route path="/query/:queryId" element={<Query />} />
           <Route path="/manage-Queries" element={<ManageQueries />} />
-          <Route path="/user-management" element={<UserManagement />} />
+          <Route path="/student-management" element={<StudentManagement />} />
         </Route>
       </Routes>
       <ToastContainer />
