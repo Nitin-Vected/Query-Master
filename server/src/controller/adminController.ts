@@ -129,33 +129,6 @@ export const adminManageStudentStatusController = async (request: any, response:
     }
 };
 
-export const adminManageQueryStatusController = async (request: any, response: express.Response) => {
-    try {
-        const { name, email, role } = request.payload;
-        const { queryId, status } = request.params;
-        console.log('query id : ', queryId, '   query status : ', status)
-        if (!queryId || !status) {
-            return response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query ID and status are required' });
-        }
-
-        const query = await queryModel.findOneAndUpdate(
-            { _id: Object(queryId), userEmail: email },
-            { status: status },
-            { new: true }
-        );
-        console.log('Query Status :', query?.status)
-
-        if (!query) {
-            return response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found or email mismatch' });
-        }
-
-        console.log('Query status updated successfully');
-        response.status(StatusCodes.CREATED).json({ message: "Query status updated to Closed successfully", query });
-    } catch (error) {
-        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
-    }
-};
-
 export const adminAddContactNumberController = async (request: any, response: express.Response) => {
     try {
         const { email, role } = request.payload;
@@ -269,6 +242,44 @@ export const adminResponseController = async (request: any, response: express.Re
 
 
 
+export const adminManageQueryStatusController = async (
+  request: any,
+  response: express.Response
+) => {
+  try {
+    const { name, email, role } = request.payload;
+    const { queryId, status } = request.params;
+    const { userEmail } = request.body;
+    console.log("query id : ", queryId, userEmail);
+    if (!queryId || !status) {
+      return response
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Query ID and status are required" });
+    }
+
+    const query = await queryModel.findOneAndUpdate(
+      { _id: Object(queryId), userEmail: userEmail },
+      { status: status },
+      { new: true }
+    );
+    console.log("Query :", query);
+
+    if (!query) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: "Query not found or email mismatch" });
+    }
+
+    console.log("Query status updated successfully");
+    response
+      .status(StatusCodes.CREATED)
+      .json({ message: "Query status updated to Closed successfully", query });
+  } catch (error) {
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Failed to find query" });
+  }
+};
 
 export const adminAuthenticationController = async (request: express.Request, response: express.Response) => {
     try {

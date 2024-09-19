@@ -1,20 +1,31 @@
 import React, { useEffect, useState } from "react";
 import BackButton from "../components/BackButton";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../app/store";
+import { useSelector } from "react-redux";
+import { RootState } from "../app/store";
 import Spinner from "../components/Spinner";
 import {
   adminGetStudentsList,
   adminUpdateStudentStatus,
 } from "../utility/utility";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Button } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 
 const StudentManagement: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [students, setStudents] = useState<any[]>([]);
-  const dispatch: AppDispatch = useDispatch();
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<{
+    id: string;
+    currentStatus: string;
+  } | null>(null); // State for selected student
   const token = useSelector(
     (state: RootState) => state.auth.userData?.token || ""
   );
@@ -36,26 +47,37 @@ const StudentManagement: React.FC = () => {
     getStudents();
   }, [token]);
 
-  const handleStatusToggle = async (
-    studentId: string,
-    currentStatus: string
-  ) => {
+  const handleOpenModal = (studentId: string, currentStatus: string) => {
+    setSelectedStudent({ id: studentId, currentStatus });
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedStudent(null); // Reset the selected student
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!selectedStudent) return;
+
+    const { id, currentStatus } = selectedStudent;
     const newStatus = currentStatus === "true" ? "false" : "true";
+
     setLoading(true);
     try {
-      await adminUpdateStudentStatus(studentId, newStatus, token);
+      await adminUpdateStudentStatus(id, newStatus, token);
       setStudents(
         students.map((student) =>
-          student._id === studentId
-            ? { ...student, status: newStatus }
-            : student
+          student._id === id ? { ...student, status: newStatus } : student
         )
       );
+      // toast.success("Student status updated successfully.");
     } catch (error) {
       console.error("Error updating student status:", error);
       setError("Failed to update student status");
     } finally {
       setLoading(false);
+      handleCloseModal();
     }
   };
 
@@ -78,7 +100,7 @@ const StudentManagement: React.FC = () => {
         <Button
           variant="contained"
           color={params.row.status === "true" ? "success" : "error"}
-          onClick={() => handleStatusToggle(params.row.id, params.row.status)}
+          onClick={() => handleOpenModal(params.row.id, params.row.status)}
         >
           {params.row.status === "true" ? "Active" : "Inactive"}
         </Button>
@@ -96,7 +118,6 @@ const StudentManagement: React.FC = () => {
       <BackButton url="/" />
       <h1>Students</h1>
       <div style={{ height: 400, width: "100%" }}>
-        {/* Use a div with explicit overflow styles */}
         <div style={{ width: "100%", overflowX: "auto" }}>
           <DataGrid
             rows={students.map((student) => ({
@@ -118,6 +139,28 @@ const StudentManagement: React.FC = () => {
           />
         </div>
       </div>
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="confirm-status-change"
+      >
+        <DialogTitle id="confirm-status-change">
+          Confirm Status Change
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to change this student's status?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmStatusChange} color="error">
+            Yes, Change Status
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

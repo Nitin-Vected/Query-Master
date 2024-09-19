@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../app/store";
+import moment from "moment";
 
 interface MessageType {
   _id: string;
@@ -21,6 +22,26 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
   const currentUserEmail = useSelector(
     (state: RootState) => state.auth.userData?.email
   );
+
+  const getTimeDifference = (date: string) => {
+    const now = moment();
+    const postDate = moment(date); // Pass the date directly to moment
+
+    const diffInMinutes = now.diff(postDate, "minutes");
+    const diffInHours = now.diff(postDate, "hours");
+    const diffInDays = now.diff(postDate, "days");
+    const diffInSeconds = now.diff(postDate, "seconds");
+
+    if (diffInSeconds < 60) {
+      return "Just now";
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes} minutes ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hours ago`;
+    }  else {
+      return `${diffInDays} days ago`;
+    }
+  };
 
   useEffect(() => {
     if (endOfMessagesRef.current) {
@@ -52,7 +73,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
           )}
 
           <p>{message.message}</p>
-          <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
+          <span>{getTimeDifference(message.timestamp)}</span>
         </div>
       ))}
       <div ref={endOfMessagesRef} />

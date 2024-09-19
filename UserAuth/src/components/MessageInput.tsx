@@ -7,9 +7,14 @@ import { toast } from "react-toastify";
 interface MessageInputProps {
   onSend: (text: string) => void;
   queryId: string;
+  status: boolean;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSend, queryId }) => {
+const MessageInput: React.FC<MessageInputProps> = ({
+  onSend,
+  queryId,
+  status,
+}) => {
   const currentUser = useSelector((state: RootState) => state.auth.userData);
   const [text, setText] = useState("");
 
@@ -41,8 +46,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend, queryId }) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Type a message..."
+        disabled={status}
       />
-      <button type="submit">Send</button>
+      <button type="submit" disabled={status}>
+        Send
+      </button>
     </form>
   );
 };

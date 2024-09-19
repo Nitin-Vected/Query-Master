@@ -17,7 +17,10 @@ userRouter.get("/userViewMyQueries", userViewMyQueriesController);
 userRouter.post('/userAddContactNumber', userAddContactNumberController)
 userRouter.post('/userRaiseQuery',userRaiseQueryController);
 
-userRouter.get('/userManageQueryStatus/:queryId/:status',userManageQueryStatusController);
+userRouter.post(
+    "/userManageQueryStatus/:queryId/:status",
+    userManageQueryStatusController
+  );
 userRouter.post("/userAddCommentToQuery/:queryId",userAddCommentController);
 
 // userRouter.get("/userCloseQuery", userCloseQueryController);

@@ -43,6 +43,32 @@ export const adminfetchQueries = async (token: string) => {
   });
 };
 
+export const sendMessageApi = async (
+  queryId: string,
+  message: string,
+  token: string,
+  role: string
+) => {
+  let URL = `${ADMIN_API_URL}/adminAddResponseToQuery`;
+  if (role !== "SupportAdmin") {
+    URL = `${USER_API_URL}/userAddCommentToQuery`;
+  }
+  try {
+    const response = await axios.post(
+      `${URL}/${queryId}`,
+      { message },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to send message");
+  }
+};
+
 export const adminGetStudentsList = async (token: string) => {
   return axios.get(`${ADMIN_API_URL}/adminViewStudentList`, {
     headers: {
@@ -66,28 +92,27 @@ export const adminUpdateStudentStatus = async (
   );
 };
 
-export const sendMessageApi = async (
+// http://localhost:3001/user/userManageQueryStatus/66e9850497c08c0da0327a64/Open
+
+export const manageQueryStatus = async (
   queryId: string,
-  message: string,
+  userEmail: string,
   token: string,
   role: string
 ) => {
-  let URL = `${ADMIN_API_URL}/adminAddResponseToQuery`;
+  let URL = `${ADMIN_API_URL}/adminManageQueryStatus`;
   if (role !== "SupportAdmin") {
-    URL = `${USER_API_URL}/userAddCommentToQuery`;
+    URL = `${USER_API_URL}/userManageQueryStatus`;
   }
-
   try {
-    const response = await axios.post(
-      `${URL}/${queryId}`,
-      { message },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return response.data;
+    const response = await axios.post(`${URL}/${queryId}/Closed`, 
+    {userEmail},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response;
   } catch (error) {
     throw new Error("Failed to send message");
   }

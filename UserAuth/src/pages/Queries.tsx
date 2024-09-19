@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import BackButton from "../components/BackButton";
-import QueryItem from "../components/QueryItem";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../app/store";
 import { fetchQueries } from "../utility/utility";
 import { setQueries, Query } from "../app/querySlice";
 import Spinner from "../components/Spinner";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { Link } from "react-router-dom";
+import { Button } from "@mui/material";
 
 const Queries: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -47,6 +49,50 @@ const Queries: React.FC = () => {
     getQueries();
   }, [token, dispatch]);
 
+  const handleClick = (id: string) => {
+    dispatch({ type: "queries/selectQuery", payload: id });
+  };
+
+  const columns: GridColDef[] = [
+    {
+      field: "createdAt",
+      headerName: "Date",
+      minWidth: 150,
+      flex: 1,
+      valueFormatter: (params) =>
+        new Date(params).toLocaleDateString(),
+    },
+    { field: "subject", headerName: "Subject", minWidth: 200, flex: 1 },
+    {
+      field: "status",
+      headerName: "Status",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params: GridRenderCellParams) => (
+        <span className={`status status-${(params.value as string).toLowerCase()}`}>
+          {params.value}
+        </span>
+      ),
+    },
+    { field: "userRole", headerName: "User Role", minWidth: 150, flex: 1 },
+    {
+      field: "action",
+      headerName: "Action",
+      minWidth: 150,
+      renderCell: (params: GridRenderCellParams) => (
+        <Button
+          component={Link}
+          to={`/query/${params.row.id}`}
+          variant="contained"
+          color="primary"
+          onClick={() => handleClick(params.row.id)}
+        >
+          View
+        </Button>
+      ),
+    },
+  ];
+
   if (loading) {
     return <Spinner />;
   }
@@ -56,16 +102,26 @@ const Queries: React.FC = () => {
     <>
       <BackButton url="/" />
       <h1>Queries</h1>
-      <div className="queries">
-        <div className="query-headings">
-          <div>Date</div>
-          <div>Subject</div>
-          <div>Status</div>
-          <div>User Role</div>
-        </div>
-        {queries.map((query) => (
-          <QueryItem key={query._id} query={query} />
-        ))}
+      <div style={{ height: 400, width: "100%" }}>
+        <DataGrid
+          rows={queries.map((query) => ({
+            id: query._id,
+            createdAt: query.createdAt,
+            subject: query.subject,
+            status: query.status,
+            userRole: query.userRole,
+          }))}
+          columns={columns}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 5,
+              },
+            },
+          }}
+          // pageSizeOptions={[5, 10]}
+          disableRowSelectionOnClick
+        />
       </div>
     </>
   );
