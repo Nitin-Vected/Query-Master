@@ -63,7 +63,7 @@ export const loginController = async (request: express.Request, response: expres
                         token = tokenGenerator(payload, ADMIN_SECRET_KEY);
                     }
 
-                    response.status(201).json({
+                    response.status(StatusCodes.CREATED).json({
                         userData: userData,
                         token: token,
                         message: "Login Successful!"

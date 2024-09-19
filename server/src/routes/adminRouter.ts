@@ -3,6 +3,7 @@ import {
   adminAddContactNumberController,
   adminAuthenticateJWT,
   adminAuthenticationController,
+  adminGetQueryDataController,
   adminManageQueryStatusController,
   adminManageStudentStatusController,
   adminRaiseQueryController,
@@ -16,13 +17,13 @@ import {
 
 const adminRouter = express.Router();
 
-adminRouter.get("/", (request: express.Request, response: express.Response) => {
-  try {
-    console.log("Hello from admin Router ..!");
-  } catch (error) {
-    console.log("Error in /admin/ ..!");
-  }
-});
+// adminRouter.get("/", (request: express.Request, response: express.Response) => {
+//   try {
+//     console.log("Hello from admin Router ..!");
+//   } catch (error) {
+//     console.log("Error in /admin/ ..!");
+//   }
+// });
 
 // adminRouter.post("/adminLogin", adminLoginController);
 adminRouter.get("/adminAuthentication", adminAuthenticationController);
@@ -32,6 +33,7 @@ adminRouter.use(adminAuthenticateJWT);
 adminRouter.get("/adminViewProfile", adminViewProfileController);
 adminRouter.get("/adminViewStudentList", adminViewStudentListController);
 adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
+adminRouter.get('/adminGetQueryData/:queryId',adminGetQueryDataController);
 
 adminRouter.get("/adminViewSupportAdminList", adminViewSupportAdminListController);
 adminRouter.get("/adminViewUserList", adminViewUserListController);

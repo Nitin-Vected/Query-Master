@@ -12,7 +12,6 @@ import ManageQueries from "./pages/ManageQueries";
 import Query from "./pages/Query";
 import "./App.css";
 import StudentManagement from "./pages/StudentManagement";
-import PaginationComponent from "./components/Example";
 
 const App: React.FC = () => {
   return (
@@ -20,7 +19,6 @@ const App: React.FC = () => {
       <Header />
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/pagination" element={<PaginationComponent />} />
 
         {/* Private Routes */}
         <Route element={<PrivateRoute />}>
