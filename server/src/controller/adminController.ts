@@ -33,7 +33,8 @@ export const adminViewProfileController = async (request: any, response: express
 
 export const adminViewRaisedQueryListController = async (request: express.Request, response: express.Response) => {
     try {
-        const raisedQueries = await queryModel.find().sort({ createdAt: -1 }); 
+        const raisedQueries = await queryModel.find().sort({ updatedAt: -1, createdAt: -1 }); 
+
         console.log(`RaisedQuery by  ${raisedQueries} : `);
         if (raisedQueries) {
             response.status(StatusCodes.OK).json({ raisedQueries: raisedQueries, message: "These are the recently raised queries ..!" });
@@ -50,7 +51,7 @@ export const adminViewStudentListController = async (request: express.Request, r
     try {
         const studentList = await userModel.find({ role: "Student" })
             .select('name email contactNumber role profileImg status')
-            .sort({ createdAt: -1 });
+            .sort({ updatedAt: -1, createdAt: -1 });
 
         console.log('StudentList :: ', studentList)
         if (studentList && studentList.length > 0) {
@@ -73,7 +74,7 @@ export const adminViewSupportAdminListController = async (request: express.Reque
     try {
         const adminList = await userModel.find({ role: "SupportAdmin" })
             .select('name email contactNumber role profileImg status')
-            .sort({ createdAt: -1 });
+            .sort({ updatedAt: -1, createdAt: -1 });
         if (adminList && adminList.length > 0) {
             response.status(StatusCodes.OK).json({
                 adminList: adminList,
@@ -93,7 +94,7 @@ export const adminViewUserListController = async (request: express.Request, resp
     try {
         const userList = await userModel.find()
             .select('name email contactNumber role profileImg status')
-            .sort({ createdAt: -1 });
+            .sort({ updatedAt: -1, createdAt: -1 });
 
         if (userList && userList.length > 0) {
             response.status(StatusCodes.OK).json({

@@ -17,13 +17,13 @@ import {
 
 const adminRouter = express.Router();
 
-adminRouter.get("/", (request: express.Request, response: express.Response) => {
-  try {
-    console.log("Hello from admin Router ..!");
-  } catch (error) {
-    console.log("Error in /admin/ ..!");
-  }
-});
+// adminRouter.get("/", (request: express.Request, response: express.Response) => {
+//   try {
+//     console.log("Hello from admin Router ..!");
+//   } catch (error) {
+//     console.log("Error in /admin/ ..!");
+//   }
+// });
 
 // adminRouter.post("/adminLogin", adminLoginController);
 adminRouter.get("/adminAuthentication", adminAuthenticationController);

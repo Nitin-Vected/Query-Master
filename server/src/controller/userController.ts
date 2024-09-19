@@ -109,7 +109,7 @@ export const userViewMyQueriesController = async (request: any, response: expres
     try {
         const { email, role } = request.payload;
         const myQueries = await queryModel.find({ userEmail: email, userRole: role })
-            .sort({ createdAt: -1 });
+            .sort({ updatedAt: -1, createdAt: -1 });
         console.log(`RaisedQuery by  ${myQueries} : `);
         if (myQueries) {
             response.status(StatusCodes.OK).json({ myQueries: myQueries, message: "These are the recently raised queries by you ..!" });
