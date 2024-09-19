@@ -29,7 +29,7 @@ adminRouter.use(adminAuthenticateJWT);
 adminRouter.get("/adminViewProfile", adminViewProfileController);
 adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
 adminRouter.get("/adminViewStudentList", adminViewStudentListController);
-adminRouter.get('/adminManageQueryStatus/:queryId/:status',adminManageQueryStatusController);
+adminRouter.post('/adminManageQueryStatus/:queryId/:status',adminManageQueryStatusController);
 adminRouter.get('/adminManageStudentStatus/:studentId/:action',adminManageStudentStatusController);
 
 adminRouter.post("/adminRaiseQuery", adminRaiseQueryController);

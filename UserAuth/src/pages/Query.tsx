@@ -8,6 +8,15 @@ import MessageInput from "../components/MessageInput";
 import { toast } from "react-toastify";
 import { RootState, AppDispatch } from "../app/store";
 import { updateQuery } from "../app/querySlice";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
+import { manageQueryStatus } from "../utility/utility";
 
 interface MessageType {
   _id: string;
@@ -21,15 +30,16 @@ interface MessageType {
 const Query: React.FC = () => {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openModal, setOpenModal] = useState(false); // State to control the modal
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
   const currentUser = useSelector((state: RootState) => state.auth.userData);
 
-  // Add a null check for currentUser before accessing email, name, and role
   const email = currentUser?.email;
   const name = currentUser?.name;
   const role = currentUser?.role;
+  const token = currentUser?.token;
 
   const selectedQueryId = useSelector(
     (state: RootState) => state.queries.selectedQueryId
@@ -82,10 +92,42 @@ const Query: React.FC = () => {
     }
   };
 
-  const onQueryClose = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    toast.success("Query Closed Successfully");
-    navigate(role === "SupportAdmin" ? "/manage-queries" : "/queries");
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleConfirmClose = async () => {
+    if (!query || !token || !role) {
+      toast.error("Failed to close query. Required data missing.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await manageQueryStatus(query._id, query.userEmail, token, role);
+
+      if (response.status === 201) {
+        toast.success("Query Closed Successfully");
+        dispatch(
+          updateQuery({
+            ...query,
+            status: "closed",
+          })
+        );
+
+        navigate(role === "SupportAdmin" ? "/manage-queries" : "/queries");
+      } else {
+        toast.error("Failed to close query. Please try again.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while closing the query.");
+    } finally {
+      setLoading(false);
+      handleCloseModal();
+    }
   };
 
   if (loading) {
@@ -103,10 +145,10 @@ const Query: React.FC = () => {
           <BackButton
             url={role === "SupportAdmin" ? "/manage-queries" : "/queries"}
           />
-          {query.status !== "closed" && (
+          {query.status.toLowerCase() !== "closed" && (
             <button
               className="btn btn-close-query btn-danger"
-              onClick={onQueryClose}
+              onClick={handleOpenModal}
             >
               Close Query
             </button>
@@ -133,7 +175,34 @@ const Query: React.FC = () => {
 
       {messages.length > 0 ? <ChatBox messages={messages} /> : <Spinner />}
 
-      <MessageInput onSend={onSendMessage} queryId={query._id} />
+      <MessageInput
+        onSend={onSendMessage}
+        queryId={query._id}
+        status={query.status.toLowerCase() === "closed"}
+      />
+
+      {/* Modal for confirmation */}
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="confirm-close-query"
+      >
+        <DialogTitle id="confirm-close-query">Confirm Close Query</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to close this query? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmClose} color="error">
+            Yes, Close Query
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

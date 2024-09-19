@@ -241,8 +241,8 @@ h3 {
 .status {
   background-color: #333;
   color: #fff;
-  width: 100px;
-  padding: 5px 15px;
+  width: 80px;
+  padding: 5px 5px;
   justify-self: center;
   border-radius: 10px;
   font-size: 16px;
