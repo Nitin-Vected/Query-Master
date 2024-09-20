@@ -2,14 +2,14 @@ import express from 'express';
 import axios from 'axios';
 import userModel from '../model/userModel';
 import { tokenGenerator } from '../utilities/jwt';
-import { ADMIN_SECRET_KEY, StatusCodes, USER_SECRET_KEY } from '../config';
+import { ADMIN_SECRET_KEY, GOOGLE_DECODE_TOKEN_API, StatusCodes, USER_SECRET_KEY } from '../config';
 interface TokenResponse {
     access_token: string;
 }
 const verifyGoogleToken = async (tokenResponse: TokenResponse) => {
     try {
         const result = await axios.get(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
+            `${GOOGLE_DECODE_TOKEN_API}`,
             {
                 headers: {
                     Authorization: `Bearer ${tokenResponse.access_token}`,
@@ -31,7 +31,7 @@ const verifyGoogleToken = async (tokenResponse: TokenResponse) => {
 export const loginController = async (request: express.Request, response: express.Response) => {
     try {
         const { tokenResponse } = request.body
-        // console.log("tokenResponse token : ", tokenResponse);
+        console.log("tokenResponse token : ", tokenResponse.access_token);
         const decodedToken = await verifyGoogleToken(tokenResponse);
         console.log('Decoded Token : ', decodedToken);
 
@@ -53,6 +53,7 @@ export const loginController = async (request: express.Request, response: expres
                         name,
                         email,
                         role: userData.role,
+                        googleToken: tokenResponse?.access_token,
                         status: userData.status,
                     };
 
