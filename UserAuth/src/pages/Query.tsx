@@ -27,7 +27,6 @@ import { BASE_API_URL } from "../utility/constants";
 const socket = io(BASE_API_URL);
 
 interface MessageType {
-  _id: string;
   sender: string;
   email: string;
   message: string;
@@ -88,7 +87,7 @@ const Query: React.FC = () => {
     }
 
     const newMessage: MessageType = {
-      _id: `${Date.now()}`,
+      // _id: `${Date.now()}`,
       sender: name || "Unknown",
       email: email,
       message: text,
@@ -236,7 +235,7 @@ const Query: React.FC = () => {
           {messages.length > 0 ? <ChatBox messages={messages} /> : <Spinner />}
           <MessageInput
             onSend={onSendMessage}
-            queryId={query._id}
+            queryId={query.queryId}
             status={query.status.toLowerCase() === "closed"}
           />
         </div>

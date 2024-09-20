@@ -116,7 +116,7 @@ export const userViewMyQueriesController = async (request: any, response: expres
     try {
         const { email, role } = request.payload;
         const myQueries = await queryModel.find({ userEmail: email, userRole: role },
-            { "conversation._id": 0, _id: 0 })
+            { "conversation._id": 0, '_id': 0 })
             .sort({ updatedAt: -1, createdAt: -1 });
         console.log(`RaisedQuery by  ${myQueries} : `);
         if (myQueries) {
@@ -141,7 +141,7 @@ export const userAddCommentController = async (request: any, response: express.R
         const query = await queryModel.findOne({ queryId });
         if (!query) {
             response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found' });
-        } else if (query.status === "Open" || query.status === "In Progress") {
+        } else if (query.status === "Open" || query.status === "in-progress") {
             console.log('Query ', query);
             query.conversation.push({
                 sender: name,
@@ -193,10 +193,8 @@ export const userAuthenticationController = async (request: any, response: expre
             return response.status(StatusCodes.UNAUTHORIZED).json({ message: 'Authorization token is missing or invalid' });
         }
         const token = authHeader.split(' ')[1];
-        console.log('Token : ', token);
         const payload = await tokenVerifier(token, USER_SECRET_KEY);
         const result = await userModel.findOne({ email: payload.email });
-        console.log('userData : ', result, '  token in userAuthenticationController : ', token);
         const userData = {
             name: result?.name,
             email: result?.email,
@@ -234,7 +232,6 @@ export const userAuthenticateJWT = async (request: any, response: express.Respon
             return response.status(StatusCodes.UNAUTHORIZED).json({ message: 'Authorization token is missing or invalid' });
         }
         const token = authHeader.split(' ')[1];
-        console.log('Token : ', token);
         const payload = await tokenVerifier(token, USER_SECRET_KEY);
         request.payload = payload;
         next();

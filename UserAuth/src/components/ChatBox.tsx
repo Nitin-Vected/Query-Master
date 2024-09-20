@@ -5,7 +5,6 @@ import moment from "moment";
 import { Tooltip } from "@mui/material";
 
 interface MessageType {
-  _id: string;
   sender: string;
   email: string;
   message: string;
@@ -52,9 +51,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
 
   return (
     <div className="chat-box">
-      {messages.map((message) => (
+      {messages.map((message, index) => (
         <div
-          key={message._id}
+          key={index}
           className={`message ${
             message.email === currentUserEmail ? "user" : "staff"
           }`}

@@ -300,7 +300,7 @@ export const adminResponseController = async (
     console.log("Got Query ==> ", query?.status);
     if (!query) {
       response.status(StatusCodes.NOT_FOUND).json({ error: "Query not found" });
-    } else if (query.status === "Open") {
+    } else if (query.status === "Open" || query.status === "in-progress") {
       console.log("Name ==> ", request.payload.name);
       console.log("Email ==> ", request.payload.email);
       console.log("Query ", query);
@@ -378,7 +378,6 @@ export const adminAuthenticationController = async (
         .json({ message: "Authorization token is missing or invalid" });
     }
     const token = authHeader.split(" ")[1];
-    console.log("Token : ", token);
     const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
     const result = await userModel.findOne({
       email: payload.email,
@@ -452,7 +451,6 @@ export const adminAuthenticateJWT = async (
         .json({ message: "Authorization token is missing or invalid" });
     }
     const token = authHeader.split(" ")[1];
-    console.log("Token : ", token);
     const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
     request.payload = payload;
     next();
