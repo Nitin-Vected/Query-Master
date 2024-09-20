@@ -168,6 +168,7 @@ const Query: React.FC = () => {
               style={{
                 display: "flex",
                 justifyContent: "space-between",
+                gap:20,
                 marginBottom: "20px",
               }}
             >
