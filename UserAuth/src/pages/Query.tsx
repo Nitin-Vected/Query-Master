@@ -189,15 +189,11 @@ const Query: React.FC = () => {
                   <th>Date</th>
                   <td>{new Date(query.createdAt).toLocaleString("en-IN")}</td>
                 </tr>
-                <tr>
-                  <th>Subject</th>
-                  <td>{query.subject}</td>
-                </tr>
               </tbody>
             </table>
 
             <div className="query-desc">
-              <h3>Description of Issue</h3>
+              <h3>Subject</h3>
               <p>{query.subject}</p>
             </div>
           </header>

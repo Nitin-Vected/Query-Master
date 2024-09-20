@@ -5,7 +5,12 @@ import { RootState, AppDispatch } from "../app/store";
 import { fetchQueries } from "../utility/utility";
 import { setQueries, Query } from "../app/querySlice";
 import Spinner from "../components/Spinner";
-import { DataGrid, GridCellParams, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridCellParams,
+  GridColDef,
+  GridRenderCellParams,
+} from "@mui/x-data-grid";
 import { Link } from "react-router-dom";
 import { Button } from "@mui/material";
 
@@ -67,22 +72,23 @@ const Queries: React.FC = () => {
           second: "2-digit",
           hour12: true,
         })}`;
-      },                                                                                                                                                                        
+      },
     },
+    { field: "email", headerName: "Email", minWidth: 250, flex: 1 },
     { field: "subject", headerName: "Subject", minWidth: 200, flex: 1 },
     {
       field: "status",
       headerName: "Status",
-      minWidth: 150,
+      minWidth: 120,
       flex: 1,
       cellClassName: (params: GridCellParams) =>
         `status-color-${(params.value as string).toLowerCase()}`,
     },
-    { field: "userRole", headerName: "User Role", minWidth: 150, flex: 1 },
+    { field: "userRole", headerName: "User Role", minWidth: 120, flex: 1 },
     {
       field: "action",
       headerName: "Action",
-      minWidth: 150,
+      minWidth: 100,
       renderCell: (params: GridRenderCellParams) => (
         <Button
           component={Link}
@@ -111,6 +117,7 @@ const Queries: React.FC = () => {
           rows={queries.map((query) => ({
             id: query._id,
             createdAt: query.createdAt,
+            email: query.userEmail,
             subject: query.subject,
             status: query.status,
             userRole: query.userRole,
