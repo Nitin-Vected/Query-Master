@@ -10,12 +10,14 @@ interface CustomRequest extends Request {
     };
 }
 
+
+
+
 const userRouter = express.Router();
 // userRouter.get('/', (request: express.Request, response: express.Response) => {
 //     console.log('Welcome user ..!');
 //     response.status(201).json({ msg: 'Hi, server has been connected successfully ..!' })
 // });
-
 
 userRouter.post("/userLogin", loginController);
 userRouter.get("/userAuthentication", userAuthenticationController);
@@ -25,15 +27,15 @@ userRouter.get("/userViewProfile", (request, response, next) => {
     userViewProfileController(request as CustomRequest, response, next);
 });
 userRouter.get("/userViewMyQueries", userViewMyQueriesController);
-userRouter.get('/userGetQueryData/:queryId',userGetQueryDataController);
+userRouter.get('/userGetQueryData/:queryId', userGetQueryDataController);
 
 userRouter.post('/userAddContactNumber', userAddContactNumberController)
-userRouter.post('/userRaiseQuery',userRaiseQueryController);
+userRouter.post('/userRaiseQuery', userRaiseQueryController);
 
 userRouter.post(
     "/userManageQueryStatus/:queryId/:status",
     userManageQueryStatusController
-  );
-userRouter.post("/userAddCommentToQuery/:queryId",userAddCommentController);
+);
+userRouter.post("/userAddCommentToQuery/:queryId", userAddCommentController);
 
 export default userRouter;

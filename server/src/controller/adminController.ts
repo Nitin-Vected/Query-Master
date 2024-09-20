@@ -1,6 +1,6 @@
 import express from 'express';
 import { tokenVerifier } from '../utilities/jwt';
-import { ADMIN_SECRET_KEY, StatusCodes } from '../config';
+import { ADMIN_SECRET_KEY, generateQueryId, StatusCodes } from '../config';
 import queryModel from '../model/queryModel';
 import userModel from '../model/userModel';
 
@@ -175,7 +175,9 @@ export const adminRaiseQueryController = async (request: any, response: express.
         }
         const similaryExistingQuery = await queryModel.findOne({ userEmail: email, userRole: role, subject, message });
         if (!similaryExistingQuery) {
+            const queryId = await generateQueryId(email, role);
             const updatedQuery = await queryModel.create({
+                queryId: queryId,
                 userEmail: email,
                 userRole: role,
                 subject,
@@ -188,7 +190,7 @@ export const adminRaiseQueryController = async (request: any, response: express.
                     timestamp: new Date()
                 }]
             });
-            response.status(StatusCodes.OK).json({ queryId: updatedQuery._id, message: "Your query has been successfully added ..!" });
+            response.status(StatusCodes.OK).json({ queryId: updatedQuery.queryId, message: "Your query has been successfully added ..!" });
         } else {
             response.status(StatusCodes.ALREADY_EXIST).json({ message: "A similar query has already been added by you ..!" });
         }

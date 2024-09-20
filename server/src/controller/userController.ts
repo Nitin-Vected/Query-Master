@@ -1,8 +1,9 @@
 import express, { Request, Response, NextFunction } from 'express';
 import userModel from '../model/userModel';
 import { tokenVerifier } from '../utilities/jwt';
-import { StatusCodes, USER_SECRET_KEY } from '../config';
+import { generateQueryId, StatusCodes, USER_SECRET_KEY } from '../config';
 import queryModel from '../model/queryModel';
+import { promises } from 'dns';
 
 interface CustomRequest extends Request {
     payload: {
@@ -37,7 +38,7 @@ export const userViewProfileController = async (request: CustomRequest, response
         }
     } catch (error) {
         console.log(error);
-        next(error); // Use next for proper error handling
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
     }
 };
 
@@ -68,16 +69,21 @@ export const userAddContactNumberController = async (request: any, response: exp
     }
 }
 
+
+
 export const userRaiseQueryController = async (request: any, response: express.Response) => {
     try {
         const { name, email, role } = request.payload;
         const { subject, message } = request.body;
 
         const similaryExistingQuery = await queryModel.findOne({ userEmail: email, userRole: role, subject, message });
-
         if (!similaryExistingQuery) {
-            console.log('Inside if block of userRaiseQueryController ..!')
+            console.log('Inside if block of userRaiseQueryController ..!');
+            // createUniqueQueryId();
+            const queryId = await generateQueryId(email, role);
+            console.log('Unique QueryId inside userRaiseQueryController ',queryId);
             const updatedQuery = await queryModel.create({
+                queryId: queryId,
                 userEmail: email,
                 userRole: role,
                 subject,
@@ -91,7 +97,8 @@ export const userRaiseQueryController = async (request: any, response: express.R
                 }]
             });
             if (updatedQuery) {
-                response.status(StatusCodes.OK).json({ queryId: updatedQuery._id, message: "Your query has been successfully published ..!" });
+                console.log('query raised successfull ..!', updatedQuery)
+                response.status(StatusCodes.OK).json({ queryId: updatedQuery.queryId, message: "Your query has been successfully published ..!" });
             } else {
                 response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ userData: null, message: "Something went wrong ..!" })
             }
