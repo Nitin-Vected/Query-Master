@@ -64,6 +64,7 @@ h3 {
   align-items: center;
   flex-wrap: wrap;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .header ul li {
@@ -170,6 +171,7 @@ h3 {
   justify-content: center;
   flex-wrap: wrap;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .query-details {
@@ -179,6 +181,7 @@ h3 {
 .query-chat {
   flex: 1;
   padding: 20px;
+  flex: 1;
 }
 
 .query-info-table {
@@ -223,6 +226,15 @@ h3 {
   background-color: white;
 }
 
+.query-desc h3 {
+  padding: 10px 15px;
+}
+
+.query-desc p {
+  background-color: white;
+  padding: 5px 15px;
+}
+
 .chat-box {
   border: 1px solid #ddd;
   padding: 10px;
@@ -248,7 +260,7 @@ h3 {
 }
 
 .message {
-  max-width: 70%;
+  /* max-width: 70%; */
   padding: 10px;
   border-radius: 5px;
   margin: 5px;

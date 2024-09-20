@@ -72,7 +72,7 @@ const Query: React.FC = () => {
   useEffect(() => {
     socket.on("receiveMessage", (message: MessageType) => {
       console.log();
-      
+
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
@@ -177,7 +177,7 @@ const Query: React.FC = () => {
               />
               {query.status.toLowerCase() !== "closed" && (
                 <>
-                  {query.status.toLowerCase() !== "in-progress" ? (
+                  {query.status.toLowerCase() !== "in-progress" && role !== "Student" ? (
                     <FormControl variant="standard">
                       <InputLabel>Update Status</InputLabel>
                       <Select
@@ -186,9 +186,9 @@ const Query: React.FC = () => {
                         label="Status"
                         style={{ minWidth: "200px" }}
                       >
-                        <MenuItem value="closed">Close Query</MenuItem>
+                        <MenuItem value="closed">Close</MenuItem>
                         <MenuItem value="in-progress">
-                          In Progress Query
+                          In Progress
                         </MenuItem>
                       </Select>
                     </FormControl>
@@ -251,8 +251,7 @@ const Query: React.FC = () => {
         <DialogTitle id="confirm-close-query">Confirm Close Query</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to close this query? This action cannot be
-            undone.
+            Are you sure you want to change this query status?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -260,7 +259,7 @@ const Query: React.FC = () => {
             Cancel
           </Button>
           <Button onClick={handleConfirmStatusChange} color="error">
-            Yes, Close Query
+            Yes, Change Status
           </Button>
         </DialogActions>
       </Dialog>

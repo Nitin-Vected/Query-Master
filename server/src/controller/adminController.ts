@@ -265,7 +265,7 @@ export const adminManageQueryStatusController = async (request: any, response: e
 
         if (result?.acknowledged) {
             console.log("Query status updated successfully");
-            response.status(StatusCodes.OK).json({ message: "Query status updated to Closed successfully ..!" });
+            response.status(StatusCodes.CREATED).json({ message: "Query status updated to Closed successfully ..!" });
         } else {
             response.status(StatusCodes.NOT_FOUND).json({ message: "Something went wrong ..!" });
         }
