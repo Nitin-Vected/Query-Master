@@ -98,22 +98,46 @@ export const manageQueryStatus = async (
   queryId: string,
   userEmail: string,
   token: string,
-  role: string
+  role: string,
+  selectedStatus: string
 ) => {
   let URL = `${ADMIN_API_URL}/adminManageQueryStatus`;
   if (role !== "SupportAdmin") {
     URL = `${USER_API_URL}/userManageQueryStatus`;
   }
   try {
-    const response = await axios.post(`${URL}/${queryId}/Closed`, 
-    {userEmail},
-    {
+    const response = await axios.post(
+      `${URL}/${queryId}/${selectedStatus}`,
+      { userEmail },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    throw new Error("Failed to send message");
+  }
+};
+
+export const fetchQueryById = async (
+  queryId: string,
+  token: string,
+  role: string
+) => {
+  let URL = `${ADMIN_API_URL}/adminGetQueryData`;
+  if (role !== "SupportAdmin") {
+    URL = `${USER_API_URL}/userGetQueryData`;
+  }
+  try {
+    const response = await axios.get(`${URL}/${queryId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
     return response;
   } catch (error) {
-    throw new Error("Failed to send message");
+    throw error;
   }
 };

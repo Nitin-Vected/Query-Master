@@ -109,12 +109,12 @@ const ManageQueries: React.FC = () => {
   return (
     <>
       <BackButton url="/" />
-      <h1>Queries</h1>
+      <h1 className="query-heading">Queries</h1>
       <div style={{ height: 420, width: "100%" }}>
         <DataGrid
           rows={queries.map((query) => ({
             id: query._id,
-            createdAt: query.createdAt,
+            createdAt: query.updatedAt,
             email: query.userEmail,
             subject: query.subject,
             status: query.status,

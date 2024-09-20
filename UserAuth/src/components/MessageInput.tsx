@@ -30,9 +30,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
     if (text.trim()) {
       onSend(text);
+      setText("");
       try {
         await sendMessageApi(queryId, text, token, role);
-        setText("");
       } catch (error) {
         console.error("Error sending message:", error);
       }

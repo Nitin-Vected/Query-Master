@@ -154,6 +154,11 @@ h3 {
   transform: scale(0.98);
 }
 
+.query-heading {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
 .query-page {
   position: relative;
   display: flex;

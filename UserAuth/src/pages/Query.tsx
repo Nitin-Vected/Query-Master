@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import BackButton from "../components/BackButton";
 import Spinner from "../components/Spinner";
 import ChatBox from "../components/ChatBox";
 import MessageInput from "../components/MessageInput";
 import { toast } from "react-toastify";
-import { RootState, AppDispatch } from "../app/store";
-import { updateQuery } from "../app/querySlice";
+import { RootState } from "../app/store";
 import {
   Button,
   Dialog,
@@ -15,8 +14,17 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  SelectChangeEvent,
 } from "@mui/material";
-import { manageQueryStatus } from "../utility/utility";
+import { manageQueryStatus, fetchQueryById } from "../utility/utility"; // Import your API utility
+import io from "socket.io-client";
+import { BASE_API_URL } from "../utility/constants";
+
+const socket = io(BASE_API_URL);
 
 interface MessageType {
   _id: string;
@@ -30,43 +38,48 @@ interface MessageType {
 const Query: React.FC = () => {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openModal, setOpenModal] = useState(false); // State to control the modal
+  const [openModal, setOpenModal] = useState(false);
+  const [query, setQuery] = useState<any>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-
   const currentUser = useSelector((state: RootState) => state.auth.userData);
+  const { email, name, role, token } = currentUser || {};
 
-  const email = currentUser?.email;
-  const name = currentUser?.name;
-  const role = currentUser?.role;
-  const token = currentUser?.token;
-
-  const selectedQueryId = useSelector(
-    (state: RootState) => state.queries.selectedQueryId
-  );
-
-  const query = useSelector((state: RootState) =>
-    state.queries.queries.find((q) => q._id === selectedQueryId)
-  );
-
-  // const param = useParams();
-  // const queryId = param.queryId;
+  const param = useParams();
+  const queryId = param.queryId;
 
   useEffect(() => {
-    if (query) {
-      setMessages(
-        query.conversation.map((msg) => ({
-          _id: msg._id,
-          sender: msg.sender,
-          email: msg.email,
-          message: msg.message,
-          timestamp: msg.timestamp,
-          role: msg.role,
-        }))
-      );
-      setLoading(false);
-    }
-  }, [query]);
+    const fetchQueryData = async () => {
+      if (!token || !queryId || !role) return;
+
+      setLoading(true);
+      try {
+        const response = await fetchQueryById(queryId, token, role);
+        setQuery(response.data.queryData);
+        setMessages(response.data.queryData.conversation || []);
+      } catch (error) {
+        toast.error("Failed to fetch query data.");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQueryData();
+  }, [token, queryId, role]);
+
+  useEffect(() => {
+    socket.on("receiveMessage", (message: MessageType) => {
+      console.log();
+      
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    return () => {
+      socket.off("receiveMessage");
+    };
+  }, []);
 
   const onSendMessage = (text: string) => {
     if (!email || !role) {
@@ -75,63 +88,62 @@ const Query: React.FC = () => {
     }
 
     const newMessage: MessageType = {
-      _id: `M${Date.now()}`,
+      _id: `${Date.now()}`,
       sender: name || "Unknown",
       email: email,
       message: text,
       timestamp: new Date().toISOString(),
       role: role,
     };
-
-    setMessages([...messages, newMessage]);
-
-    if (query) {
-      dispatch(
-        updateQuery({
-          ...query,
-          conversation: [...query.conversation, newMessage],
-        })
-      );
-    }
+    socket.emit("sendMessage", newMessage);
+    setQuery({
+      ...query,
+      conversation: [...(query.conversation || []), newMessage],
+    });
   };
 
-  const handleOpenModal = () => {
+  const handleStatusChange = (event: SelectChangeEvent<string>) => {
+    handleOpenModal(event.target.value);
+  };
+
+  const handleOpenModal = (status: string) => {
+    setSelectedStatus(status);
     setOpenModal(true);
   };
 
   const handleCloseModal = () => {
+    setSelectedStatus("");
     setOpenModal(false);
   };
 
-  const handleConfirmClose = async () => {
-    if (!query || !token || !role) {
-      toast.error("Failed to close query. Required data missing.");
+  const handleConfirmStatusChange = async () => {
+    if (!query || !token || !role || !selectedStatus) {
+      toast.error("Failed to update query status. Required data missing.");
       return;
     }
+
     setLoading(true);
     try {
       const response = await manageQueryStatus(
         query._id,
         query.userEmail,
         token,
-        role
+        role,
+        selectedStatus
       );
 
       if (response.status === 201) {
-        toast.success("Query Closed Successfully");
-        dispatch(
-          updateQuery({
-            ...query,
-            status: "closed",
-          })
-        );
-
+        toast.success("Query status updated successfully.");
+        setQuery({
+          ...query,
+          status: selectedStatus,
+        });
         navigate(role === "SupportAdmin" ? "/manage-queries" : "/queries");
       } else {
-        toast.error("Failed to close query. Please try again.");
+        toast.error("Failed to update query status. Please try again.");
       }
     } catch (error) {
-      toast.error("An error occurred while closing the query.");
+      toast.error("An error occurred while updating the query status.");
     } finally {
       setLoading(false);
       handleCloseModal();
@@ -163,12 +175,31 @@ const Query: React.FC = () => {
                 url={role === "SupportAdmin" ? "/manage-queries" : "/queries"}
               />
               {query.status.toLowerCase() !== "closed" && (
-                <button
-                  className="btn btn-close-query btn-danger"
-                  onClick={handleOpenModal}
-                >
-                  Close Query
-                </button>
+                <>
+                  {query.status.toLowerCase() !== "in-progress" ? (
+                    <FormControl variant="standard">
+                      <InputLabel>Update Status</InputLabel>
+                      <Select
+                        value={selectedStatus}
+                        onChange={handleStatusChange}
+                        label="Status"
+                        style={{ minWidth: "200px" }}
+                      >
+                        <MenuItem value="closed">Close Query</MenuItem>
+                        <MenuItem value="in-progress">
+                          In Progress Query
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  ) : (
+                    <button
+                      className="btn btn-close-query btn-danger"
+                      onClick={() => handleOpenModal("closed")}
+                    >
+                      Close Query
+                    </button>
+                  )}
+                </>
               )}
             </div>
 
@@ -205,7 +236,6 @@ const Query: React.FC = () => {
 
         {/* Right side: Chat system */}
         <div className="query-chat">
-          {/* <h2>Comments</h2> */}
           {messages.length > 0 ? <ChatBox messages={messages} /> : <Spinner />}
           <MessageInput
             onSend={onSendMessage}
@@ -232,7 +262,7 @@ const Query: React.FC = () => {
           <Button onClick={handleCloseModal} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleConfirmClose} color="error">
+          <Button onClick={handleConfirmStatusChange} color="error">
             Yes, Close Query
           </Button>
         </DialogActions>

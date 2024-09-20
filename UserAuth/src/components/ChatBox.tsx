@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../app/store";
 import moment from "moment";
+import { Tooltip } from "@mui/material";
 
 interface MessageType {
   _id: string;
@@ -38,7 +39,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
       return `${diffInMinutes} minutes ago`;
     } else if (diffInHours < 24) {
       return `${diffInHours} hours ago`;
-    }  else {
+    } else {
       return `${diffInDays} days ago`;
     }
   };
@@ -73,7 +74,11 @@ const ChatBox: React.FC<ChatBoxProps> = ({ messages }) => {
           )}
 
           <p>{message.message}</p>
-          <span>{getTimeDifference(message.timestamp)}</span>
+          <Tooltip
+            title={moment(message.timestamp).format("DD/MM/YYYY, h:mm A")}
+          >
+            <span>{getTimeDifference(message.timestamp)}</span>
+          </Tooltip>
         </div>
       ))}
       <div ref={endOfMessagesRef} />
