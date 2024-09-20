@@ -33,8 +33,7 @@ export const adminViewProfileController = async (request: any, response: express
 
 export const adminViewRaisedQueryListController = async (request: express.Request, response: express.Response) => {
     try {
-        const raisedQueries = await queryModel.find().sort({ updatedAt: -1, createdAt: -1 }); 
-
+        const raisedQueries = await queryModel.find().select('-_id').sort({ updatedAt: -1, createdAt: -1 }); 
         console.log(`RaisedQuery by  ${raisedQueries} : `);
         if (raisedQueries) {
             response.status(StatusCodes.OK).json({ raisedQueries: raisedQueries, message: "These are the recently raised queries ..!" });
@@ -190,7 +189,7 @@ export const adminRaiseQueryController = async (request: any, response: express.
                     timestamp: new Date()
                 }]
             });
-            response.status(StatusCodes.OK).json({ queryId: updatedQuery.queryId, message: "Your query has been successfully added ..!" });
+            response.status(StatusCodes.OK).json({ message: "Your query has been successfully added ..!" });
         } else {
             response.status(StatusCodes.ALREADY_EXIST).json({ message: "A similar query has already been added by you ..!" });
         }
@@ -225,16 +224,15 @@ export const adminResponseController = async (request: any, response: express.Re
             await query.save();
             console.log('After conversation.push:', query.conversation);
             // student's should not see the admin's email or role instead "Support Admin" will be shown in sender and email
-            const queryResponse = query.toObject();
-            queryResponse.conversation = queryResponse.conversation.map((conv: any) => ({
-                sender: conv.role === "SupportAdmin" ? "Support Admin" : conv.sender,
-                email: conv.role === "SupportAdmin" ? "Support Admin" : conv.email,
-                message: conv.message,
-                role: conv.role,
-                timestamp: conv.timestamp
-            }));
-
-            response.status(StatusCodes.CREATED).json({ query: queryResponse, message: "Your response has been sent to the Inquirer successfully!" });
+            // const queryResponse = query.toObject();
+            // queryResponse.conversation = queryResponse.conversation.map((conv: any) => ({
+            //     sender: conv.role === "SupportAdmin" ? "Support Admin" : conv.sender,
+            //     email: conv.role === "SupportAdmin" ? "Support Admin" : conv.email,
+            //     message: conv.message,
+            //     role: conv.role,
+            //     timestamp: conv.timestamp
+            // }));
+            response.status(StatusCodes.CREATED).json({ message: "Your response has been sent to the Inquirer successfully!" });
         } else {
             response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query has been closed by the user!' });
         }

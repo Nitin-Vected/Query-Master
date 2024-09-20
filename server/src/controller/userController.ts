@@ -81,7 +81,7 @@ export const userRaiseQueryController = async (request: any, response: express.R
             console.log('Inside if block of userRaiseQueryController ..!');
             // createUniqueQueryId();
             const queryId = await generateQueryId(email, role);
-            console.log('Unique QueryId inside userRaiseQueryController ',queryId);
+            console.log('Unique QueryId inside userRaiseQueryController ', queryId);
             const updatedQuery = await queryModel.create({
                 queryId: queryId,
                 userEmail: email,
@@ -98,7 +98,7 @@ export const userRaiseQueryController = async (request: any, response: express.R
             });
             if (updatedQuery) {
                 console.log('query raised successfull ..!', updatedQuery)
-                response.status(StatusCodes.OK).json({ queryId: updatedQuery.queryId, message: "Your query has been successfully published ..!" });
+                response.status(StatusCodes.OK).json({ message: "Your query has been successfully published ..!" });
             } else {
                 response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ userData: null, message: "Something went wrong ..!" })
             }
@@ -116,7 +116,7 @@ export const userViewMyQueriesController = async (request: any, response: expres
     try {
         const { email, role } = request.payload;
         const myQueries = await queryModel.find({ userEmail: email, userRole: role })
-            .sort({ updatedAt: -1, createdAt: -1 });
+            .select('-_id').sort({ updatedAt: -1, createdAt: -1 });
         console.log(`RaisedQuery by  ${myQueries} : `);
         if (myQueries) {
             response.status(StatusCodes.OK).json({ myQueries: myQueries, message: "These are the recently raised queries by you ..!" });
