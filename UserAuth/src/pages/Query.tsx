@@ -125,7 +125,7 @@ const Query: React.FC = () => {
     setLoading(true);
     try {
       const response = await manageQueryStatus(
-        query._id,
+        query.queryId,
         query.userEmail,
         token,
         role,

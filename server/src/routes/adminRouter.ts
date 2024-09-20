@@ -39,7 +39,7 @@ adminRouter.get("/adminViewSupportAdminList", adminViewSupportAdminListControlle
 adminRouter.get("/adminViewUserList", adminViewUserListController);
 
 adminRouter.post('/adminManageQueryStatus/:queryId/:status',adminManageQueryStatusController);
-adminRouter.get('/adminManageStudentStatus/:studentId/:action',adminManageStudentStatusController);
+adminRouter.get('/adminManageStudentStatus/:email/:action',adminManageStudentStatusController);
 
 adminRouter.post("/adminRaiseQuery", adminRaiseQueryController);
 adminRouter.post("/adminAddResponseToQuery/:queryId",adminResponseController);

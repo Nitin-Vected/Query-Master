@@ -78,12 +78,12 @@ export const adminGetStudentsList = async (token: string) => {
 };
 
 export const adminUpdateStudentStatus = async (
-  studentId: string,
+  email: string,
   newStatus: "true" | "false",
   token: string
 ) => {
   return axios.get(
-    `${ADMIN_API_URL}/adminManageStudentStatus/${studentId}/${newStatus}`,
+    `${ADMIN_API_URL}/adminManageStudentStatus/${email}/${newStatus}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

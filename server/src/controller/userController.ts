@@ -138,7 +138,7 @@ export const userAddCommentController = async (request: any, response: express.R
         console.log('QueryId : ', queryId);
 
         // Find the query by its _id
-        const query = await queryModel.findOne({ _id: Object(queryId) });
+        const query = await queryModel.findOne({ queryId });
         if (!query) {
             response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found' });
         } else if (query.status === "Open" || query.status === "In Progress") {
@@ -171,7 +171,7 @@ export const userManageQueryStatusController = async (request: any, response: ex
             response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query ID and status are required' });
         }
         const result = await queryModel.updateOne(
-            { _id: Object(queryId), userEmail: email },
+            { queryId: queryId, userEmail: email },
             { $set: { status: status } },
         );
         console.log('Query Status :', result)

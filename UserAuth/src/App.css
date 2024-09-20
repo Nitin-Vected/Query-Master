@@ -264,6 +264,7 @@ h3 {
   padding: 10px;
   border-radius: 5px;
   margin: 5px;
+  text-align: left;
 }
 
 .message.staff {

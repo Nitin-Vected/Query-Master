@@ -23,7 +23,7 @@ const StudentManagement: React.FC = () => {
   const [students, setStudents] = useState<any[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<{
-    id: string;
+    email: string;
     currentStatus: string;
   } | null>(null); // State for selected student
   const token = useSelector(
@@ -47,8 +47,8 @@ const StudentManagement: React.FC = () => {
     getStudents();
   }, [token]);
 
-  const handleOpenModal = (studentId: string, currentStatus: string) => {
-    setSelectedStudent({ id: studentId, currentStatus });
+  const handleOpenModal = (email: string, currentStatus: string) => {
+    setSelectedStudent({ email, currentStatus });
     setOpenModal(true);
   };
 
@@ -59,16 +59,17 @@ const StudentManagement: React.FC = () => {
 
   const handleConfirmStatusChange = async () => {
     if (!selectedStudent) return;
+    console.log(selectedStudent);
 
-    const { id, currentStatus } = selectedStudent;
+    const { email, currentStatus } = selectedStudent;
     const newStatus = currentStatus === "true" ? "false" : "true";
 
     setLoading(true);
     try {
-      await adminUpdateStudentStatus(id, newStatus, token);
+      await adminUpdateStudentStatus(email, newStatus, token);
       setStudents(
         students.map((student) =>
-          student._id === id ? { ...student, status: newStatus } : student
+          student.email === email ? { ...student, status: newStatus } : student
         )
       );
       // toast.success("Student status updated successfully.");
@@ -82,7 +83,7 @@ const StudentManagement: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "Id", minWidth: 150, flex: 1 },
+    // { field: "id", headerName: "Id", minWidth: 150, flex: 1 },
     { field: "name", headerName: "Name", minWidth: 200, flex: 1 },
     { field: "email", headerName: "Email", minWidth: 250, flex: 1 },
     {
@@ -90,8 +91,8 @@ const StudentManagement: React.FC = () => {
       headerName: "Contact Number",
       minWidth: 150,
       flex: 1,
-      align: 'center',
-      headerAlign:'center'
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "role",
@@ -108,7 +109,7 @@ const StudentManagement: React.FC = () => {
         <Button
           variant="contained"
           color={params.row.status === "true" ? "success" : "error"}
-          onClick={() => handleOpenModal(params.row.id, params.row.status)}
+          onClick={() => handleOpenModal(params.row.email, params.row.status)}
         >
           {params.row.status === "true" ? "Active" : "Inactive"}
         </Button>
@@ -128,11 +129,13 @@ const StudentManagement: React.FC = () => {
       <div style={{ height: 400, width: "100%" }}>
         <div style={{ width: "100%", overflowX: "auto" }}>
           <DataGrid
-            rows={students.map((student) => ({
-              id: student._id,
+            rows={students.map((student, index) => ({
+              id: index,
               name: student.name,
               email: student.email,
-              contactNumber: student.contactNumber ? student.contactNumber : "-",
+              contactNumber: student.contactNumber
+                ? student.contactNumber
+                : "-",
               role: student.role,
               status: student.status,
             }))}
