@@ -30,7 +30,7 @@ const ManageQueries: React.FC = () => {
         const response = await adminfetchQueries(token);
         const fetchedQueries: Query[] = response.data.raisedQueries.map(
           (query: Query) => ({
-            _id: query._id,
+            queryId: query.queryId,
             userEmail: query.userEmail,
             subject: query.subject,
             status: query.status,
@@ -53,12 +53,13 @@ const ManageQueries: React.FC = () => {
   }, [token, dispatch]);
 
   const handleClick = (id: string) => {
+    console.log(id);
     dispatch({ type: "queries/selectQuery", payload: id });
   };
 
   const columns: GridColDef[] = [
     {
-      field: "createdAt",
+      field: "updatedAt",
       headerName: "Date - Time",
       minWidth: 200,
       flex: 1,
@@ -90,10 +91,10 @@ const ManageQueries: React.FC = () => {
       renderCell: (params: GridRenderCellParams) => (
         <Button
           component={Link}
-          to={`/query/${params.row.id}`}
+          to={`/query/${params.row.queryId}`}
           variant="contained"
           color="primary"
-          onClick={() => handleClick(params.row.id)}
+          onClick={() => handleClick(params.row.queryId)}
         >
           View
         </Button>
@@ -112,9 +113,10 @@ const ManageQueries: React.FC = () => {
       <h1 className="query-heading">Queries</h1>
       <div style={{ height: 420, width: "100%" }}>
         <DataGrid
-          rows={queries.map((query) => ({
-            id: query._id,
-            createdAt: query.updatedAt,
+          rows={queries.map((query, index) => ({
+            id: index,
+            queryId: query.queryId,
+            updatedAt: query.updatedAt,
             email: query.userEmail,
             subject: query.subject,
             status: query.status,
@@ -128,7 +130,6 @@ const ManageQueries: React.FC = () => {
               },
             },
           }}
-          // pageSizeOptions={[5, 10]}
           disableRowSelectionOnClick
         />
       </div>

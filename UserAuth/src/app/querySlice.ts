@@ -10,7 +10,7 @@ export interface Conversation {
 }
 
 export interface Query {
-  _id: string;
+  queryId: string;
   userEmail: string;
   subject: string;
   status: string;
@@ -38,14 +38,14 @@ const querySlice = createSlice({
       state.queries = action.payload;
     },
     updateQuery(state, action: PayloadAction<Query>) {
-      const index = state.queries.findIndex(query => query._id === action.payload._id);
+      const index = state.queries.findIndex(query => query.queryId === action.payload.queryId);
       if (index !== -1) {
         state.queries[index] = action.payload;
       }
     },
     addConversationMessage(state, action: PayloadAction<{ queryId: string; message: Conversation }>) {
       const { queryId, message } = action.payload;
-      const query = state.queries.find(q => q._id === queryId);
+      const query = state.queries.find(q => q.queryId === queryId);
       if (query) {
         query.conversation.push(message);
       }

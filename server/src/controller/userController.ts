@@ -115,8 +115,9 @@ export const userRaiseQueryController = async (request: any, response: express.R
 export const userViewMyQueriesController = async (request: any, response: express.Response) => {
     try {
         const { email, role } = request.payload;
-        const myQueries = await queryModel.find({ userEmail: email, userRole: role })
-            .select('-_id').sort({ updatedAt: -1, createdAt: -1 });
+        const myQueries = await queryModel.find({ userEmail: email, userRole: role },
+            { "conversation._id": 0, _id: 0 })
+            .sort({ updatedAt: -1, createdAt: -1 });
         console.log(`RaisedQuery by  ${myQueries} : `);
         if (myQueries) {
             response.status(StatusCodes.OK).json({ myQueries: myQueries, message: "These are the recently raised queries by you ..!" });
@@ -213,7 +214,7 @@ export const userAuthenticationController = async (request: any, response: expre
 export const userGetQueryDataController = async (request: express.Request, response: express.Response) => {
     try {
         const { queryId } = request.params;
-        const queryData = await queryModel.findOne({ _id: queryId });
+        const queryData = await queryModel.findOne({ queryId: queryId }, {'conversation._id':0, _id:0});
         if (queryData) {
             response.status(StatusCodes.OK).json({ queryData: queryData, message: "Query has been f ..!" });
         } else {

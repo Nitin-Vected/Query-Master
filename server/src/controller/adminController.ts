@@ -33,7 +33,9 @@ export const adminViewProfileController = async (request: any, response: express
 
 export const adminViewRaisedQueryListController = async (request: express.Request, response: express.Response) => {
     try {
-        const raisedQueries = await queryModel.find().select('-_id').sort({ updatedAt: -1, createdAt: -1 }); 
+        const raisedQueries = await queryModel.find({},
+            { "conversation._id": 0, _id: 0 })
+            .sort({ updatedAt: -1, createdAt: -1 });
         console.log(`RaisedQuery by  ${raisedQueries} : `);
         if (raisedQueries) {
             response.status(StatusCodes.OK).json({ raisedQueries: raisedQueries, message: "These are the recently raised queries ..!" });
@@ -303,7 +305,7 @@ export const adminAuthenticationController = async (request: express.Request, re
 export const adminGetQueryDataController = async (request: express.Request, response: express.Response) => {
     try {
         const { queryId } = request.params;
-        const queryData = await queryModel.findOne({ _id: queryId });
+        const queryData = await queryModel.findOne({ queryId: queryId },{ "conversation._id": 0, _id: 0 });
         if (queryData) {
             response.status(StatusCodes.OK).json({ queryData: queryData, message: "Query has been f ..!" });
         } else {

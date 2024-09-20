@@ -215,7 +215,7 @@ const Query: React.FC = () => {
               <tbody>
                 <tr>
                   <th>Query ID</th>
-                  <td>{query._id}</td>
+                  <td>{query.queryId}</td>
                 </tr>
                 <tr>
                   <th>Date</th>
