@@ -1,18 +1,18 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
-  userName: string;
+  name: string;
   firstName: string;
   lastName: string;
   email: string;
   contactNumber: string;
-  profileImg: string,
-  role: string
-  status: string
+  profileImg: string;
+  role: 'Student' | 'SupportAdmin';
+  status: string;
 }
 
 const UserSchema: mongoose.Schema = new Schema({
-  userName: {
+  name: {
     type: String,
     required: true,
     trim: true,
@@ -43,14 +43,13 @@ const UserSchema: mongoose.Schema = new Schema({
   },
   role: {
     type: String,
-    default: 'Student',
+    enum: ['Student', 'SupportAdmin'], 
     required: true,
   },
   status: {
     type: String,
     required: true,
   },
-
 }, { versionKey: false, timestamps: true });
 
-export default mongoose.model<IUser>('user', UserSchema, 'user');
+export default mongoose.model<IUser>('User', UserSchema, 'user');

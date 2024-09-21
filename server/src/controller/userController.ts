@@ -1,182 +1,241 @@
-import express from 'express';
-import axios from 'axios';
+import express, { Request, Response, NextFunction } from 'express';
 import userModel from '../model/userModel';
-import { tokenGenerator, tokenVerifier } from '../utilities/jwt';
-import { USER_SECRET_KEY } from '../config';
+import { tokenVerifier } from '../utilities/jwt';
+import { generateQueryId, StatusCodes, USER_SECRET_KEY } from '../config';
 import queryModel from '../model/queryModel';
-interface TokenResponse {
-    access_token: string;
+import { promises } from 'dns';
+
+interface CustomRequest extends Request {
+    payload: {
+        email: string;
+        role: string;
+        token: string;
+    };
 }
 
-const verifyGoogleToken = async (tokenResponse: TokenResponse) => {
+export const userViewProfileController = async (request: CustomRequest, response: Response, next: NextFunction) => {
     try {
-        const result = await axios.get(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            {
-                headers: {
-                    Authorization: `Bearer ${tokenResponse.access_token}`,
-                },
-            }
-        );
-        console.log("result.data : ", result);
-        if (result.data) {
-            console.log("result.data : ", result.data);
-
-            return result.data;
-        }
-        return null;
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-export const userLoginController = async (request: express.Request, response: express.Response) => {
-    try {
-        const { tokenResponse } = request.body
-        console.log("tokenResponse token : ", tokenResponse);
-        const decodedToken = await verifyGoogleToken(tokenResponse);
-        console.log('Decoded Token : ', decodedToken);
-        4
-        if (decodedToken) {
-            const { name, given_name, family_name, picture, email, email_verified } = decodedToken;
-            let userData = await userModel.findOne({ email: email });
-            console.log('userData : ', userData);
-            if (userData) {
-                userData.email = email;
-                userData.userName = name;
-                userData.profileImg = picture;
-                userData.firstName = given_name;
-                userData.lastName = family_name;
-                userData.status = email_verified;
-                await userData.save();
-                console.log('User Data Updated')
-                const token = tokenGenerator({ email: userData.email, role: userData.role }, USER_SECRET_KEY);
-                response.status(201).json({ userData: userData, token: token, msg: "Logged in  Successfull ..!" });
-
-            }
-            else {
-                throw new Error('Account Not Exist ..!');
-                // userData = await userModel.create({
-                //     userName: name,
-                //     firstName: given_name,
-                //     lastName: family_name,
-                //     email: email,
-                //     profileImg: picture,
-                //     role: 'Student',
-                //     status: email_verified,
-                // });
-                // console.log('user has been registered successfully ..!', userData);
-            }
-        }
-
-    } catch (error) {
-        console.log(error);
-        response.status(500).json({ msg: "Account Not Exist ..!" });
-    }
-}
-
-export const userViewProfileController = async (request: express.Request, response: express.Response) => {
-    try {
-        const email = request.body.email;
+        let email = request.payload?.email;
         if (!email) {
-            response.status(404).json({ message: "Token not found" });
+            return response.status(StatusCodes.UNAUTHORIZED).json({ message: "Token not found" });
+        }
+
+        const result = await userModel.findOne({ email });
+        console.log('ContactNumber', result);
+
+        const userData = {
+            name: result?.name,
+            email: result?.email,
+            contactNumber: result?.contactNumber,
+            role: result?.role,
+            profileImg: result?.profileImg
+        };
+
+        if (result?.status) {
+            response.status(StatusCodes.OK).json({ userData: userData, message: "UserData fetched successfully ..!" });
         } else {
-            const userData = await userModel.findOne({ email });
-            if (userData?.status) {
-                response.status(201).json({ userData: userData, msg: "This is your dersired data ..!" })
-            } else {
-                response.status(404).json({ userData: null, msg: "The Account You are Trying to Acces has been Deactivated ..!" })
-            }
+            response.status(StatusCodes.BAD_REQUEST).json({ userData: null, message: "The Account You are Trying to Access has been Deactivated ..!" });
         }
     } catch (error) {
         console.log(error);
-        response.status(500).json({ msg: "Something went wrong ..!" });
-
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
     }
-}
+};
 
 export const userAddContactNumberController = async (request: any, response: express.Response) => {
     try {
-        const { userEmail } = request.payload;
+        const userEmail = request.payload.email;
         const { contactNumber } = request.body;
-        console.log('Hello from userAddContactNumberController ..!');
-
+        // console.log('Hello from userAddContactNumberController ..!',userEmail,'  ',contactNumber);
         if (!userEmail) {
-            response.status(404).json({ message: "Token not found" });
+            response.status(StatusCodes.UNAUTHORIZED).json({ message: "Token not found" });
         } else {
-            const userData = await userModel.findOneAndUpdate(
-                { email:userEmail },
-                { contactNumber },
-                { new: true }
+            const result = await userModel.updateOne(
+                { email: userEmail },
+                { $set: { contactNumber: contactNumber } },
             );
-            if (userData?.status) {
-                return response.status(201).json({ userData: userData, msg: "Contact number updated successfully!" });
+            console.log('ContactNumber updated ', result)
+
+            if (result?.acknowledged) {
+                response.status(StatusCodes.OK).json({ message: "Contact number updated successfully ..!" });
             } else {
-                return response.status(404).json({ userData: null, msg: "The account you are trying to access has been deactivated!" });
+                response.status(StatusCodes.UNAUTHORIZED).json({ message: "The account you are trying to access has been deactivated!" });
             }
         }
     } catch (error) {
         console.log(error);
-        response.status(500).json({ msg: "Something went wrong ..!" });
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
 
     }
 }
 
-export const userRaiseQueryController = async (request: express.Request, response: express.Response) => {
+
+
+export const userRaiseQueryController = async (request: any, response: express.Response) => {
     try {
-        console.log('Hellow from userRaiseQueryController ..!')
-        const { userName, email, contactNumber, subject, message } = request.body;
-        const queryToRaise = {
-            userName: userName,
-            userEmail: email,
-            userContactNumber: contactNumber,
-            subject: subject,
-            message: message,
-            adminResponse: "",
-            date: new Date().toLocaleString(),
-            status: "Pending"
-        };
-        const raisedQuery = await queryModel.create(queryToRaise);
-        console.log(`RaisedQuery by  ${userName} : ${raisedQuery}`);
-        response.status(201).json({ raisedQuery: raisedQuery, msg: "Your query has been sent to admin successfully ..!" });
+        const { name, email, role } = request.payload;
+        const { subject, message } = request.body;
+
+        const similaryExistingQuery = await queryModel.findOne({ userEmail: email, userRole: role, subject, message });
+        if (!similaryExistingQuery) {
+            console.log('Inside if block of userRaiseQueryController ..!');
+            // createUniqueQueryId();
+            const queryId = await generateQueryId(email, role);
+            console.log('Unique QueryId inside userRaiseQueryController ', queryId);
+            const updatedQuery = await queryModel.create({
+                queryId: queryId,
+                userEmail: email,
+                userRole: role,
+                subject,
+                message,
+                conversation: [{
+                    sender: name,
+                    email: email,
+                    message: message,
+                    role: role,
+                    timestamp: new Date()
+                }]
+            });
+            if (updatedQuery) {
+                console.log('query raised successfull ..!', updatedQuery)
+                response.status(StatusCodes.OK).json({ message: "Your query has been successfully published ..!" });
+            } else {
+                response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ userData: null, message: "Something went wrong ..!" })
+            }
+        } else {
+            response.status(StatusCodes.ALREADY_EXIST).json({ message: "A similar query has already been added by you ..!" });
+        }
 
     } catch (error) {
+        console.log(error);
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to create query' });
+    }
+};
+
+export const userViewMyQueriesController = async (request: any, response: express.Response) => {
+    try {
+        const { email, role } = request.payload;
+        const myQueries = await queryModel.find({ userEmail: email, userRole: role },
+            { "conversation._id": 0, '_id': 0 })
+            .sort({ updatedAt: -1, createdAt: -1 });
+        console.log(`RaisedQuery by  ${myQueries} : `);
+        if (myQueries) {
+            response.status(StatusCodes.OK).json({ myQueries: myQueries, message: "These are the recently raised queries by you ..!" });
+        } else {
+            response.status(StatusCodes.NOT_FOUND).json({ myQueries: null, message: "No Queries are added by You ..!" });
+        }
+    } catch (error) {
         console.log('Error occure in userRaiseQueryController : ', error)
-        response.status(500).json({ msg: "Something went wrong ..!" });
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong ..!" });
     }
 }
 
-
-export const userAuthenticationController = async (request: express.Request, response: express.Response) => {
+export const userAddCommentController = async (request: any, response: express.Response) => {
     try {
-        const token = request.body.user_token;
-        if (!token) {
-            response.status(404).json({ message: "Token not found" });
+        const { name, email, role } = request.payload;
+        const { queryId } = request.params;
+        const { message } = request.body;
+        console.log('QueryId : ', queryId);
+
+        // Find the query by its _id
+        const query = await queryModel.findOne({ queryId });
+        if (!query) {
+            response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found' });
+        } else if (query.status === "Open" || query.status === "in-progress") {
+            console.log('Query ', query);
+            query.conversation.push({
+                sender: name,
+                email: email,
+                message,
+                role: role,
+                timestamp: new Date()
+            });
+            await query.save();
+            response.status(StatusCodes.OK).json({ message: "Your response has been sent to the trail successfully!" });
         } else {
-            const payload = await tokenVerifier(token, USER_SECRET_KEY);
-            console.log('Payload --> ', payload);
-            var result = await userModel.findOne({ email: payload.userEmail });
-            console.log('Authenntication Successfull ..!', result)
-            response.status(200).json({ userData: result, token: token, msg: "Authenntication Successfull ..!" });
+            response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query has been closed by the user ..!' });
+        }
+        console.log('Query in userAddCommentController : ', query);
+
+    } catch (error) {
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
+    }
+};
+
+export const userManageQueryStatusController = async (request: any, response: express.Response) => {
+    try {
+        const { email } = request.payload;
+        const { queryId, status } = request.params;
+        console.log('query id : ', queryId, '   query status : ', status)
+        if (!queryId || !status) {
+            response.status(StatusCodes.BAD_REQUEST).json({ error: 'Query ID and status are required' });
+        }
+        const result = await queryModel.updateOne(
+            { queryId: queryId, userEmail: email },
+            { $set: { status: status } },
+        );
+        console.log('Query Status :', result)
+
+        if (!result?.acknowledged) {
+            response.status(StatusCodes.NOT_FOUND).json({ error: 'Query not found or email mismatch' });
+        }
+        console.log('Query status updated successfully');
+        response.status(StatusCodes.CREATED).json({ message: "Query status updated successfully" });
+    } catch (error) {
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to find query' });
+    }
+};
+
+export const userAuthenticationController = async (request: any, response: express.Response) => {
+    try {
+        const authHeader = request.headers['authorization'];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return response.status(StatusCodes.UNAUTHORIZED).json({ message: 'Authorization token is missing or invalid' });
+        }
+        const token = authHeader.split(' ')[1];
+        const payload = await tokenVerifier(token, USER_SECRET_KEY);
+        const result = await userModel.findOne({ email: payload.email });
+        const userData = {
+            name: result?.name,
+            email: result?.email,
+            contactNumber: result?.contactNumber,
+            role: result?.role,
+            profileImg: result?.profileImg
+        }
+        response.status(StatusCodes.OK).json({ userData: userData, token: token, message: "Authenntication Successfull ..!" });
+    } catch (err) {
+        console.log("Error while user authentication Controller", err);
+        response.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token Not verify please login then try to access ..!' });
+    }
+};
+
+export const userGetQueryDataController = async (request: express.Request, response: express.Response) => {
+    try {
+        const { queryId } = request.params;
+        const queryData = await queryModel.findOne({ queryId: queryId }, {'conversation._id':0, _id:0});
+        if (queryData) {
+            response.status(StatusCodes.OK).json({ queryData: queryData, message: "Query has been f ..!" });
+        } else {
+            response.status(StatusCodes.NOT_FOUND).json({ queryData: null, message: "Query Not found with this Id  ..!" });
         }
     } catch (err) {
         console.log("Error while user authentication Controller", err);
-        response.status(203).json({ message: 'Token Not verify please login then try to access ..!' });
+        response.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token Not verify please login then try to access ..!' });
     }
 };
 
 // for backend
 export const userAuthenticateJWT = async (request: any, response: express.Response, next: Function) => {
-    const token = request.query.userToken;
-    // console.log('candidate token --> ',token);
-    if (!token) {
-        return response.status(401).json({ message: "Token not found" });
-    }
     try {
+        const authHeader = request.headers['authorization'];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return response.status(StatusCodes.UNAUTHORIZED).json({ message: 'Authorization token is missing or invalid' });
+        }
+        const token = authHeader.split(' ')[1];
         const payload = await tokenVerifier(token, USER_SECRET_KEY);
         request.payload = payload;
         next();
     } catch (error) {
-        return response.status(500).json({ message: "Invalid or expired Candidate token" });
+        response.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid or expired User token" });
     }
 };
