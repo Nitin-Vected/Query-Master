@@ -36,32 +36,39 @@ export const loginController = async (
     const decodedToken = await verifyGoogleToken(tokenResponse);
 
     if (decodedToken) {
-      const { name, given_name, family_name, picture, email, email_verified } =
+      const { given_name, family_name, picture, email, email_verified } =
         decodedToken;
-      let userData = await userModel.findOne({ email: email });
-      if (userData) {
-        userData.email = email;
-        userData.name = name;
-        userData.profileImg = picture;
-        userData.firstName = given_name;
-        userData.lastName = family_name;
-        userData.status = email_verified;
-        await userData.save();
-        if (userData.status === "true") {
+      let result = await userModel.findOne({ email: email });
+      if (result) {
+        result.email = email;
+        result.profileImg = picture;
+        result.firstName = given_name;
+        result.lastName = family_name;
+        result.status = email_verified;
+        await result.save();
+        if (result.status === "true") {
           const payload = {
-            name,
+            name: given_name + " " + family_name,
             email,
-            role: userData.role,
+            role: result.role,
             googleToken: tokenResponse?.access_token,
-            status: userData.status,
+            status: result.status,
           };
 
           let token;
-          if (userData.role === "Student") {
+          if (result.role === "Student") {
             token = tokenGenerator(payload, USER_SECRET_KEY);
           } else {
             token = tokenGenerator(payload, ADMIN_SECRET_KEY);
           }
+
+          const userData = {
+            name: given_name + " " + family_name,
+            email: result?.email,
+            contactNumber: result?.contactNumber,
+            role: result?.role,
+            profileImg: result?.profileImg,
+          };
 
           response.status(StatusCodes.CREATED).json({
             userData: userData,
@@ -69,12 +76,10 @@ export const loginController = async (
             message: "Login Successful!",
           });
         } else {
-          response
-            .status(StatusCodes.UNAUTHORIZED)
-            .json({
-              message:
-                "Account not verified. Please verify your account to login.",
-            });
+          response.status(StatusCodes.UNAUTHORIZED).json({
+            message:
+              "Account not verified. Please verify your account to login.",
+          });
         }
       } else {
         throw new Error("Account Not Exist ..!");

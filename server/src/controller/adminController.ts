@@ -300,7 +300,7 @@ export const adminResponseController = async (
     console.log("Got Query ==> ", query?.status);
     if (!query) {
       response.status(StatusCodes.NOT_FOUND).json({ error: "Query not found" });
-    } else if (query.status === "Open" || query.status === "in-progress") {
+    } else if (query.status !== "Closed") {
       console.log("Name ==> ", request.payload.name);
       console.log("Email ==> ", request.payload.email);
       console.log("Query ", query);
