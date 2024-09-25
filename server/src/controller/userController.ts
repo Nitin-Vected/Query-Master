@@ -1,9 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
 import userModel from "../model/userModel";
 import { tokenVerifier } from "../utilities/jwt";
-import { generateQueryId, StatusCodes, USER_SECRET_KEY } from "../config";
+import { generateUniqueId, StatusCodes, USER_SECRET_KEY } from "../config";
 import queryModel from "../model/queryModel";
-import { promises } from "dns";
 
 interface CustomRequest extends Request {
   payload: {
@@ -118,7 +117,7 @@ export const userRaiseQueryController = async (
     if (!similaryExistingQuery) {
       console.log("Inside if block of userRaiseQueryController ..!");
       // createUniqueQueryId();
-      const queryId = await generateQueryId(email, role);
+      const queryId = await generateUniqueId('query', email, role);
       console.log("Unique QueryId inside userRaiseQueryController ", queryId);
       const updatedQuery = await queryModel.create({
         queryId: queryId,

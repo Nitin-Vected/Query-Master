@@ -1,6 +1,6 @@
 import express from "express";
 import { tokenVerifier } from "../utilities/jwt";
-import { ADMIN_SECRET_KEY, generateQueryId, StatusCodes } from "../config";
+import { ADMIN_SECRET_KEY, generateUniqueId, StatusCodes } from "../config";
 import queryModel from "../model/queryModel";
 import userModel from "../model/userModel";
 
@@ -252,7 +252,7 @@ export const adminRaiseQueryController = async (
       message,
     });
     if (!similaryExistingQuery) {
-      const queryId = await generateQueryId(email, role);
+      const queryId = await generateUniqueId('query', email, role);
       const updatedQuery = await queryModel.create({
         queryId: queryId,
         userEmail: email,
