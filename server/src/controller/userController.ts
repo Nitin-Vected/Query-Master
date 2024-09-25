@@ -1,65 +1,71 @@
 import express, { Request, Response, NextFunction } from "express";
 import userModel from "../model/userModel";
 import { tokenVerifier } from "../utilities/jwt";
-import { generateQueryId, StatusCodes, USER_SECRET_KEY } from "../config";
+import { generateUniqueId, StatusCodes, USER_SECRET_KEY } from "../config";
 import queryModel from "../model/queryModel";
-import { promises } from "dns";
 
 interface CustomRequest extends Request {
   payload: {
     email: string;
-    role: string;
+    roleName: string;
+    access: [string];
     token: string;
   };
 }
 
-export const userViewProfileController = async (
-  request: CustomRequest,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    let email = request.payload?.email;
-    if (!email) {
-      return response
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Token not found" });
-    }
+interface Role {
+  roleId: {
+    roleName: string;
+  };
+}
 
-    const result = await userModel.findOne({ email });
-    console.log("ContactNumber", result);
+// export const userViewProfileController = async (
+//   request: CustomRequest,
+//   response: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     let email = request.payload?.email;
+//     if (!email) {
+//       return response
+//         .status(StatusCodes.UNAUTHORIZED)
+//         .json({ message: "Token not found" });
+//     }
 
-    const userData = {
-      name: result?.name,
-      email: result?.email,
-      contactNumber: result?.contactNumber,
-      role: result?.role,
-      profileImg: result?.profileImg,
-    };
+//     const result = await userModel.findOne({ email });
+//     console.log("ContactNumber", result);
 
-    if (result?.status) {
-      response
-        .status(StatusCodes.OK)
-        .json({
-          userData: userData,
-          message: "UserData fetched successfully ..!",
-        });
-    } else {
-      response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({
-          userData: null,
-          message:
-            "The Account You are Trying to Access has been Deactivated ..!",
-        });
-    }
-  } catch (error) {
-    console.log(error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
+//     const userData = {
+//       name: result?.firstName + " " + result?.lastName,
+//       email: result?.email,
+//       contactNumber: result?.contactNumber,
+//       roleName: result?.roleId ? result.roleId.roleName : null,
+//       profileImg: result?.profileImg,
+//     };
+
+//     if (result?.status) {
+//       response
+//         .status(StatusCodes.OK)
+//         .json({
+//           userData: userData,
+//           message: "UserData fetched successfully ..!",
+//         });
+//     } else {
+//       response
+//         .status(StatusCodes.BAD_REQUEST)
+//         .json({
+//           userData: null,
+//           message:
+//             "The Account You are Trying to Access has been Deactivated ..!",
+//         });
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };
 
 export const userAddContactNumberController = async (
   request: any,
@@ -117,8 +123,7 @@ export const userRaiseQueryController = async (
     });
     if (!similaryExistingQuery) {
       console.log("Inside if block of userRaiseQueryController ..!");
-      // createUniqueQueryId();
-      const queryId = await generateQueryId(email, role);
+      const queryId = await generateUniqueId('query', email, role);
       console.log("Unique QueryId inside userRaiseQueryController ", queryId);
       const updatedQuery = await queryModel.create({
         queryId: queryId,
@@ -284,10 +289,10 @@ export const userAuthenticationController = async (
     const payload = await tokenVerifier(token, USER_SECRET_KEY);
     const result = await userModel.findOne({ email: payload.email });
     const userData = {
-      name: result?.name,
+      name: result?.firstName + " " + result?.lastName,
       email: result?.email,
       contactNumber: result?.contactNumber,
-      role: result?.role,
+      role: result?.roleId,
       profileImg: result?.profileImg,
     };
     response
@@ -338,6 +343,7 @@ export const userGetQueryDataController = async (
       });
   }
 };
+
 
 // for backend
 export const userAuthenticateJWT = async (

@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import queryModel from "./model/queryModel";
 import shortid from 'shortid';
+import roleModel from "./model/roleModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string;
@@ -21,31 +22,97 @@ export const StatusCodes = {
     SERVICE_UNAVAILABLE: 503,
 };
 
-export const generateQueryId = async (email: string, role: string) => {
+export const generateUniqueId = async (mode: string, email?: string, role?: string) => {
     try {
+        console.log('mode ==> ', mode)
         let isUnique = false;
-        let newQueryId = '';
-        const latestQuery = await queryModel.findOne({ userEmail: email, userRole: role }).sort({ createdAt: -1 }).limit(1);
-        console.log("Latest Query ---> ", latestQuery);
-        let newCounter = 1;
-        if (latestQuery && latestQuery.queryId) {
-            const numericPart = latestQuery.queryId.match(/\d+$/);  
-            if (numericPart) {
-                newCounter = parseInt(numericPart[0]) + 1; 
-            };
-        }
-        while (!isUnique) {
-            const uniqueId = shortid.generate();;
-            newQueryId = `QRY${uniqueId}0${newCounter}`;
-            console.log(`Generated Query ID: ${newQueryId}`);
-            const existingQuery = await queryModel.findOne({ queryId: newQueryId });
-            if (!existingQuery) {
-                isUnique = true;
-            } else {
-                console.log('Query ID collision, regenerating...');
+        let newUniqueId = '';
+        switch (mode) {
+            case 'query': {
+                const latestQuery = await queryModel.findOne({ userEmail: email, userRole: role }).sort({ createdAt: -1 }).limit(1);
+                console.log("Latest Query ---> ", latestQuery);
+                let newCounter = 1;
+                if (latestQuery && latestQuery.queryId) {
+                    const numericPart = latestQuery.queryId.match(/\d+$/);
+                    if (numericPart) {
+                        newCounter = parseInt(numericPart[0]) + 1;
+                    };
+                }
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();;
+                    newUniqueId = `QRY${uniqueId}0${newCounter}`;
+                    console.log(`Generated Query ID: ${newUniqueId}`);
+                    const existingQuery = await queryModel.findOne({ queryId: newUniqueId });
+                    if (!existingQuery) {
+                        isUnique = true;
+                    } else {
+                        console.log('Query ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
             }
+            case 'role': {
+                const latestRole = await roleModel.find().sort({ createdAt: -1 }).limit(1);
+                console.log("Latest Role ---> ", latestRole);
+                let newCounter = 1;
+
+                if (latestRole.length > 0) {
+                    const role = latestRole[0];
+                    if (role.roleId) {
+                        const numericPart = role.roleId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `ROLE${uniqueId}0${newCounter}`; // Change prefix for role ID
+                    console.log(`Generated Role ID: ${newUniqueId}`);
+
+                    const existingRole = await roleModel.findOne({ roleId: newUniqueId });
+                    if (!existingRole) {
+                        isUnique = true;
+                    } else {
+                        console.log('Role ID collision, regenerating...');
+                    }
+                }
+
+                return newUniqueId;
+
+            }
+            // case 'course': {
+            //     const latestCourse = await courseModel.find().sort({ createdAt: -1 }).limit(1);
+            //     console.log("Latest Role ---> ", latestCourse);
+            //     let newCounter = 1;
+
+            //     if (latestCourse.length > 0) {
+            //         const course = latestCourse[0];
+            //         if (course.courseId) {
+            //             const numericPart = course.courseId.match(/\d+$/);
+            //             if (numericPart) {
+            //                 newCounter = parseInt(numericPart[0]) + 1;
+            //             }
+            //         }
+            //     }
+
+            //     while (!isUnique) {
+            //         const uniqueId = shortid.generate();
+            //         newUniqueId = `COURSE${uniqueId}0${newCounter}`; 
+            //         console.log(`Generated Course ID: ${newUniqueId}`);
+
+            //         const existingRole = await courseModel.findOne({ courseId: newUniqueId });
+            //         if (!existingRole) {
+            //             isUnique = true;
+            //         } else {
+            //             console.log('Role ID collision, regenerating...');
+            //         }
+            //     }
+            //     return newUniqueId;
+            // }
         }
-        return newQueryId;
+
     } catch (error) {
         console.error('Error generating Query ID:', error);
         throw error;
