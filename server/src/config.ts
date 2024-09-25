@@ -2,8 +2,7 @@ import dotenv from "dotenv";
 import queryModel from "./model/queryModel";
 import courseModel from "./model/courseModel";
 import shortid from 'shortid';
-// import roleModel from "./model/roleModel";
-
+import roleModel from "./model/roleModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string;
@@ -54,34 +53,34 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
                 return newUniqueId;
             }
             case 'role': {
-                // const latestRole = await roleModel.find().sort({ createdAt: -1 }).limit(1);
-                // console.log("Latest Role ---> ", latestRole);
-                // let newCounter = 1;
+                const latestRole = await roleModel.find().sort({ createdAt: -1 }).limit(1);
+                console.log("Latest Role ---> ", latestRole);
+                let newCounter = 1;
 
-                // if (latestRole.length > 0) {
-                //     const role = latestRole[0];
-                //     if (role.roleId) {
-                //         const numericPart = role.roleId.match(/\d+$/);
-                //         if (numericPart) {
-                //             newCounter = parseInt(numericPart[0]) + 1;
-                //         }
-                //     }
-                // }
+                if (latestRole.length > 0) {
+                    const role = latestRole[0];
+                    if (role.roleId) {
+                        const numericPart = role.roleId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
 
-                // while (!isUnique) {
-                //     const uniqueId = shortid.generate();
-                //     newUniqueId = `ROLE${uniqueId}0${newCounter}`; // Change prefix for role ID
-                //     console.log(`Generated Role ID: ${newUniqueId}`);
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `ROLE${uniqueId}0${newCounter}`;
+                    console.log(`Generated Role ID: ${newUniqueId}`);
 
-                //     const existingRole = await roleModel.findOne({ roleId: newUniqueId });
-                //     if (!existingRole) {
-                //         isUnique = true;
-                //     } else {
-                //         console.log('Role ID collision, regenerating...');
-                //     }
-                // }
+                    const existingRole = await roleModel.findOne({ roleId: newUniqueId });
+                    if (!existingRole) {
+                        isUnique = true;
+                    } else {
+                        console.log('Role ID collision, regenerating...');
+                    }
+                }
 
-                // return newUniqueId;
+                return newUniqueId;
 
             }
             case 'course': {

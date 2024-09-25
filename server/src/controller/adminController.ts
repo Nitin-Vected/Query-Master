@@ -3,46 +3,47 @@ import { tokenVerifier } from "../utilities/jwt";
 import { ADMIN_SECRET_KEY, generateUniqueId, StatusCodes } from "../config";
 import queryModel from "../model/queryModel";
 import userModel from "../model/userModel";
+import roleModel from "../model/roleModel";
 
-export const adminViewProfileController = async (
-  request: any,
-  response: express.Response
-) => {
-  try {
-    const { email, role } = request.payload;
-    if (!email) {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Token not found" });
-    } else {
-      const result = await userModel.findOne({ email, role });
-      const adminData = {
-        name: result?.name,
-        email: result?.email,
-        contactNumber: result?.contactNumber,
-        role: result?.role,
-        profileImg: result?.profileImg,
-      };
-      if (result?.status) {
-        response.status(StatusCodes.OK).json({
-          adminData: adminData,
-          message: "This is your dersired data ..!",
-        });
-      } else {
-        response.status(StatusCodes.NOT_FOUND).json({
-          adminData: null,
-          message:
-            "The Account You are Trying to Acces has been Deactivated ..!",
-        });
-      }
-    }
-  } catch (error) {
-    console.log(error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
+// export const adminViewProfileController = async (
+//   request: any,
+//   response: express.Response
+// ) => {
+//   try {
+//     const { email, role } = request.payload;
+//     if (!email) {
+//       response
+//         .status(StatusCodes.NOT_FOUND)
+//         .json({ message: "Token not found" });
+//     } else {
+//       const result = await userModel.findOne({ email, role });
+//       const adminData = {
+//         name: result?.firstName + " " + result?.lastName,
+//         email: result?.email,
+//         contactNumber: result?.contactNumber,
+//         role: result?.role,
+//         profileImg: result?.profileImg,
+//       };
+//       if (result?.status) {
+//         response.status(StatusCodes.OK).json({
+//           adminData: adminData,
+//           message: "This is your dersired data ..!",
+//         });
+//       } else {
+//         response.status(StatusCodes.NOT_FOUND).json({
+//           adminData: null,
+//           message:
+//             "The Account You are Trying to Acces has been Deactivated ..!",
+//         });
+//       }
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };
 
 export const adminViewRaisedQueryListController = async (
   request: express.Request,
@@ -366,48 +367,48 @@ export const adminManageQueryStatusController = async (
   }
 };
 
-export const adminAuthenticationController = async (
-  request: express.Request,
-  response: express.Response
-) => {
-  try {
-    const authHeader = request.headers["authorization"];
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return response
-        .status(401)
-        .json({ message: "Authorization token is missing or invalid" });
-    }
-    const token = authHeader.split(" ")[1];
-    const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
-    const result = await userModel.findOne({
-      email: payload.email,
-      role: payload.role,
-    });
-    const adminData = {
-      name: result?.name,
-      email: result?.email,
-      contactNumber: result?.contactNumber,
-      role: result?.role,
-      profileImg: result?.profileImg,
-    };
-    if (result?.status) {
-      response.status(StatusCodes.OK).json({
-        userData: adminData,
-        token: token,
-        message: "Authenntication Successfull ..!",
-      });
-    } else {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Something went wrong ..!" });
-    }
-  } catch (err) {
-    console.log("Error while user authentication Controller", err);
-    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Token Not verify please login then try to access ..!",
-    });
-  }
-};
+// export const adminAuthenticationController = async (
+//   request: express.Request,
+//   response: express.Response
+// ) => {
+//   try {
+//     const authHeader = request.headers["authorization"];
+//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//       return response
+//         .status(401)
+//         .json({ message: "Authorization token is missing or invalid" });
+//     }
+//     const token = authHeader.split(" ")[1];
+//     const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
+//     const result = await userModel.findOne({
+//       email: payload.email,
+//       role: payload.role,
+//     });
+//     const adminData = {
+//       name: result?.firstName + " " + result?.lastName,
+//       email: result?.email,
+//       contactNumber: result?.contactNumber,
+//       role: result?.role,
+//       profileImg: result?.profileImg,
+//     };
+//     if (result?.status) {
+//       response.status(StatusCodes.OK).json({
+//         userData: adminData,
+//         token: token,
+//         message: "Authenntication Successfull ..!",
+//       });
+//     } else {
+//       response
+//         .status(StatusCodes.NOT_FOUND)
+//         .json({ message: "Something went wrong ..!" });
+//     }
+//   } catch (err) {
+//     console.log("Error while user authentication Controller", err);
+//     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//       message: "Token Not verify please login then try to access ..!",
+//     });
+//   }
+// };
 
 export const adminGetQueryDataController = async (
   request: express.Request,
@@ -436,6 +437,41 @@ export const adminGetQueryDataController = async (
     });
   }
 };
+
+export const adminAddNewRoleController = async (
+  request: any,
+  response: express.Response
+) => {
+  try {
+    const { email, role } = request.payload;
+    const { roleName, access } = request.body;
+    const roleId = await generateUniqueId('role');
+    const data = {
+      roleId,
+      roleName,
+      access,
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: role,
+      updaterRole: role
+    }
+    const newRole = await roleModel.create(data);
+    if (newRole) {
+      response.status(StatusCodes.CREATED).json({
+        message: 'Role Added successfully ..!',
+      });
+    } else {
+      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Something Went Wrong ..!',
+      });
+    }
+  } catch (error) {
+    console.error('Error in adminManageRoleController:', error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Something went wrong!',
+    });
+  }
+}
 
 // for backend
 export const adminAuthenticateJWT = async (
