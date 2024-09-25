@@ -1,13 +1,12 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUser extends Document {
-  name: string;
   firstName: string;
   lastName: string;
   email: string;
   contactNumber: string;
   profileImg: string;
-  role: "Student" | "SupportAdmin";
+  roleId: string;
   status: string;
 }
 
@@ -37,10 +36,10 @@ const UserSchema: mongoose.Schema = new Schema(
       type: String,
       required: true,
     },
-    role: {
+    roleId: {
       type: String,
-      enum: ["Student", "SupportAdmin"],
       required: true,
+      ref: "roleMaster", 
     },
     status: {
       type: String,
