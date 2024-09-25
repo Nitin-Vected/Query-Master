@@ -1,8 +1,8 @@
 import React from "react";
 import { FaQuestionCircle, FaTicketAlt } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
-import { useSelector } from 'react-redux';
-import { RootState } from '../app/store'; // Import the RootState type
+import { useSelector } from "react-redux";
+import { RootState } from "../app/store"; // Import the RootState type
 
 interface UserData {
   userName: string | null;
@@ -11,7 +11,7 @@ interface UserData {
 
 const Home: React.FC = () => {
   const location = useLocation();
-  
+
   const userData = useSelector((state: RootState) => state.auth.userData);
 
   const displayUserData: UserData = {
