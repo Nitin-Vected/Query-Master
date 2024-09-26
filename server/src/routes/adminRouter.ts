@@ -12,7 +12,6 @@ import {
   adminRaiseQueryController,
   adminResponseController,
   adminViewProfileController,
-  // adminViewProfileController,
   adminViewRaisedQueryListController,
   adminViewStudentListController,
   adminViewSupportAdminListController,

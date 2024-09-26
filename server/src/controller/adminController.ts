@@ -6,45 +6,46 @@ import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
 import batchModel from "../model/batchModel";
 
-// export const adminViewProfileController = async (
-//   request: any,
-//   response: express.Response
-// ) => {
-//   try {
-//     const { email, role } = request.payload;
-//     if (!email) {
-//       response
-//         .status(StatusCodes.NOT_FOUND)
-//         .json({ message: "Token not found" });
-//     } else {
-//       const result = await userModel.findOne({ email, role });
-//       const adminData = {
-//         name: result?.firstName + " " + result?.lastName,
-//         email: result?.email,
-//         contactNumber: result?.contactNumber,
-//         role: result?.role,
-//         profileImg: result?.profileImg,
-//       };
-//       if (result?.status) {
-//         response.status(StatusCodes.OK).json({
-//           adminData: adminData,
-//           message: "This is your dersired data ..!",
-//         });
-//       } else {
-//         response.status(StatusCodes.NOT_FOUND).json({
-//           adminData: null,
-//           message:
-//             "The Account You are Trying to Acces has been Deactivated ..!",
-//         });
-//       }
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     response
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .json({ message: "Something went wrong ..!" });
-//   }
-// };
+export const adminViewProfileController = async (
+  request: any,
+  response: express.Response
+) => {
+  try {
+    const { userId, roleId, roleName } = request.payload;
+    if (!userId || !roleId) {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Token not found" });
+    } else {
+      const result = await userModel.findOne({ userId, roleId });
+      console.log("result : ", result);
+      const adminData = {
+        name: result?.firstName + " " + result?.lastName,
+        email: result?.email,
+        contactNumber: result?.contactNumber,
+        role: roleName,
+        profileImg: result?.profileImg,
+      };
+      if (result?.status) {
+        response.status(StatusCodes.OK).json({
+          adminData: adminData,
+          message: "This is your dersired data ..!",
+        });
+      } else {
+        response.status(StatusCodes.NOT_FOUND).json({
+          adminData: null,
+          message:
+            "The Account You are Trying to Acces has been Deactivated ..!",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
 
 export const adminViewRaisedQueryListController = async (
   request: express.Request,
