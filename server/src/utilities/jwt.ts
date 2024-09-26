@@ -17,13 +17,13 @@ export const tokenGenerator = (data: Payload) => {
     let token = '';
     switch (data.roleName) {
         case 'SupportAdmin': {
-            token = jwt.sign(data, USER_SECRET_KEY, { expiresIn: '1d' });
+            token = jwt.sign(data, ADMIN_SECRET_KEY, { expiresIn: '1d' });
             console.log('Admin Token ==> ', token);
             break;
         }
         case 'Student': {
             console.log('Data ==> ', data);
-            token = jwt.sign(data, ADMIN_SECRET_KEY, { expiresIn: '1d' });
+            token = jwt.sign(data, USER_SECRET_KEY, { expiresIn: '1d' });
             console.log('User Token ==> ', token);
             break;
         }
@@ -34,8 +34,9 @@ export const tokenGenerator = (data: Payload) => {
 
 export const tokenVerifier = (token: any, secretKey: string) => {
     try {
-        // console.log('token --> ',token);
+        console.log('token --> ',token);
         const payload = jwt.verify(token, secretKey);
+        console.log("Verified Payload ",payload);
         return payload;
     } catch (error: any) {
         console.log('Token verification failed:', error.message);

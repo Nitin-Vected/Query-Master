@@ -9,6 +9,7 @@ import {
   adminManageStudentStatusController,
   adminRaiseQueryController,
   adminResponseController,
+  adminViewProfileController,
   // adminViewProfileController,
   adminViewRaisedQueryListController,
   adminViewStudentListController,
@@ -31,7 +32,7 @@ const adminRouter = express.Router();
 
 adminRouter.use(adminAuthenticateJWT);
 
-// adminRouter.get("/adminViewProfile", adminViewProfileController);
+adminRouter.get("/adminViewProfile", adminViewProfileController);
 adminRouter.get("/adminViewStudentList", adminViewStudentListController);
 adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
 adminRouter.get('/adminGetQueryData/:queryId',adminGetQueryDataController);
