@@ -17,13 +17,13 @@ export const tokenGenerator = (data: Payload) => {
     let token = '';
     switch (data.roleName) {
         case 'SupportAdmin': {
-            token = jwt.sign(data, USER_SECRET_KEY, { expiresIn: '1d' });
+            token = jwt.sign(data, ADMIN_SECRET_KEY, { expiresIn: '1d' });
             console.log('Admin Token ==> ', token);
             break;
         }
         case 'Student': {
             console.log('Data ==> ', data);
-            token = jwt.sign(data, ADMIN_SECRET_KEY, { expiresIn: '1d' });
+            token = jwt.sign(data, USER_SECRET_KEY, { expiresIn: '1d' });
             console.log('User Token ==> ', token);
             break;
         }

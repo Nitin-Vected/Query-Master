@@ -4,6 +4,7 @@ import { ADMIN_SECRET_KEY, generateUniqueId, StatusCodes } from "../config";
 import queryModel from "../model/queryModel";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
+import batchModel from "../model/batchModel";
 
 // export const adminViewProfileController = async (
 //   request: any,
@@ -471,6 +472,45 @@ export const adminAddNewRoleController = async (
       message: 'Something went wrong!',
     });
   }
+}
+
+//Batch Controllers
+export const adminAddNewBatchController = async (request: any, response: express.Response) => {
+  try {
+    const { email, roleId } = request.payload;
+    const { batchName, startDate, endDate, trainerId, courseId, students } = request.body;
+    const batchId = await generateUniqueId('batch')
+    const data = {
+      batchId,
+      courseId: courseId,
+      trainerId: trainerId,
+      batchName: batchName,
+      startDate: startDate,
+      students: students,
+      endDate: endDate,
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: roleId,
+      updatorRole: roleId
+    }
+    console.log(data)
+    const newBatch = await batchModel.create(data);
+    if (newBatch) {
+      response.status(StatusCodes.CREATED).json({
+        message: 'Batch Added successfully ..!',
+      });
+    } else {
+      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Something Went Wrong ..!',
+      });
+    }
+  } catch (error) {
+    console.log("Add Batch Error", error)
+  }
+}
+
+export const adminGetAllBatchController = async (request: any, response: express.Response) => {
+
 }
 
 // for backend

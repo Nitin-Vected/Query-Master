@@ -1,11 +1,17 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+// Students interface
+interface Students {
+    enrollmentNumber: string;
+}
+
 // Batch interface extending mongoose Document
 interface Batch extends Document {
     batchId: string;
     courseId: string;
     trainerId: string;
     batchName: string;
+    students: Students[];
     startDate: string;
     endDate: string;
     creatorRole: string;
@@ -14,24 +20,35 @@ interface Batch extends Document {
     updatedBy: string;
 }
 
+//Students Schema
+const StudentsSchema: Schema = new mongoose.Schema({
+    enrollmentNumber: {
+        type: String,
+        required: true
+    },
+})
+
 //Batch Schema
-const batchSchema: Schema = new mongoose.Schema({
+const BatchSchema: Schema = new mongoose.Schema({
     batchId: {
         type: String,
         required: true
     },
     courseId: {
         type: String,
-        required: true
+        ref: "Course",
+        unique: true
     },
     trainerId: {
         type: String,
+        ref: "Employee",
         required: true
     },
     batchName: {
         type: String,
         required: true
     },
+    students: [StudentsSchema],
     startDate: {
         type: String,
         required: true
@@ -58,4 +75,4 @@ const batchSchema: Schema = new mongoose.Schema({
     },
 }, { versionKey: false, timestamps: true });
 
-export default mongoose.model<Batch>('batch', batchSchema);
+export default mongoose.model<Batch>('batch', BatchSchema);

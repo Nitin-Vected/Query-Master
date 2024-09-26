@@ -4,6 +4,7 @@ import courseModel from "./model/courseModel";
 import shortid from 'shortid';
 import roleModel from "./model/roleModel";
 import userModel from "./model/userModel";
+import batchModel from "./model/batchModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string;
@@ -101,7 +102,7 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
 
                 while (!isUnique) {
                     const uniqueId = shortid.generate();
-                    newUniqueId = `COURSE${uniqueId}0${newCounter}`; 
+                    newUniqueId = `COURSE${uniqueId}0${newCounter}`;
                     console.log(`Generated Course ID: ${newUniqueId}`);
 
                     const existingRole = await courseModel.findOne({ courseId: newUniqueId });
@@ -130,11 +131,40 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
 
                 while (!isUnique) {
                     const uniqueId = shortid.generate();
-                    newUniqueId = `USER${uniqueId}0${newCounter}`; 
+                    newUniqueId = `USER${uniqueId}0${newCounter}`;
                     console.log(`Generated Course ID: ${newUniqueId}`);
 
                     const existingUserWithSameId = await userModel.findOne({ userId: newUniqueId });
                     if (!existingUserWithSameId) {
+                        isUnique = true;
+                    } else {
+                        console.log('User ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
+            }
+            case 'batch': {
+                const latestBatch = await batchModel.find().sort({ createdAt: -1 }).limit(1);
+                console.log("Latest Batch ---> ", latestBatch);
+                let newCounter = 1;
+
+                if (latestBatch.length > 0) {
+                    const userData = latestBatch[0];
+                    if (userData.batchId) {
+                        const numericPart = userData.batchId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `BATCH${uniqueId}0${newCounter}`;
+                    // console.log(`Generated Batch ID: ${newUniqueId}`);
+
+                    const existingBatchWithSameId = await batchModel.findOne({ batchId: newUniqueId });
+                    if (!existingBatchWithSameId) {
                         isUnique = true;
                     } else {
                         console.log('User ID collision, regenerating...');
