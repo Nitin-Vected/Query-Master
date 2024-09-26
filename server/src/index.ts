@@ -3,7 +3,7 @@ import cors from "cors";
 import { connectDB } from "./model/connection";
 import userRouter from "./routes/userRouter";
 import adminRouter from "./routes/adminRouter";
-import councilorRouter from "./routes/councilorRouter";
+import counsellorRouter from "./routes/counsellorRouter";
 import { PORT } from "./config";
 import http from "http";
 import { Server } from "socket.io";
@@ -24,7 +24,7 @@ app.use(express.json());
 
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);
-app.use("/councilor", councilorRouter);
+app.use("/counsellor", counsellorRouter);
 
 io.on("connection", (socket) => {
   console.log("A User Connected:", socket.id);

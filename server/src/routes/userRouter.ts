@@ -8,7 +8,7 @@ import {
   userManageQueryStatusController,
   userRaiseQueryController,
   userViewMyQueriesController,
-  ,userViewProfileController
+  userViewProfileController
 } from "../controller/userController";
 import { loginController } from "../controller/LoginController";
 

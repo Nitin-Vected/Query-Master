@@ -117,7 +117,7 @@ export const updateCourseApplicationStatusController = async (
   }
 };
 
-export const councilorAuthenticateJWT = async (
+export const counsellorAuthenticateJWT = async (
   request: any,
   response: express.Response,
   next: Function

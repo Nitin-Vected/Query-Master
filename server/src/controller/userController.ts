@@ -5,7 +5,6 @@ import { generateUniqueId, StatusCodes, USER_SECRET_KEY } from "../config";
 import queryModel from "../model/queryModel";
 import roleModel from "../model/roleModel";
 
-
 export const userViewProfileController = async (
   request: any,
   response: Response,
