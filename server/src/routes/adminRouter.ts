@@ -11,6 +11,7 @@ import {
   adminManageStudentStatusController,
   adminRaiseQueryController,
   adminResponseController,
+  adminViewProfileController,
   // adminViewProfileController,
   adminViewRaisedQueryListController,
   adminViewStudentListController,
@@ -33,7 +34,7 @@ adminRouter.get("/", (request: express.Request, response: express.Response) => {
 
 adminRouter.use(adminAuthenticateJWT);
 
-// adminRouter.get("/adminViewProfile", adminViewProfileController);
+adminRouter.get("/adminViewProfile", adminViewProfileController);
 adminRouter.get("/adminViewStudentList", adminViewStudentListController);
 adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
 adminRouter.get('/adminGetQueryData/:queryId', adminGetQueryDataController);
@@ -52,6 +53,9 @@ adminRouter.post("/addNewRole", adminAddNewRoleController);
 
 adminRouter.post("/addNewBatch", adminAddNewBatchController);
 adminRouter.get("/getBatches",);
+
+
+
 
 
 export default adminRouter;

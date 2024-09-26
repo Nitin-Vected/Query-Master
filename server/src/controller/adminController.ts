@@ -80,14 +80,27 @@ export const adminViewStudentListController = async (
 ) => {
   try {
     const studentList = await userModel
-      .find({ role: "Student" }, { _id: 0 })
-      .select("name email contactNumber role profileImg status")
+      .find({ roleId: "ROLEGnd3oTjQX01" }, { _id: 0 })
+      .select("firstName lastName email contactNumber roleId profileImg status")
       .sort({ updatedAt: -1, createdAt: -1 });
 
     console.log("StudentList :: ", studentList);
+
+
     if (studentList && studentList.length > 0) {
+      const result = studentList.map((student) => ({
+        name: `${student.firstName} ${student.lastName}`,
+        email: student.email,
+        contactNumber: student.contactNumber,
+        role: "Student",
+        profileImg: student.profileImg,
+        status: student.status,
+      }));
+
+      console.log(result)
+
       response.status(StatusCodes.OK).json({
-        studentList: studentList,
+        studentList: result,
         message: "These are the registered students!",
       });
     } else {
@@ -179,7 +192,7 @@ export const adminManageStudentStatusController = async (
     }
 
     const result = await userModel.updateOne(
-      { email: email, role: "Student" },
+      { email: email, role: "ROLEGnd3oTjQX01" },
       { $set: { status: action } }
     );
     if (result?.acknowledged) {
@@ -240,7 +253,7 @@ export const adminRaiseQueryController = async (
   response: express.Response
 ) => {
   try {
-    const { name, email, role } = request.payload;
+    const { name, email, roleName } = request.payload;
     const { subject, message } = request.body;
     if (!subject || !message) {
       response
@@ -249,16 +262,16 @@ export const adminRaiseQueryController = async (
     }
     const similaryExistingQuery = await queryModel.findOne({
       userEmail: email,
-      userRole: role,
+      userRole: roleName,
       subject,
       message,
     });
     if (!similaryExistingQuery) {
-      const queryId = await generateUniqueId('query', email, role);
+      const queryId = await generateUniqueId('query', email, roleName);
       const updatedQuery = await queryModel.create({
         queryId: queryId,
         userEmail: email,
-        userRole: role,
+        userRole: roleName,
         subject,
         message,
         conversation: [
@@ -266,7 +279,7 @@ export const adminRaiseQueryController = async (
             sender: name,
             email: email,
             message: message,
-            role: role,
+            role: roleName,
             timestamp: new Date(),
           },
         ],
@@ -293,7 +306,7 @@ export const adminResponseController = async (
   response: express.Response
 ) => {
   try {
-    const { name, email, role } = request.payload;
+    const { name, email, roleName } = request.payload;
     const { queryId } = request.params;
     const { message } = request.body;
     console.log("QueryId : ", queryId);
@@ -310,7 +323,7 @@ export const adminResponseController = async (
         sender: name,
         email: email,
         message,
-        role: role,
+        role: roleName,
         timestamp: new Date(),
       });
       await query.save();
@@ -444,18 +457,22 @@ export const adminAddNewRoleController = async (
   response: express.Response
 ) => {
   try {
-    const { email, role } = request.payload;
-    const { roleName, access } = request.body;
+    const { email, roleName } = request.payload;
+    console.log('request.payload ',request.payload);
+    
+    const { userRole, access } = request.body;
     const roleId = await generateUniqueId('role');
     const data = {
       roleId,
-      roleName,
+      roleName: userRole,
       access,
       createdBy: email,
       updatedBy: email,
-      creatorRole: role,
-      updaterRole: role
+      creatorRole: roleName,
+      updaterRole: roleName
     }
+    console.log("data ",data);
+    
     const newRole = await roleModel.create(data);
     if (newRole) {
       response.status(StatusCodes.CREATED).json({

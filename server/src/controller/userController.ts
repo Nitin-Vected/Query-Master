@@ -3,69 +3,41 @@ import userModel from "../model/userModel";
 import { tokenVerifier } from "../utilities/jwt";
 import { generateUniqueId, StatusCodes, USER_SECRET_KEY } from "../config";
 import queryModel from "../model/queryModel";
+import roleModel from "../model/roleModel";
 
-interface CustomRequest extends Request {
-  payload: {
-    email: string;
-    roleName: string;
-    access: [string];
-    token: string;
-  };
-}
-
-interface Role {
-  roleId: {
-    roleName: string;
-  };
-}
-
-// export const userViewProfileController = async (
-//   request: CustomRequest,
-//   response: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     let email = request.payload?.email;
-//     if (!email) {
-//       return response
-//         .status(StatusCodes.UNAUTHORIZED)
-//         .json({ message: "Token not found" });
-//     }
-
-//     const result = await userModel.findOne({ email });
-//     console.log("ContactNumber", result);
-
-//     const userData = {
-//       name: result?.firstName + " " + result?.lastName,
-//       email: result?.email,
-//       contactNumber: result?.contactNumber,
-//       roleName: result?.roleId ? result.roleId.roleName : null,
-//       profileImg: result?.profileImg,
-//     };
-
-//     if (result?.status) {
-//       response
-//         .status(StatusCodes.OK)
-//         .json({
-//           userData: userData,
-//           message: "UserData fetched successfully ..!",
-//         });
-//     } else {
-//       response
-//         .status(StatusCodes.BAD_REQUEST)
-//         .json({
-//           userData: null,
-//           message:
-//             "The Account You are Trying to Access has been Deactivated ..!",
-//         });
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     response
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .json({ message: "Something went wrong ..!" });
-//   }
-// };
+export const userViewProfileController = async (
+  request: any,
+  response: Response,
+) => {
+  try {
+    console.log("result", request.payload);
+    let userId = request.payload?.userId;
+    if (!userId) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "Token not found" });
+    }
+    const result = await userModel.findOne({ userId });
+    if (!result) {
+      return response.status(StatusCodes.NOT_FOUND).json({ message: "The Account You are Trying to Access not find..!" });
+    } else if (result?.status) {
+      console.log("result", result?.roleId);
+      const userData = {
+        name: result?.firstName + " " + result?.lastName,
+        email: result?.email,
+        contactNumber: result?.contactNumber,
+        profileImg: result?.profileImg,
+        role: request.payload.roleName
+      };
+      response.status(StatusCodes.OK).json({ userData: userData, message: "UserData fetched successfully ..!" });
+    }
+  } catch (error) {
+    console.log(error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
 
 export const userAddContactNumberController = async (
   request: any,
@@ -74,7 +46,6 @@ export const userAddContactNumberController = async (
   try {
     const userEmail = request.payload.email;
     const { contactNumber } = request.body;
-    // console.log('Hello from userAddContactNumberController ..!',userEmail,'  ',contactNumber);
     if (!userEmail) {
       response
         .status(StatusCodes.UNAUTHORIZED)
@@ -109,23 +80,23 @@ export const userRaiseQueryController = async (
   response: express.Response
 ) => {
   try {
-    const { name, email, role } = request.payload;
+    const { name, email, roleName } = request.payload;
     const { subject, message } = request.body;
 
     const similaryExistingQuery = await queryModel.findOne({
       userEmail: email,
-      userRole: role,
+      userRole: roleName,
       subject,
       message,
     });
     if (!similaryExistingQuery) {
       console.log("Inside if block of userRaiseQueryController ..!");
-      const queryId = await generateUniqueId("query", email, role);
+      const queryId = await generateUniqueId("query", email, roleName);
       console.log("Unique QueryId inside userRaiseQueryController ", queryId);
       const updatedQuery = await queryModel.create({
         queryId: queryId,
         userEmail: email,
-        userRole: role,
+        userRole: roleName,
         subject,
         message,
         conversation: [
@@ -133,7 +104,7 @@ export const userRaiseQueryController = async (
             sender: name,
             email: email,
             message: message,
-            role: role,
+            role: roleName,
             timestamp: new Date(),
           },
         ],
@@ -166,10 +137,10 @@ export const userViewMyQueriesController = async (
   response: express.Response
 ) => {
   try {
-    const { email, role } = request.payload;
+    const { email, roleName } = request.payload;
     const myQueries = await queryModel
       .find(
-        { userEmail: email, userRole: role },
+        { userEmail: email, userRole: roleName },
         { "conversation._id": 0, _id: 0 }
       )
       .sort({ updatedAt: -1, createdAt: -1 });
@@ -252,18 +223,12 @@ export const userManageQueryStatusController = async (
     console.log("Query Status :", result);
 
     if (!result?.acknowledged) {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ error: "Query not found or email mismatch" });
+      response.status(StatusCodes.NOT_FOUND).json({ error: "Query not found or email mismatch" });
     }
     console.log("Query status updated successfully");
-    response
-      .status(StatusCodes.CREATED)
-      .json({ message: "Query status updated successfully" });
+    response.status(StatusCodes.CREATED).json({ message: "Query status updated successfully" });
   } catch (error) {
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Failed to find query" });
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Failed to find query" });
   }
 };
 
@@ -272,6 +237,8 @@ export const userAuthenticationController = async (
   response: express.Response
 ) => {
   try {
+    console.log("Inside userAuthenticationController");
+
     const authHeader = request.headers["authorization"];
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return response
@@ -279,6 +246,7 @@ export const userAuthenticationController = async (
         .json({ message: "Authorization token is missing or invalid" });
     }
     const token = authHeader.split(" ")[1];
+    console.log('token inside userAuthenticationController -> ', token);
     const payload = await tokenVerifier(token, USER_SECRET_KEY);
     const result = await userModel.findOne({ email: payload.email });
     const userData = {

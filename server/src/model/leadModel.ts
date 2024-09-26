@@ -1,15 +1,15 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
-interface CourseApplication {
+interface CourseCategory {
   courseId: string;
   statusId: string;
   appliedAt: Date;
 }
 
-const courseApplicationSchema = new Schema<CourseApplication>(
+const courseCategorySchema = new Schema<CourseCategory>(
   {
     courseId: { type: String, required: true, ref: "Course" },
-    statusId: { type: String, required: true, ref: "Status",  },
+    statusId: { type: String, required: true, ref: "Status" },
     appliedAt: { type: Date, default: Date.now },
   },
   { _id: false }
@@ -29,7 +29,7 @@ interface Lead extends Document {
   updatedAt?: Date;
   updatedBy?: string;
   updaterRole?: string;
-  courseApplications: CourseApplication[];
+  courseCategory: CourseCategory[];
 }
 
 const leadSchema = new Schema<Lead>(
@@ -45,7 +45,7 @@ const leadSchema = new Schema<Lead>(
     createrRole: { type: String, required: true },
     updatedBy: { type: String, ref: "User" },
     updaterRole: { type: String },
-    courseApplications: [courseApplicationSchema],
+    courseCategory: [courseCategorySchema],
   },
   { timestamps: true }
 );

@@ -120,7 +120,13 @@ const StudentManagement: React.FC = () => {
   if (loading) {
     return <Spinner />;
   }
-  if (error) return <div>{error}</div>;
+  if (error)
+    return (
+      <div>
+        <BackButton url="/" />
+        {error}
+      </div>
+    );
 
   return (
     <>

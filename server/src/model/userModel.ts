@@ -16,7 +16,7 @@ const UserSchema: mongoose.Schema = new Schema(
     userId: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     firstName: {
       type: String,
