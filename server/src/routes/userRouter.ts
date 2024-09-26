@@ -1,20 +1,25 @@
-import express, { Request } from 'express';
-import { userAddCommentController, userAddContactNumberController, userAuthenticateJWT, userAuthenticationController, userGetQueryDataController, userManageQueryStatusController, userRaiseQueryController, userViewMyQueriesController
-    // ,userViewProfileController 
-} from '../controller/userController';
-import { loginController } from '../controller/LoginController';
+import express, { Request } from "express";
+import {
+  userAddCommentController,
+  userAddContactNumberController,
+  userAuthenticateJWT,
+  userAuthenticationController,
+  userGetQueryDataController,
+  userManageQueryStatusController,
+  userRaiseQueryController,
+  userViewMyQueriesController,
+  // ,userViewProfileController
+} from "../controller/userController";
+import { loginController } from "../controller/LoginController";
 
 interface CustomRequest extends Request {
-    payload: {
-        email: string;
-        roleName: string;
-        access: [string];
-        token: string;
-    };
+  payload: {
+    email: string;
+    roleName: string;
+    access: [string];
+    token: string;
+  };
 }
-
-
-
 
 const userRouter = express.Router();
 // userRouter.get('/', (request: express.Request, response: express.Response) => {
@@ -30,16 +35,15 @@ userRouter.use(userAuthenticateJWT);
 //     userViewProfileController(request as CustomRequest, response, next);
 // });
 userRouter.get("/userViewMyQueries", userViewMyQueriesController);
-userRouter.get('/userGetQueryData/:queryId', userGetQueryDataController);
+userRouter.get("/userGetQueryData/:queryId", userGetQueryDataController);
 
-userRouter.post('/userAddContactNumber', userAddContactNumberController)
-userRouter.post('/userRaiseQuery', userRaiseQueryController);
+userRouter.post("/userAddContactNumber", userAddContactNumberController);
+userRouter.post("/userRaiseQuery", userRaiseQueryController);
 
 userRouter.post(
-    "/userManageQueryStatus/:queryId/:status",
-    userManageQueryStatusController
+  "/userManageQueryStatus/:queryId/:status",
+  userManageQueryStatusController
 );
 userRouter.post("/userAddCommentToQuery/:queryId", userAddCommentController);
-
 
 export default userRouter;

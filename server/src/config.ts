@@ -10,6 +10,7 @@ export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string
 export const PORT: string = process.env.PORT as string;
 export const USER_SECRET_KEY: string = process.env.USER_SECRET_KEY as string;
 export const ADMIN_SECRET_KEY: string = process.env.ADMIN_SECRET_KEY as string;
+export const COUNCILOR_SECRET_KEY: string = process.env.COUNCILOR_SECRET_KEY as string;
 export const GOOGLE_DECODE_TOKEN_API: string = process.env.GOOGLE_DECODE_TOKEN_API as string;
 export const StatusCodes = {
     OK: 200,

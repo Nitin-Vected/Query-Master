@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 // Conversation interface
 interface Conversation {
@@ -11,7 +11,7 @@ interface Conversation {
 
 // Query interface extending mongoose Document
 interface Query extends Document {
-  queryId : string;
+  queryId: string;
   userEmail: string;
   subject: string;
   message: string;
@@ -22,57 +22,59 @@ interface Query extends Document {
 
 // Conversation Schema
 const ConversationSchema: Schema = new Schema({
-  sender: { 
-    type: String, 
-    required: true 
-  },
-  email: { 
-    type: String, 
-    required: true 
-  },
-  message: { 
-    type: String, 
-    required: true 
-  },
-  timestamp: { 
-    type: Date, 
-    default: Date.now 
-  },
-  role: { 
-    type: String, 
-    required: true 
-  }
-});
-
-// Query Schema
-const QuerySchema: Schema = new Schema({
-  queryId : {
+  sender: {
     type: String,
     required: true,
-    unique: true
   },
-  userEmail: {
+  email: {
     type: String,
-    required: true
-  },
-  subject: {
-    type: String,
-    required: true
+    required: true,
   },
   message: {
     type: String,
-    required: true
+    required: true,
   },
-  status: {
+  timestamp: {
+    type: Date,
+    default: Date.now,
+  },
+  role: {
     type: String,
-    default: 'Open'
+    required: true,
   },
-  userRole: {
-    type: String,
-    required: true
+});
+
+// Query Schema
+const QuerySchema: Schema = new Schema(
+  {
+    queryId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    userEmail: {
+      type: String,
+      required: true,
+    },
+    subject: {
+      type: String,
+      required: true,
+    },
+    message: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      default: "Open",
+    },
+    userRole: {
+      type: String,
+      required: true,
+    },
+    conversation: [ConversationSchema],
   },
-  conversation: [ConversationSchema]
-}, { versionKey: false, timestamps: true });
+  { versionKey: false, timestamps: true }
+);
 
-export default mongoose.model<Query>('QueryList', QuerySchema);
-
+export default mongoose.model<Query>("QueryList", QuerySchema);

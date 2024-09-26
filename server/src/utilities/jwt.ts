@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { ADMIN_SECRET_KEY, USER_SECRET_KEY } from '../config';
+import { ADMIN_SECRET_KEY, COUNCILOR_SECRET_KEY, USER_SECRET_KEY } from '../config';
 
 interface Payload {
     name: string;
@@ -17,13 +17,19 @@ export const tokenGenerator = (data: Payload) => {
     let token = '';
     switch (data.roleName) {
         case 'SupportAdmin': {
-            token = jwt.sign(data, USER_SECRET_KEY, { expiresIn: '1d' });
+            token = jwt.sign(data, ADMIN_SECRET_KEY, { expiresIn: '1d' });
             console.log('Admin Token ==> ', token);
             break;
         }
         case 'Student': {
             console.log('Data ==> ', data);
-            token = jwt.sign(data, ADMIN_SECRET_KEY, { expiresIn: '1d' });
+            token = jwt.sign(data, USER_SECRET_KEY, { expiresIn: '1d' });
+            console.log('User Token ==> ', token);
+            break;
+        }
+        case 'Councilor': {
+            console.log('Data ==> ', data);
+            token = jwt.sign(data, COUNCILOR_SECRET_KEY, { expiresIn: '1d' });
             console.log('User Token ==> ', token);
             break;
         }

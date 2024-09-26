@@ -1,145 +1,220 @@
 import express from "express";
 import leadModel from "../model/leadModel";
-import statusModel from "../model/statusModel";
-import courseModel from "../model/courseModel";
-import { generateUniqueId } from "../config";
+import { COUNCILOR_SECRET_KEY, StatusCodes, generateUniqueId } from "../config";
+import { Request, Response } from "express";
+import { tokenVerifier } from "../utilities/jwt";
+import studentModel from "../model/studentModel";
+import userModel from "../model/userModel";
 
-const router = express.Router();
+const getNextEnrollmentId = async (): Promise<string> => {
+  const lastStudent = await studentModel.findOne().sort({ _id: -1 });
 
-router.post("/leads", async (req, res) => {
-  try {
-    const newLead = new leadModel(req.body);
-    await newLead.save();
-    res.status(201).json(newLead);
-  } catch (error) {
-    res.status(400).json({ message: "Error creating lead", error });
+  let newEnrollmentNumber: string;
+  if (lastStudent && lastStudent.enrollmentNumber) {
+    const lastEnrollmentNumber = parseInt(
+      lastStudent.enrollmentNumber.replace("VSA", ""),
+      10
+    );
+    const nextEnrollmentNumber = lastEnrollmentNumber + 1;
+    newEnrollmentNumber = `VSA${String(nextEnrollmentNumber).padStart(4, "0")}`;
+  } else {
+    newEnrollmentNumber = "VSA0001";
   }
-});
 
-router.get("/leads", async (req, res) => {
+  return newEnrollmentNumber;
+};
+
+export const addNewLeadsController = async (req: Request, res: Response) => {
+  try {
+    const leads = Array.isArray(req.body) ? req.body : [req.body];
+    const result = await leadModel.insertMany(leads);
+    res
+      .status(StatusCodes.CREATED)
+      .json({ data: result, message: "Leads created Successfully..." });
+  } catch (error) {
+    console.log("Error occured in addNewLeads : ", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const getAllLeadsController = async (req: Request, res: Response) => {
   try {
     const leads = await leadModel.find();
-    res.status(200).json(leads);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching leads", error });
-  }
-});
-
-router.get("/leads/:leadId", async (req, res) => {
-  try {
-    const lead = await leadModel.findById(req.params.leadId);
-    if (!lead) {
-      return res.status(404).json({ message: "Lead not found" });
+    if (leads) {
+      res.status(StatusCodes.OK).json({
+        leads: leads,
+        message: "These are the leads created by you!",
+      });
+    } else {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ myQueries: null, message: "No Leads are added by You!" });
     }
-    res.status(200).json(lead);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching lead", error });
+    console.log("Error occured in getAllLeads : ", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
   }
-});
+};
 
-router.put("/leads/:leadId", async (req, res) => {
+export const getLeadByIdController = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
   try {
-    const lead = await leadModel.findByIdAndUpdate(
-      req.params.leadId,
-      req.body,
-      { new: true }
+    const lead = await leadModel.findById(id);
+    if (!lead) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Lead not found" });
+    }
+    res.status(200).json({ data: lead, message: "Lead of given id" });
+  } catch (error) {
+    console.log("Error occured in getLeadById : ", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const updateCourseApplicationStatusController = async (
+  req: Request,
+  res: Response
+) => {
+  const { leadId, courseId, newStatusId } = req.body;
+
+  try {
+    const lead = await leadModel.findById(leadId);
+
+    if (!lead) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Lead not found" });
+    }
+
+    const courseApp = lead.courseApplications.find(
+      (app) => app.courseId === courseId
     );
-    if (!lead) {
-      return res.status(404).json({ message: "Lead not found" });
-    }
-    res.status(200).json(lead);
-  } catch (error) {
-    res.status(400).json({ message: "Error updating lead", error });
-  }
-});
 
-router.post("/courses", async (req, res) => {
+    if (!courseApp) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Course application not found" });
+    }
+
+    courseApp.statusId = newStatusId;
+    await lead.save();
+    res
+      .status(StatusCodes.OK)
+      .json({ data: lead, message: "Status Updated Successfully" });
+  } catch (error) {
+    console.log("Error occured in addNewLeads : ", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const councilorAuthenticateJWT = async (
+  request: any,
+  response: express.Response,
+  next: Function
+) => {
   try {
-    const { courseName, courseCategory, courseFees, courseDescription } =
-      req.body;
-    const courseId = generateUniqueId('course');
-    const newCourse = new courseModel({
+    const authHeader = request.headers["authorization"];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      response
+        .status(401)
+        .json({ message: "Authorization token is missing or invalid" });
+    }
+    const token = authHeader.split(" ")[1];
+    const payload = await tokenVerifier(token, COUNCILOR_SECRET_KEY);
+    request.payload = payload;
+    next();
+  } catch (error) {
+    response
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "Invalid or expired Candidate token" });
+  }
+};
+
+export const createUserAndStudentController = async (
+  req: Request,
+  res: Response
+) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    contactNumber,
+    profileImg,
+    roleId,
+    status,
+    batchId,
+    courseId,
+    queryId,
+    transactions,
+    fees,
+    discount,
+    enrollmentDate,
+    createdBy,
+    creatorRole,
+  } = req.body;
+
+  try {
+    const userId = generateUniqueId("user");
+
+    const enrollmentNumber = await getNextEnrollmentId();
+
+    if (!transactions || transactions.length === 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Transactions field must not be empty",
+      });
+    }
+
+    const newUser = new userModel({
+      userId,
+      firstName,
+      lastName,
+      email,
+      contactNumber,
+      profileImg,
+      roleId,
+      status,
+    });
+
+    await newUser.save();
+
+    const newStudent = new studentModel({
+      enrollmentNumber,
+      userId: newUser.userId,
+      batchId,
       courseId,
-      courseName,
-      courseCategory,
-      courseFees,
-      courseDescription,
+      queryId,
+      transactions,
+      fees,
+      discount,
+      enrollmentDate,
+      createdBy,
+      updatedBy: createdBy,
+      creatorRole,
+      updatorRole: creatorRole,
     });
-    await newCourse.save();
-    res.status(201).json(newCourse);
-  } catch (error) {
-    res.status(400).json({ message: "Error creating course", error });
-  }
-});
 
-router.get("/courses", async (req, res) => {
-  try {
-    const courses = await courseModel.find();
-    res.status(200).json(courses);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching courses", error });
-  }
-});
+    await newStudent.save();
 
-router.get("/courses/:courseId", async (req, res) => {
-  try {
-    const course = await courseModel.findOne({ courseId: req.params.courseId });
-    if (!course) {
-      return res.status(404).json({ message: "Course not found" });
-    }
-    res.status(200).json(course);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching course", error });
-  }
-});
-
-router.put("/courses/:courseId", async (req, res) => {
-  try {
-    const course = await courseModel.findOneAndUpdate(
-      { courseId: req.params.courseId },
-      { ...req.body },
-      { new: true }
-    );
-    if (!course) {
-      return res.status(404).json({ message: "Course not found" });
-    }
-    res.status(200).json(course);
-  } catch (error) {
-    res.status(400).json({ message: "Error updating course", error });
-  }
-});
-
-router.delete("/courses/:courseId", async (req, res) => {
-  try {
-    const course = await courseModel.findOneAndDelete({
-      courseId: req.params.courseId,
+    res.status(StatusCodes.CREATED).json({
+      message: "User and Student created successfully",
+      user: newUser,
+      student: newStudent,
     });
-    if (!course) {
-      return res.status(404).json({ message: "Course not found" });
-    }
-    res.status(200).json({ message: "Course deleted" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting course", error });
+    console.log("Error occured in createUserAndStudentController : ", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
   }
-});
-
-router.post("/statuses", async (req, res) => {
-  try {
-    const newStatus = new statusModel(req.body);
-    await newStatus.save();
-    res.status(201).json(newStatus);
-  } catch (error) {
-    res.status(400).json({ message: "Error creating status", error });
-  }
-});
-
-router.get("/statuses", async (req, res) => {
-  try {
-    const statuses = await statusModel.find();
-    res.status(200).json(statuses);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching statuses", error });
-  }
-});
-
-export default router;
+};

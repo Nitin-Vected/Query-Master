@@ -74,7 +74,6 @@ export const userAddContactNumberController = async (
   try {
     const userEmail = request.payload.email;
     const { contactNumber } = request.body;
-    // console.log('Hello from userAddContactNumberController ..!',userEmail,'  ',contactNumber);
     if (!userEmail) {
       response
         .status(StatusCodes.UNAUTHORIZED)

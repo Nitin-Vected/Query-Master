@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 interface CourseApplication {
   courseId: string;
@@ -9,7 +9,7 @@ interface CourseApplication {
 const courseApplicationSchema = new Schema<CourseApplication>(
   {
     courseId: { type: String, required: true, ref: "Course" },
-    statusId: { type: String, required: true, ref: "Status",  },
+    statusId: { type: String, required: true, ref: "Status" },
     appliedAt: { type: Date, default: Date.now },
   },
   { _id: false }
