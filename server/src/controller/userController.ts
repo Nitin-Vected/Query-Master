@@ -91,12 +91,9 @@ export const userAddContactNumberController = async (
           .status(StatusCodes.OK)
           .json({ message: "Contact number updated successfully ..!" });
       } else {
-        response
-          .status(StatusCodes.UNAUTHORIZED)
-          .json({
-            message:
-              "The account you are trying to access has been deactivated!",
-          });
+        response.status(StatusCodes.UNAUTHORIZED).json({
+          message: "The account you are trying to access has been deactivated!",
+        });
       }
     }
   } catch (error) {
@@ -123,7 +120,7 @@ export const userRaiseQueryController = async (
     });
     if (!similaryExistingQuery) {
       console.log("Inside if block of userRaiseQueryController ..!");
-      const queryId = await generateUniqueId('query', email, role);
+      const queryId = await generateUniqueId("query", email, role);
       console.log("Unique QueryId inside userRaiseQueryController ", queryId);
       const updatedQuery = await queryModel.create({
         queryId: queryId,
@@ -178,12 +175,10 @@ export const userViewMyQueriesController = async (
       .sort({ updatedAt: -1, createdAt: -1 });
     console.log(`RaisedQuery by  ${myQueries} : `);
     if (myQueries) {
-      response
-        .status(StatusCodes.OK)
-        .json({
-          myQueries: myQueries,
-          message: "These are the recently raised queries by you ..!",
-        });
+      response.status(StatusCodes.OK).json({
+        myQueries: myQueries,
+        message: "These are the recently raised queries by you ..!",
+      });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
@@ -221,11 +216,9 @@ export const userAddCommentController = async (
         timestamp: new Date(),
       });
       await query.save();
-      response
-        .status(StatusCodes.OK)
-        .json({
-          message: "Your response has been sent to the trail successfully!",
-        });
+      response.status(StatusCodes.OK).json({
+        message: "Your response has been sent to the trail successfully!",
+      });
     } else {
       response
         .status(StatusCodes.BAD_REQUEST)
@@ -295,20 +288,16 @@ export const userAuthenticationController = async (
       role: result?.roleId,
       profileImg: result?.profileImg,
     };
-    response
-      .status(StatusCodes.OK)
-      .json({
-        userData: userData,
-        token: token,
-        message: "Authenntication Successfull ..!",
-      });
+    response.status(StatusCodes.OK).json({
+      userData: userData,
+      token: token,
+      message: "Authenntication Successfull ..!",
+    });
   } catch (err) {
     console.log("Error while user authentication Controller", err);
-    response
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({
-        message: "Token Not verify please login then try to access ..!",
-      });
+    response.status(StatusCodes.UNAUTHORIZED).json({
+      message: "Token Not verify please login then try to access ..!",
+    });
   }
 };
 
@@ -327,23 +316,18 @@ export const userGetQueryDataController = async (
         .status(StatusCodes.OK)
         .json({ queryData: queryData, message: "Query has been f ..!" });
     } else {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({
-          queryData: null,
-          message: "Query Not found with this Id  ..!",
-        });
+      response.status(StatusCodes.NOT_FOUND).json({
+        queryData: null,
+        message: "Query Not found with this Id  ..!",
+      });
     }
   } catch (err) {
     console.log("Error while user authentication Controller", err);
-    response
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({
-        message: "Token Not verify please login then try to access ..!",
-      });
+    response.status(StatusCodes.UNAUTHORIZED).json({
+      message: "Token Not verify please login then try to access ..!",
+    });
   }
 };
-
 
 // for backend
 export const userAuthenticateJWT = async (

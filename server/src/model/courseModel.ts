@@ -6,6 +6,10 @@ interface Course extends Document {
   courseCategory: string;
   courseFees: number;
   courseDescription: string;
+  createdBy: string;
+  updatedBy: string;
+  creatorRole: string;
+  updaterRole: string;
 }
 
 const courseSchema = new Schema<Course>({
@@ -14,6 +18,10 @@ const courseSchema = new Schema<Course>({
   courseCategory: { type: String, required: true },
   courseFees: { type: Number, required: true, min: 0 },
   courseDescription: { type: String, required: true },
-});
+  createdBy: { type: String, required: true },
+  updatedBy: { type: String, required: true },
+  creatorRole: { type: String, required: true },
+  updaterRole: { type: String, required: true }
+}, { versionKey: false, timestamps: true });
 
 export default model<Course>("Course", courseSchema);

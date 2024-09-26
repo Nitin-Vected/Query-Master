@@ -2,14 +2,14 @@ import { Schema, model, Document, Types } from "mongoose";
 
 interface CourseApplication {
   courseId: string;
-  statusId: Types.ObjectId;
+  statusId: string;
   appliedAt: Date;
 }
 
 const courseApplicationSchema = new Schema<CourseApplication>(
   {
     courseId: { type: String, required: true, ref: "Course" },
-    statusId: { type: Schema.Types.ObjectId, ref: "Status", required: true },
+    statusId: { type: String, required: true, ref: "Status",  },
     appliedAt: { type: Date, default: Date.now },
   },
   { _id: false }
