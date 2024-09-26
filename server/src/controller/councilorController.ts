@@ -24,94 +24,94 @@ const getNextEnrollmentId = async (): Promise<string> => {
   return newEnrollmentNumber;
 };
 
-export const addNewLeadsController = async (req: Request, res: Response) => {
+export const addNewLeadsController = async (request: Request, response: Response) => {
   try {
-    const leads = Array.isArray(req.body) ? req.body : [req.body];
+    const leads = Array.isArray(request.body) ? request.body : [request.body];
     const result = await leadModel.insertMany(leads);
-    res
+    response
       .status(StatusCodes.CREATED)
       .json({ data: result, message: "Leads created Successfully..." });
   } catch (error) {
     console.log("Error occured in addNewLeads : ", error);
-    res
+    response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const getAllLeadsController = async (req: Request, res: Response) => {
+export const getAllLeadsController = async (request: Request, response: Response) => {
   try {
     const leads = await leadModel.find();
     if (leads) {
-      res.status(StatusCodes.OK).json({
+      response.status(StatusCodes.OK).json({
         leads: leads,
         message: "These are the leads created by you!",
       });
     } else {
-      res
+      response
         .status(StatusCodes.NOT_FOUND)
         .json({ myQueries: null, message: "No Leads are added by You!" });
     }
   } catch (error) {
     console.log("Error occured in getAllLeads : ", error);
-    res
+    response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const getLeadByIdController = async (req: Request, res: Response) => {
-  const { id } = req.params;
+export const getLeadByIdController = async (request: Request, response: Response) => {
+  const { id } = request.params;
 
   try {
     const lead = await leadModel.findById(id);
     if (!lead) {
-      return res
+      return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Lead not found" });
     }
-    res.status(200).json({ data: lead, message: "Lead of given id" });
+    response.status(200).json({ data: lead, message: "Lead of given id" });
   } catch (error) {
     console.log("Error occured in getLeadById : ", error);
-    res
+    response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
 export const updateCourseApplicationStatusController = async (
-  req: Request,
-  res: Response
+  request: Request,
+  response: Response
 ) => {
-  const { leadId, courseId, newStatusId } = req.body;
+  const { leadId, courseId, newStatusId } = request.body;
 
   try {
     const lead = await leadModel.findById(leadId);
 
     if (!lead) {
-      return res
+      return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Lead not found" });
     }
 
-    const courseApp = lead.courseApplications.find(
+    const courseApp = lead.courseCategory.find(
       (app) => app.courseId === courseId
     );
 
     if (!courseApp) {
-      return res
+      return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Course application not found" });
     }
 
     courseApp.statusId = newStatusId;
     await lead.save();
-    res
+    response
       .status(StatusCodes.OK)
       .json({ data: lead, message: "Status Updated Successfully" });
   } catch (error) {
     console.log("Error occured in addNewLeads : ", error);
-    res
+    response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
@@ -141,8 +141,8 @@ export const councilorAuthenticateJWT = async (
 };
 
 export const createUserAndStudentController = async (
-  req: Request,
-  res: Response
+  request: Request,
+  response: Response
 ) => {
   const {
     firstName,
@@ -161,7 +161,7 @@ export const createUserAndStudentController = async (
     enrollmentDate,
     createdBy,
     creatorRole,
-  } = req.body;
+  } = request.body;
 
   try {
     const userId = generateUniqueId("user");
@@ -169,7 +169,7 @@ export const createUserAndStudentController = async (
     const enrollmentNumber = await getNextEnrollmentId();
 
     if (!transactions || transactions.length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
+      return response.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: "Transactions field must not be empty",
       });
@@ -206,14 +206,14 @@ export const createUserAndStudentController = async (
 
     await newStudent.save();
 
-    res.status(StatusCodes.CREATED).json({
+    response.status(StatusCodes.CREATED).json({
       message: "User and Student created successfully",
       user: newUser,
       student: newStudent,
     });
   } catch (error) {
     console.log("Error occured in createUserAndStudentController : ", error);
-    res
+    response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
