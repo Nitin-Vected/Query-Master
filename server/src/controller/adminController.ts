@@ -458,18 +458,22 @@ export const adminAddNewRoleController = async (
   response: express.Response
 ) => {
   try {
-    const { email, role } = request.payload;
-    const { roleName, access } = request.body;
+    const { email, roleName } = request.payload;
+    console.log('request.payload ',request.payload);
+    
+    const { userRole, access } = request.body;
     const roleId = await generateUniqueId('role');
     const data = {
       roleId,
-      roleName,
+      roleName: userRole,
       access,
       createdBy: email,
       updatedBy: email,
-      creatorRole: role,
-      updaterRole: role
+      creatorRole: roleName,
+      updaterRole: roleName
     }
+    console.log("data ",data);
+    
     const newRole = await roleModel.create(data);
     if (newRole) {
       response.status(StatusCodes.CREATED).json({
@@ -487,6 +491,8 @@ export const adminAddNewRoleController = async (
     });
   }
 }
+
+
 
 // for backend
 export const adminAuthenticateJWT = async (
