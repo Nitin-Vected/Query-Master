@@ -3,6 +3,7 @@ import queryModel from "./model/queryModel";
 import courseModel from "./model/courseModel";
 import shortid from 'shortid';
 import roleModel from "./model/roleModel";
+import userModel from "./model/userModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string;
@@ -107,7 +108,36 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
                     if (!existingRole) {
                         isUnique = true;
                     } else {
-                        console.log('Role ID collision, regenerating...');
+                        console.log('Course ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
+            }
+            case 'user': {
+                const latestUser = await userModel.find().sort({ createdAt: -1 }).limit(1);
+                console.log("Latest User ---> ", latestUser);
+                let newCounter = 1;
+
+                if (latestUser.length > 0) {
+                    const userData = latestUser[0];
+                    if (userData.userId) {
+                        const numericPart = userData.userId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `USER${uniqueId}0${newCounter}`; 
+                    console.log(`Generated Course ID: ${newUniqueId}`);
+
+                    const existingUserWithSameId = await userModel.findOne({ userId: newUniqueId });
+                    if (!existingUserWithSameId) {
+                        isUnique = true;
+                    } else {
+                        console.log('User ID collision, regenerating...');
                     }
                 }
                 return newUniqueId;
