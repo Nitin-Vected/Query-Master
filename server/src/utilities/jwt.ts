@@ -1,23 +1,32 @@
-import e from 'express';
 import jwt from 'jsonwebtoken';
+import { ADMIN_SECRET_KEY, USER_SECRET_KEY } from '../config';
 
 interface Payload {
+    name: string;
     email: string;
-    role: string;
+    roleId: string;
+    roleName: string;
+    googleToken: string;
 }
 
 interface Token {
     token: string;
 }
-export const tokenGenerator = (data: Payload, secretKey: string) => {
+
+export const tokenGenerator = (data: Payload) => {
     let token = '';
-    if (data.role === 'supportAdmin') {
-        token = jwt.sign(data, secretKey, { expiresIn: '1d' });
-        console.log('Admin Token ==> ', token);
-    } else {
-        console.log('Data ==> ', data);
-        token = jwt.sign(data, secretKey, { expiresIn: '1d' });
-        console.log('User Token ==> ', token);
+    switch (data.roleName) {
+        case 'SupportAdmin': {
+            token = jwt.sign(data, USER_SECRET_KEY, { expiresIn: '1d' });
+            console.log('Admin Token ==> ', token);
+            break;
+        }
+        case 'Student': {
+            console.log('Data ==> ', data);
+            token = jwt.sign(data, ADMIN_SECRET_KEY, { expiresIn: '1d' });
+            console.log('User Token ==> ', token);
+            break;
+        }
     }
     console.log('Token inside tokenGenerator outside if-else  block ==> ', token);
     return token;

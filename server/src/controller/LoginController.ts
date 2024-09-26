@@ -3,14 +3,15 @@ import axios from "axios";
 import userModel from "../model/userModel";
 import { tokenGenerator } from "../utilities/jwt";
 import {
-  ADMIN_SECRET_KEY,
   GOOGLE_DECODE_TOKEN_API,
   StatusCodes,
-  USER_SECRET_KEY,
 } from "../config";
+import roleModel from "../model/roleModel";
+
 interface TokenResponse {
   access_token: string;
 }
+
 const verifyGoogleToken = async (tokenResponse: TokenResponse) => {
   try {
     const result = await axios.get(`${GOOGLE_DECODE_TOKEN_API}`, {
@@ -18,12 +19,10 @@ const verifyGoogleToken = async (tokenResponse: TokenResponse) => {
         Authorization: `Bearer ${tokenResponse.access_token}`,
       },
     });
-    if (result.data) {
-      return result.data;
-    }
-    return null;
+    return result.data || null; // Return null if data is not present
   } catch (error) {
-    console.log(error);
+    console.error("Error verifying token:", error);
+    return null; // Ensure null is returned on error
   }
 };
 
@@ -34,64 +33,50 @@ export const loginController = async (
   try {
     const { tokenResponse } = request.body;
     const decodedToken = await verifyGoogleToken(tokenResponse);
-
     if (decodedToken) {
-      const { name, given_name, family_name, picture, email, email_verified } =
-        decodedToken;
-      let userData = await userModel.findOne({ email: email });
-      if (userData) {
-        userData.email = email;
-        userData.name = name;
-        userData.profileImg = picture;
-        userData.firstName = given_name;
-        userData.lastName = family_name;
-        userData.status = email_verified;
-        await userData.save();
-        if (userData.status === "true") {
-          const payload = {
-            name,
-            email,
-            role: userData.role,
-            googleToken: tokenResponse?.access_token,
-            status: userData.status,
-          };
+      const { given_name, family_name, picture, email, email_verified } = decodedToken;
+      const user = await userModel.findOne({ email: email }, { _id: 0 });
+      if (user && user?.status) {
+        user.email = email;
+        user.profileImg = picture;
+        user.firstName = given_name;
+        user.lastName = family_name;
+        user.status = email_verified;
+        await user.save();
 
-          let token;
-          if (userData.role === "Student") {
-            token = tokenGenerator(payload, USER_SECRET_KEY);
-          } else {
-            token = tokenGenerator(payload, ADMIN_SECRET_KEY);
-          }
+        const roleDetails = await roleModel.findOne({ roleId: user.roleId });
+        const result = {
+          name: given_name + " " + family_name,
+          email: user.email,
+          contactNumber: user.contactNumber,
+          profileImg: user.profileImg,
+          role: roleDetails ? roleDetails.roleName : null,
+        };
 
-          response.status(StatusCodes.CREATED).json({
-            userData: userData,
-            token: token,
-            message: "Login Successful!",
-          });
-        } else {
-          response
-            .status(StatusCodes.UNAUTHORIZED)
-            .json({
-              message:
-                "Account not verified. Please verify your account to login.",
-            });
-        }
+        console.log("result ==> ", result);
+
+        const payload = {
+          name: given_name + " " + family_name,
+          email,
+          roleId: user?.roleId,
+          roleName: roleDetails ? roleDetails.roleName : "Not mentioned",
+          googleToken: tokenResponse?.access_token,
+          status: user?.status,
+        };
+
+        let token = tokenGenerator(payload);
+
+        response.status(StatusCodes.CREATED).json({
+          userData: result,
+          token: token,
+          message: "Login Successful!",
+        });
       } else {
-        throw new Error("Account Not Exist ..!");
-        // userData = await userModel.create({
-        //     name: name,
-        //     firstName: given_name,
-        //     lastName: family_name,
-        //     email: email,
-        //     profileImg: picture,
-        //     role: 'SupportAdmin',
-        //     status: email_verified,
-        // });
-        // console.log('user has been registered successfully ..!', userData);
+        response.status(StatusCodes.NOT_FOUND).json({ message: "Account Not Exist!" });
       }
     }
   } catch (error) {
-    console.log(error);
-    response.status(500).json({ message: "Account Not Exist ..!" });
+    console.error(error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error" });
   }
 };

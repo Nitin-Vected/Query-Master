@@ -1,11 +1,14 @@
 import express, { Request } from 'express';
-import { userAddCommentController, userAddContactNumberController, userAuthenticateJWT, userAuthenticationController, userGetQueryDataController, userManageQueryStatusController, userRaiseQueryController, userViewMyQueriesController, userViewProfileController } from '../controller/userController';
+import { userAddCommentController, userAddContactNumberController, userAuthenticateJWT, userAuthenticationController, userGetQueryDataController, userManageQueryStatusController, userRaiseQueryController, userViewMyQueriesController
+    // ,userViewProfileController 
+} from '../controller/userController';
 import { loginController } from '../controller/LoginController';
 
 interface CustomRequest extends Request {
     payload: {
         email: string;
-        role: string;
+        roleName: string;
+        access: [string];
         token: string;
     };
 }
@@ -23,9 +26,9 @@ userRouter.post("/userLogin", loginController);
 userRouter.get("/userAuthentication", userAuthenticationController);
 
 userRouter.use(userAuthenticateJWT);
-userRouter.get("/userViewProfile", (request, response, next) => {
-    userViewProfileController(request as CustomRequest, response, next);
-});
+// userRouter.get("/userViewProfile", (request, response, next) => {
+//     userViewProfileController(request as CustomRequest, response, next);
+// });
 userRouter.get("/userViewMyQueries", userViewMyQueriesController);
 userRouter.get('/userGetQueryData/:queryId', userGetQueryDataController);
 
@@ -37,5 +40,6 @@ userRouter.post(
     userManageQueryStatusController
 );
 userRouter.post("/userAddCommentToQuery/:queryId", userAddCommentController);
+
 
 export default userRouter;

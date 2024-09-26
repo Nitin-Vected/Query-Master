@@ -23,7 +23,7 @@ const Login: React.FC = () => {
       try {
         if (access_token) {
           const { data } = await loginWithGoogleApi(access_token);
-
+          console.log('Data===> ', data);
           const { userData, token } = data;
 
           const userDataObj = {
