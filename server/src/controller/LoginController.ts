@@ -19,10 +19,10 @@ const verifyGoogleToken = async (tokenResponse: TokenResponse) => {
         Authorization: `Bearer ${tokenResponse.access_token}`,
       },
     });
-    return result.data || null; // Return null if data is not present
+    return result.data || null;
   } catch (error) {
     console.error("Error verifying token:", error);
-    return null; // Ensure null is returned on error
+    return null;
   }
 };
 
