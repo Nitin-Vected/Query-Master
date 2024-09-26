@@ -40,8 +40,9 @@ export const tokenGenerator = (data: Payload) => {
 
 export const tokenVerifier = (token: any, secretKey: string) => {
     try {
-        // console.log('token --> ',token);
+        console.log('token --> ',token);
         const payload = jwt.verify(token, secretKey);
+        console.log("Verified Payload ",payload);
         return payload;
     } catch (error: any) {
         console.log('Token verification failed:', error.message);

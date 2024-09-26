@@ -8,7 +8,7 @@ import {
   userManageQueryStatusController,
   userRaiseQueryController,
   userViewMyQueriesController,
-  // ,userViewProfileController
+  ,userViewProfileController
 } from "../controller/userController";
 import { loginController } from "../controller/LoginController";
 
@@ -31,14 +31,13 @@ userRouter.post("/userLogin", loginController);
 userRouter.get("/userAuthentication", userAuthenticationController);
 
 userRouter.use(userAuthenticateJWT);
-// userRouter.get("/userViewProfile", (request, response, next) => {
-//     userViewProfileController(request as CustomRequest, response, next);
-// });
+userRouter.get("/userViewProfile", userViewProfileController);
+userRouter.post('/userRaiseQuery', userRaiseQueryController);
+
 userRouter.get("/userViewMyQueries", userViewMyQueriesController);
 userRouter.get("/userGetQueryData/:queryId", userGetQueryDataController);
 
-userRouter.post("/userAddContactNumber", userAddContactNumberController);
-userRouter.post("/userRaiseQuery", userRaiseQueryController);
+userRouter.post('/userAddContactNumber', userAddContactNumberController)
 
 userRouter.post(
   "/userManageQueryStatus/:queryId/:status",

@@ -112,7 +112,7 @@ export const loginController = async (
           profileImg: picture,
           status: email_verified,
           roleId: "ROLEuvsBMYopB02", 
-          contactNumber: "6260658118", 
+          contactNumber: "9755590152", 
         });
       }
 
@@ -122,13 +122,14 @@ export const loginController = async (
         email: user.email,
         contactNumber: user.contactNumber,
         profileImg: user.profileImg,
-        role: roleDetails ? roleDetails.roleName : null,
+        role: roleDetails && roleDetails.roleName,
       };
 
       console.log("result ==> ", result);
 
       const payload = {
         name: given_name + " " + family_name,
+        userId: user?.userId,
         email,
         roleId: user?.roleId,
         roleName: roleDetails ? roleDetails.roleName : "Not mentioned",
