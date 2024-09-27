@@ -5,6 +5,7 @@ import shortid from 'shortid';
 import roleModel from "./model/roleModel";
 import userModel from "./model/userModel";
 import batchModel from "./model/batchModel";
+import employeeModel from "./model/employeeModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string;
@@ -14,7 +15,9 @@ export const ADMIN_SECRET_KEY: string = process.env.ADMIN_SECRET_KEY as string;
 export const COUNSELLOR_SECRET_KEY: string = process.env.COUNSELLOR_SECRET_KEY as string;
 export const GOOGLE_DECODE_TOKEN_API: string = process.env.GOOGLE_DECODE_TOKEN_API as string;
 export const STUDENT_ROLE_ID = "ROLEGnd3oTjQX01";
-export const SUPPORT_ADIMIN_ROLE_ID = "ROLEGnd3oTjQX01";
+export const SUPPORT_ADIMIN_ROLE_ID = "ROLEuvsBMYopB02";
+export const COUNSELLOR_ROLE_ID = "ROLERQ80Z9Ctm03";
+export const TRAINER_ROLE_ID = "ROLEtEUJrkc0r04";
 
 export const StatusCodes = {
     OK: 200,
@@ -167,6 +170,34 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
                         isUnique = true;
                     } else {
                         console.log('User ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
+            }
+            case 'employee': {
+                const latestEmployee = await employeeModel.find().sort({ createdAt: -1 }).limit(1);
+                let newCounter = 1;
+
+                if (latestEmployee.length > 0) {
+                    const userData = latestEmployee[0];
+                    if (userData.employeeId) {
+                        const numericPart = userData.employeeId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `EMP${uniqueId}0${newCounter}`;
+                    console.log(`Generated Batch ID: ${newUniqueId}`);
+
+                    const existingEmployeeWithSameId = await employeeModel.findOne({ employeeId: newUniqueId });
+                    if (!existingEmployeeWithSameId) {
+                        isUnique = true;
+                    } else {
+                        console.log('Employee ID collision, regenerating...');
                     }
                 }
                 return newUniqueId;

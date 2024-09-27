@@ -40,7 +40,7 @@ const UserSchema: mongoose.Schema = new Schema(
     },
     profileImg: {
       type: String,
-      required: true,
+      default: "",
     },
     roleId: {
       type: String,

@@ -3,7 +3,6 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IEmployee extends Document {
   employeeId: string;
   userId: string;
-  queryId: string;
   createdBy: string;
   updatedBy: string;
   creatorRole: string;
@@ -20,11 +19,6 @@ const EmployeeSchema: mongoose.Schema = new Schema(
     userId: {
       type: String,
       ref: "user",
-      required: true,
-    },
-    queryId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "querylists",
       required: true,
     },
     createdBy: {

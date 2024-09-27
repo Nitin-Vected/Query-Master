@@ -2,15 +2,20 @@ import express from "express";
 import { tokenVerifier } from "../utilities/jwt";
 import {
   ADMIN_SECRET_KEY,
+  COUNSELLOR_ROLE_ID,
   generateUniqueId,
   StatusCodes,
   STUDENT_ROLE_ID,
+  SUPPORT_ADIMIN_ROLE_ID,
+  TRAINER_ROLE_ID,
 } from "../config";
 import queryModel from "../model/queryModel";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
 import batchModel from "../model/batchModel";
 import courseModel from "../model/courseModel";
+import employeeModel from "../model/employeeModel";
+import { AccessRights } from "../model/accessRightsModel";
 
 export const adminViewProfileController = async (
   request: any,
@@ -128,7 +133,7 @@ export const adminViewSupportAdminListController = async (
 ) => {
   try {
     const adminList = await userModel
-      .find({ role: "SupportAdmin" }, { _id: 0 })
+      .find({ roleId: SUPPORT_ADIMIN_ROLE_ID }, { _id: 0 })
       .select("name email contactNumber role profileImg status")
       .sort({ updatedAt: -1, createdAt: -1 });
     if (adminList && adminList.length > 0) {
@@ -631,6 +636,81 @@ export const adminGetAllCourseController = async (
   }
 };
 
+export const adminRegisterEmployeesController = async (request: any, response: express.Response) => {
+  try {
+    const { name, email, contactNumber, roleId } = request.body;
+    const [firstName, lastName] = name.split(" ");
+    const userId = await generateUniqueId("user");
+
+    const userData = await userModel.create({
+      userId,
+      email,
+      firstName,
+      lastName,
+      status: true,
+      roleId: (roleId === COUNSELLOR_ROLE_ID) ? COUNSELLOR_ROLE_ID : (roleId === TRAINER_ROLE_ID) ? TRAINER_ROLE_ID : SUPPORT_ADIMIN_ROLE_ID,
+      contactNumber,
+    });
+
+    if (userData) {
+      const employeeId = await generateUniqueId("employee");
+      const employeeData = await employeeModel.create({
+        employeeId,
+        userId: userData.userId,
+        createdBy: request.payload.email,
+        updatedBy: request.payload.email,
+        creatorRole: request.payload.roleName,
+        updatorRole: request.payload.roleName,
+      });
+      if (employeeData) {
+        response.status(StatusCodes.CREATED).json({
+          message: "Employee registered successfully",
+        });
+      } else {
+        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: "Employee not registered Something Went Wrong ..!",
+        });
+      }
+    } else {
+      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Employee not registered Something Went Wrong ..!",
+      });
+    }
+  } catch (error) {
+    console.log("Error occured in addNewLeads : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminManageUsersAccessRightsController = async (request: any, response: express.Response) => {
+  try {
+    const { email, roleName } = request.payload
+    const { userId, roleId, permissions } = request.body;
+    if (!userId || !roleId || !(permissions.length > 0)) {
+      response.status(StatusCodes.BAD_REQUEST).json({ message: "Please fill up all the required fields ..! " })
+    } else {
+      const accessRight = await AccessRights.create({
+        userId,
+        roleId,
+        permissions,
+        createdBy: email,
+        updatedBy: email,
+        creatorRole: roleName,
+        updaterRole: roleName,
+      });
+      response.status(StatusCodes.CREATED).json({
+        message: "Access rights assigned successfully",
+        data: accessRight,
+      });
+    }
+  } catch (error) {
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something Went Wrong" });
+  }
+}
+
+
 export const adminAuthenticateJWT = async (
   request: any,
   response: express.Response,
@@ -653,3 +733,5 @@ export const adminAuthenticateJWT = async (
       .json({ message: "Invalid or expired Candidate token" });
   }
 };
+
+// view student, view 

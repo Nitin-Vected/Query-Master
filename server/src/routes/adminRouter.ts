@@ -10,7 +10,9 @@ import {
   adminGetQueryDataController,
   adminManageQueryStatusController,
   adminManageStudentStatusController,
+  adminManageUsersAccessRightsController,
   adminRaiseQueryController,
+  adminRegisterEmployeesController,
   adminResponseController,
   adminViewProfileController,
   adminViewRaisedQueryListController,
@@ -59,6 +61,8 @@ adminRouter.post("/adminAddResponseToQuery/:queryId", adminResponseController);
 adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 
 adminRouter.post("/addNewRole", adminAddNewRoleController);
+adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
+adminRouter.post("/adminAddAccessRights", adminManageUsersAccessRightsController);
 
 adminRouter.post("/addNewBatch", adminAddNewBatchController);
 adminRouter.get("/getAllBatches", adminGetAllBatchController);
