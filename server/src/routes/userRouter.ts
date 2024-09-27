@@ -10,7 +10,7 @@ import {
   userViewMyQueriesController,
   userViewProfileController,
 } from "../controller/userController";
-import { loginController } from "../controller/LoginController";
+import { loginController } from "../controller/loginController";
 
 interface CustomRequest extends Request {
   payload: {

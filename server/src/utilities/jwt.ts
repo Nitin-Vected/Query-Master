@@ -30,13 +30,11 @@ export const tokenGenerator = (data: Payload) => {
       break;
     }
     case "Counsellor": {
-      console.log("Data ==> ", data);
-      console.log("User Token ==> ", token);
       token = jwt.sign(data, COUNSELLOR_SECRET_KEY, { expiresIn: "1d" });
+      console.log("User Token ==> ", token);
       break;
     }
   }
-  console.log("Token inside tokenGenerator outside if-else  block ==> ", token);
   return token;
 };
 

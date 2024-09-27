@@ -118,29 +118,6 @@ export const updateCourseCategoryStatusController = async (
   }
 };
 
-export const counsellorAuthenticateJWT = async (
-  request: any,
-  response: express.Response,
-  next: Function
-) => {
-  try {
-    const authHeader = request.headers["authorization"];
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      response
-        .status(401)
-        .json({ message: "Authorization token is missing or invalid" });
-    }
-    const token = authHeader.split(" ")[1];
-    const payload = await tokenVerifier(token, COUNSELLOR_SECRET_KEY);
-    request.payload = payload;
-    next();
-  } catch (error) {
-    response
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Invalid or expired Candidate token" });
-  }
-};
-
 export const createUserAndStudentController = async (
   request: Request,
   response: Response
@@ -219,3 +196,26 @@ export const createUserAndStudentController = async (
       .json({ message: "Something went wrong ..!" });
   }
 };
+
+export const counsellorAuthenticateJWT = async (
+    request: any,
+    response: express.Response,
+    next: Function
+  ) => {
+    try {
+      const authHeader = request.headers["authorization"];
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        response
+          .status(401)
+          .json({ message: "Authorization token is missing or invalid" });
+      }
+      const token = authHeader.split(" ")[1];
+      const payload = await tokenVerifier(token, COUNSELLOR_SECRET_KEY);
+      request.payload = payload;
+      next();
+    } catch (error) {
+      response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "Invalid or expired Candidate token" });
+    }
+  };
