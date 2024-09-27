@@ -1,9 +1,10 @@
 import express from "express";
 import { tokenVerifier } from "../utilities/jwt";
-import { ADMIN_SECRET_KEY, generateUniqueId, StatusCodes } from "../config";
+import { ADMIN_SECRET_KEY, generateUniqueId, StatusCodes, STUDENT_ROLE_ID } from "../config";
 import queryModel from "../model/queryModel";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
+import batchModel from "../model/batchModel";
 
 export const adminViewProfileController = async (
   request: any,
@@ -80,7 +81,7 @@ export const adminViewStudentListController = async (
 ) => {
   try {
     const studentList = await userModel
-      .find({ roleId: "ROLEGnd3oTjQX01" }, { _id: 0 })
+      .find({ roleId: STUDENT_ROLE_ID }, { _id: 0 })
       .select("firstName lastName email contactNumber roleId profileImg status")
       .sort({ updatedAt: -1, createdAt: -1 });
 
@@ -191,7 +192,7 @@ export const adminManageStudentStatusController = async (
     }
 
     const result = await userModel.updateOne(
-      { email: email, role: "ROLEGnd3oTjQX01" },
+      { email: email, roleId: STUDENT_ROLE_ID },
       { $set: { status: action } }
     );
     if (result?.acknowledged) {
@@ -380,6 +381,50 @@ export const adminManageQueryStatusController = async (
   }
 };
 
+export const adminAuthenticationController = async (
+  request: express.Request,
+  response: express.Response
+) => {
+  try {
+    const authHeader = request.headers["authorization"];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return response
+        .status(401)
+        .json({ message: "Authorization token is missing or invalid" });
+    }
+    const token = authHeader.split(" ")[1];
+    const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
+    const result = await userModel.findOne({
+      email: payload.email,
+      role: payload.roleName,
+    });
+    const adminData = {
+      name: result?.firstName + " " + result?.lastName,
+      email: result?.email,
+      contactNumber: result?.contactNumber,
+      role: payload?.roleName,
+      profileImg: result?.profileImg,
+    };
+    if (result?.status) {
+      response.status(StatusCodes.OK).json({
+        userData: adminData,
+        token: token,
+        message: "Authenntication Successfull ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Something went wrong ..!" });
+    }
+  } catch (err) {
+    console.log("Error while user authentication Controller", err);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Token Not verify please login then try to access ..!",
+    });
+  }
+};
+
+
 export const adminGetQueryDataController = async (
   request: express.Request,
   response: express.Response
@@ -445,7 +490,46 @@ export const adminAddNewRoleController = async (
       message: "Something went wrong!",
     });
   }
-};
+}
+
+//Batch Controllers
+export const adminAddNewBatchController = async (request: any, response: express.Response) => {
+  try {
+    const { email, roleId } = request.payload;
+    const { batchName, startDate, endDate, trainerId, courseId, students } = request.body;
+    const batchId = await generateUniqueId('batch')
+    const data = {
+      batchId,
+      courseId: courseId,
+      trainerId: trainerId,
+      batchName: batchName,
+      startDate: startDate,
+      students: students,
+      endDate: endDate,
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: roleId,
+      updatorRole: roleId
+    }
+    console.log(data)
+    const newBatch = await batchModel.create(data);
+    if (newBatch) {
+      response.status(StatusCodes.CREATED).json({
+        message: 'Batch Added successfully ..!',
+      });
+    } else {
+      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Something Went Wrong ..!',
+      });
+    }
+  } catch (error) {
+    console.log("Add Batch Error", error)
+  }
+}
+
+export const adminGetAllBatchController = async (request: any, response: express.Response) => {
+
+}
 
 // for backend
 export const adminAuthenticateJWT = async (

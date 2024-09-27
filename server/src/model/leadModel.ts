@@ -41,13 +41,13 @@ const leadSchema = new Schema<Lead>(
     feesAmount: { type: Number, min: 0 },
     discount: { type: Number, min: 0, max: 15 },
     channel: { type: String },
-    createdBy: { type: String, ref: "User", required: true },
+    createdBy: { type: String, ref: "user", required: true },
     createrRole: { type: String, required: true },
-    updatedBy: { type: String, ref: "User" },
+    updatedBy: { type: String, ref: "user" },
     updaterRole: { type: String },
     courseCategory: [courseCategorySchema],
   },
-  { timestamps: true }
+  { versionKey: false, timestamps: true }
 );
 
 export default model<Lead>("Lead", leadSchema);

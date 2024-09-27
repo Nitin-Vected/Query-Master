@@ -16,7 +16,7 @@ counsellorRouter.post("/addNewLeads", addNewLeadsController);
 counsellorRouter.get("/getAllLeads", getAllLeadsController);
 counsellorRouter.get("/getLeadById/:leadId", getLeadByIdController);
 counsellorRouter.put(
-  "//leads/course-application/status",
+  "/leads/course-application/status",
   updateCourseApplicationStatusController
 );
 counsellorRouter.post("/createUserAndStudent", createUserAndStudentController);

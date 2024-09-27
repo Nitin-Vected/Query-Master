@@ -4,14 +4,18 @@ import courseModel from "./model/courseModel";
 import shortid from 'shortid';
 import roleModel from "./model/roleModel";
 import userModel from "./model/userModel";
+import batchModel from "./model/batchModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string;
 export const PORT: string = process.env.PORT as string;
 export const USER_SECRET_KEY: string = process.env.USER_SECRET_KEY as string;
 export const ADMIN_SECRET_KEY: string = process.env.ADMIN_SECRET_KEY as string;
-export const COUNCILOR_SECRET_KEY: string = process.env.COUNCILOR_SECRET_KEY as string;
+export const COUNSELLOR_SECRET_KEY: string = process.env.COUNSELLOR_SECRET_KEY as string;
 export const GOOGLE_DECODE_TOKEN_API: string = process.env.GOOGLE_DECODE_TOKEN_API as string;
+export const STUDENT_ROLE_ID = "ROLEGnd3oTjQX01";
+export const SUPPORT_ADIMIN_ROLE_ID = "ROLEGnd3oTjQX01";
+
 export const StatusCodes = {
     OK: 200,
     CREATED: 201,
@@ -102,7 +106,7 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
 
                 while (!isUnique) {
                     const uniqueId = shortid.generate();
-                    newUniqueId = `COURSE${uniqueId}0${newCounter}`; 
+                    newUniqueId = `COURSE${uniqueId}0${newCounter}`;
                     console.log(`Generated Course ID: ${newUniqueId}`);
 
                     const existingRole = await courseModel.findOne({ courseId: newUniqueId });
@@ -131,11 +135,40 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
 
                 while (!isUnique) {
                     const uniqueId = shortid.generate();
-                    newUniqueId = `USER${uniqueId}0${newCounter}`; 
+                    newUniqueId = `USER${uniqueId}0${newCounter}`;
                     console.log(`Generated Course ID: ${newUniqueId}`);
 
                     const existingUserWithSameId = await userModel.findOne({ userId: newUniqueId });
                     if (!existingUserWithSameId) {
+                        isUnique = true;
+                    } else {
+                        console.log('User ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
+            }
+            case 'batch': {
+                const latestBatch = await batchModel.find().sort({ createdAt: -1 }).limit(1);
+                console.log("Latest Batch ---> ", latestBatch);
+                let newCounter = 1;
+
+                if (latestBatch.length > 0) {
+                    const userData = latestBatch[0];
+                    if (userData.batchId) {
+                        const numericPart = userData.batchId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `BATCH${uniqueId}0${newCounter}`;
+                    // console.log(`Generated Batch ID: ${newUniqueId}`);
+
+                    const existingBatchWithSameId = await batchModel.findOne({ batchId: newUniqueId });
+                    if (!existingBatchWithSameId) {
                         isUnique = true;
                     } else {
                         console.log('User ID collision, regenerating...');

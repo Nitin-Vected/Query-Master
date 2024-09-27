@@ -1,6 +1,8 @@
 import express from "express";
 import {
   adminAddContactNumberController,
+  adminAddNewBatchController,
+  // adminAddNewBatchController,
   adminAddNewRoleController,
   adminAuthenticateJWT,
   adminGetQueryDataController,
@@ -16,6 +18,17 @@ import {
 } from "../controller/adminController";
 
 const adminRouter = express.Router();
+
+adminRouter.get("/", (request: express.Request, response: express.Response) => {
+  try {
+    console.log("Hello from admin Router ..!");
+  } catch (error) {
+    console.log("Error in /admin/ ..!");
+  }
+});
+
+// adminRouter.post("/adminLogin", adminLoginController);
+// adminRouter.get("/adminAuthentication", adminAuthenticationController);
 
 adminRouter.use(adminAuthenticateJWT);
 
@@ -41,8 +54,16 @@ adminRouter.get(
 
 adminRouter.post("/adminRaiseQuery", adminRaiseQueryController);
 adminRouter.post("/adminAddResponseToQuery/:queryId", adminResponseController);
+adminRouter.post("/adminAddResponseToQuery/:queryId", adminResponseController);
 adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 
 adminRouter.post("/addNewRole", adminAddNewRoleController);
+
+adminRouter.post("/addNewBatch", adminAddNewBatchController);
+adminRouter.get("/getBatches",);
+
+
+
+
 
 export default adminRouter;
