@@ -46,7 +46,6 @@ export const adminViewProfileController = async (
   }
 };
 
-
 export const adminViewRaisedQueryListController = async (
   request: express.Request,
   response: express.Response
@@ -87,7 +86,6 @@ export const adminViewStudentListController = async (
 
     console.log("StudentList :: ", studentList);
 
-
     if (studentList && studentList.length > 0) {
       const result = studentList.map((student) => ({
         name: `${student.firstName} ${student.lastName}`,
@@ -98,7 +96,7 @@ export const adminViewStudentListController = async (
         status: student.status,
       }));
 
-      console.log(result)
+      console.log(result);
 
       response.status(StatusCodes.OK).json({
         studentList: result,
@@ -268,7 +266,7 @@ export const adminRaiseQueryController = async (
       message,
     });
     if (!similaryExistingQuery) {
-      const queryId = await generateUniqueId('query', email, roleName);
+      const queryId = await generateUniqueId("query", email, roleName);
       const updatedQuery = await queryModel.create({
         queryId: queryId,
         userEmail: email,
@@ -382,49 +380,6 @@ export const adminManageQueryStatusController = async (
   }
 };
 
-// export const adminAuthenticationController = async (
-//   request: express.Request,
-//   response: express.Response
-// ) => {
-//   try {
-//     const authHeader = request.headers["authorization"];
-//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//       return response
-//         .status(401)
-//         .json({ message: "Authorization token is missing or invalid" });
-//     }
-//     const token = authHeader.split(" ")[1];
-//     const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
-//     const result = await userModel.findOne({
-//       email: payload.email,
-//       role: payload.role,
-//     });
-//     const adminData = {
-//       name: result?.firstName + " " + result?.lastName,
-//       email: result?.email,
-//       contactNumber: result?.contactNumber,
-//       role: result?.role,
-//       profileImg: result?.profileImg,
-//     };
-//     if (result?.status) {
-//       response.status(StatusCodes.OK).json({
-//         userData: adminData,
-//         token: token,
-//         message: "Authenntication Successfull ..!",
-//       });
-//     } else {
-//       response
-//         .status(StatusCodes.NOT_FOUND)
-//         .json({ message: "Something went wrong ..!" });
-//     }
-//   } catch (err) {
-//     console.log("Error while user authentication Controller", err);
-//     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//       message: "Token Not verify please login then try to access ..!",
-//     });
-//   }
-// };
-
 export const adminGetQueryDataController = async (
   request: express.Request,
   response: express.Response
@@ -459,10 +414,10 @@ export const adminAddNewRoleController = async (
 ) => {
   try {
     const { email, roleName } = request.payload;
-    console.log('request.payload ',request.payload);
-    
+    console.log("request.payload ", request.payload);
+
     const { userRole, access } = request.body;
-    const roleId = await generateUniqueId('role');
+    const roleId = await generateUniqueId("role");
     const data = {
       roleId,
       roleName: userRole,
@@ -470,29 +425,27 @@ export const adminAddNewRoleController = async (
       createdBy: email,
       updatedBy: email,
       creatorRole: roleName,
-      updaterRole: roleName
-    }
-    console.log("data ",data);
-    
+      updaterRole: roleName,
+    };
+    console.log("data ", data);
+
     const newRole = await roleModel.create(data);
     if (newRole) {
       response.status(StatusCodes.CREATED).json({
-        message: 'Role Added successfully ..!',
+        message: "Role Added successfully ..!",
       });
     } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Something Went Wrong ..!',
+        message: "Something Went Wrong ..!",
       });
     }
   } catch (error) {
-    console.error('Error in adminManageRoleController:', error);
+    console.error("Error in adminManageRoleController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Something went wrong!',
+      message: "Something went wrong!",
     });
   }
-}
-
-
+};
 
 // for backend
 export const adminAuthenticateJWT = async (
