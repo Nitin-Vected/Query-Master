@@ -79,7 +79,7 @@ export const getLeadByIdController = async (request: Request, response: Response
   }
 };
 
-export const updateCourseApplicationStatusController = async (
+export const updateCourseCategoryStatusController = async (
   request: Request,
   response: Response
 ) => {
