@@ -1,6 +1,6 @@
 import express from "express";
 import leadModel from "../model/leadModel";
-import { COUNCILOR_SECRET_KEY, StatusCodes, generateUniqueId } from "../config";
+import { COUNSELLOR_SECRET_KEY, StatusCodes, generateUniqueId } from "../config";
 import { Request, Response } from "express";
 import { tokenVerifier } from "../utilities/jwt";
 import studentModel from "../model/studentModel";
@@ -28,6 +28,8 @@ export const addNewLeadsController = async (request: Request, response: Response
   try {
     const leads = Array.isArray(request.body) ? request.body : [request.body];
     const result = await leadModel.insertMany(leads);
+    console.log('lead : ',leads)
+    console.log('result : ',result)
     response
       .status(StatusCodes.CREATED)
       .json({ data: result, message: "Leads created Successfully..." });
@@ -84,7 +86,6 @@ export const updateCourseApplicationStatusController = async (
   response: Response
 ) => {
   const { leadId, courseId, newStatusId } = request.body;
-
   try {
     const lead = await leadModel.findById(leadId);
 
@@ -130,7 +131,7 @@ export const counsellorAuthenticateJWT = async (
         .json({ message: "Authorization token is missing or invalid" });
     }
     const token = authHeader.split(" ")[1];
-    const payload = await tokenVerifier(token, COUNCILOR_SECRET_KEY);
+    const payload = await tokenVerifier(token, COUNSELLOR_SECRET_KEY);
     request.payload = payload;
     next();
   } catch (error) {

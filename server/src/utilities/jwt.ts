@@ -1,16 +1,14 @@
 import jwt from 'jsonwebtoken';
-import { ADMIN_SECRET_KEY, COUNCILOR_SECRET_KEY, USER_SECRET_KEY } from '../config';
+import { ADMIN_SECRET_KEY, COUNSELLOR_SECRET_KEY, USER_SECRET_KEY } from '../config';
 
 interface Payload {
     name: string;
+    userId: string;
     email: string;
     roleId: string;
     roleName: string;
     googleToken: string;
-}
-
-interface Token {
-    token: string;
+    status: string;
 }
 
 export const tokenGenerator = (data: Payload) => {
@@ -27,10 +25,10 @@ export const tokenGenerator = (data: Payload) => {
             console.log('User Token ==> ', token);
             break;
         }
-        case 'Councilor': {
+        case 'Counsellor': {
             console.log('Data ==> ', data);
-            token = jwt.sign(data, COUNCILOR_SECRET_KEY, { expiresIn: '1d' });
             console.log('User Token ==> ', token);
+            token = jwt.sign(data, COUNSELLOR_SECRET_KEY, { expiresIn: '1d' });
             break;
         }
     }
@@ -40,9 +38,9 @@ export const tokenGenerator = (data: Payload) => {
 
 export const tokenVerifier = (token: any, secretKey: string) => {
     try {
-        console.log('token --> ',token);
+        console.log('token --> ', token);
         const payload = jwt.verify(token, secretKey);
-        console.log("Verified Payload ",payload);
+        console.log("Verified Payload ", payload);
         return payload;
     } catch (error: any) {
         console.log('Token verification failed:', error.message);

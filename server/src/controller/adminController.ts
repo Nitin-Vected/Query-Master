@@ -1,6 +1,6 @@
 import express from "express";
 import { tokenVerifier } from "../utilities/jwt";
-import { ADMIN_SECRET_KEY, generateUniqueId, StatusCodes } from "../config";
+import { ADMIN_SECRET_KEY, generateUniqueId, StatusCodes, STUDENT_ROLE_ID } from "../config";
 import queryModel from "../model/queryModel";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
@@ -81,7 +81,7 @@ export const adminViewStudentListController = async (
 ) => {
   try {
     const studentList = await userModel
-      .find({ roleId: "ROLEGnd3oTjQX01" }, { _id: 0 })
+      .find({ roleId: STUDENT_ROLE_ID }, { _id: 0 })
       .select("firstName lastName email contactNumber roleId profileImg status")
       .sort({ updatedAt: -1, createdAt: -1 });
 
@@ -193,7 +193,7 @@ export const adminManageStudentStatusController = async (
     }
 
     const result = await userModel.updateOne(
-      { email: email, role: "ROLEGnd3oTjQX01" },
+      { email: email, roleId: STUDENT_ROLE_ID },
       { $set: { status: action } }
     );
     if (result?.acknowledged) {
@@ -382,48 +382,49 @@ export const adminManageQueryStatusController = async (
   }
 };
 
-// export const adminAuthenticationController = async (
-//   request: express.Request,
-//   response: express.Response
-// ) => {
-//   try {
-//     const authHeader = request.headers["authorization"];
-//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//       return response
-//         .status(401)
-//         .json({ message: "Authorization token is missing or invalid" });
-//     }
-//     const token = authHeader.split(" ")[1];
-//     const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
-//     const result = await userModel.findOne({
-//       email: payload.email,
-//       role: payload.role,
-//     });
-//     const adminData = {
-//       name: result?.firstName + " " + result?.lastName,
-//       email: result?.email,
-//       contactNumber: result?.contactNumber,
-//       role: result?.role,
-//       profileImg: result?.profileImg,
-//     };
-//     if (result?.status) {
-//       response.status(StatusCodes.OK).json({
-//         userData: adminData,
-//         token: token,
-//         message: "Authenntication Successfull ..!",
-//       });
-//     } else {
-//       response
-//         .status(StatusCodes.NOT_FOUND)
-//         .json({ message: "Something went wrong ..!" });
-//     }
-//   } catch (err) {
-//     console.log("Error while user authentication Controller", err);
-//     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//       message: "Token Not verify please login then try to access ..!",
-//     });
-//   }
-// };
+export const adminAuthenticationController = async (
+  request: express.Request,
+  response: express.Response
+) => {
+  try {
+    const authHeader = request.headers["authorization"];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return response
+        .status(401)
+        .json({ message: "Authorization token is missing or invalid" });
+    }
+    const token = authHeader.split(" ")[1];
+    const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
+    const result = await userModel.findOne({
+      email: payload.email,
+      role: payload.roleName,
+    });
+    const adminData = {
+      name: result?.firstName + " " + result?.lastName,
+      email: result?.email,
+      contactNumber: result?.contactNumber,
+      role: payload?.roleName,
+      profileImg: result?.profileImg,
+    };
+    if (result?.status) {
+      response.status(StatusCodes.OK).json({
+        userData: adminData,
+        token: token,
+        message: "Authenntication Successfull ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Something went wrong ..!" });
+    }
+  } catch (err) {
+    console.log("Error while user authentication Controller", err);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Token Not verify please login then try to access ..!",
+    });
+  }
+};
+
 
 export const adminGetQueryDataController = async (
   request: express.Request,
@@ -459,8 +460,8 @@ export const adminAddNewRoleController = async (
 ) => {
   try {
     const { email, roleName } = request.payload;
-    console.log('request.payload ',request.payload);
-    
+    console.log('request.payload ', request.payload);
+
     const { userRole, access } = request.body;
     const roleId = await generateUniqueId('role');
     const data = {
@@ -472,8 +473,8 @@ export const adminAddNewRoleController = async (
       creatorRole: roleName,
       updaterRole: roleName
     }
-    console.log("data ",data);
-    
+    console.log("data ", data);
+
     const newRole = await roleModel.create(data);
     if (newRole) {
       response.status(StatusCodes.CREATED).json({
