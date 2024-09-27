@@ -36,7 +36,8 @@ export const loginController = async (
     const decodedToken = await verifyGoogleToken(tokenResponse);
 
     if (decodedToken) {
-      const { given_name, family_name, picture, email, email_verified } = decodedToken;
+      const { given_name, family_name, picture, email, email_verified } =
+        decodedToken;
 
       let user = await userModel.findOne({ email: email }, { _id: 0 });
 
@@ -48,7 +49,7 @@ export const loginController = async (
         user.status = email_verified;
         await user.save();
       } else {
-        const userId = await generateUniqueId('user');
+        const userId = await generateUniqueId("user");
         user = await userModel.create({
           userId,
           email,
@@ -56,8 +57,8 @@ export const loginController = async (
           lastName: family_name,
           profileImg: picture,
           status: email_verified,
-          roleId: "ROLERQ80Z9Ctm03", 
-          contactNumber: "9755554545", 
+          roleId: "ROLERQ80Z9Ctm03",
+          contactNumber: "9755554545",
         });
       }
 
@@ -85,17 +86,21 @@ export const loginController = async (
       console.log("payload ==> ", payload);
 
       let token = tokenGenerator(payload);
-      console.log('Token in loginController ===> ',token);
+      console.log("Token in loginController ===> ", token);
       response.status(StatusCodes.CREATED).json({
         userData: result,
         token: token,
         message: "Login Successful!",
       });
     } else {
-      response.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid Google token!" });
+      response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "Invalid Google token!" });
     }
   } catch (error) {
     console.error(error);
-    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error" });
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal Server Error" });
   }
 };

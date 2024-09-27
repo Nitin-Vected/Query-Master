@@ -1,78 +1,77 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
-// Students interface
 interface Students {
-    enrollmentNumber: string;
+  enrollmentNumber: string;
 }
 
-// Batch interface extending mongoose Document
 interface Batch extends Document {
-    batchId: string;
-    courseId: string;
-    trainerId: string;
-    batchName: string;
-    students: Students[];
-    startDate: string;
-    endDate: string;
-    creatorRole: string;
-    updatorRole: string;
-    createdBy: string;
-    updatedBy: string;
+  batchId: string;
+  courseId: string;
+  trainerId: string;
+  batchName: string;
+  students: Students[];
+  startDate: string;
+  endDate: string;
+  creatorRole: string;
+  updatorRole: string;
+  createdBy: string;
+  updatedBy: string;
 }
 
-//Students Schema
 const StudentsSchema: Schema = new mongoose.Schema({
-    enrollmentNumber: {
-        type: String,
-        required: true
-    },
-})
+  enrollmentNumber: {
+    type: String,
+    required: true,
+  },
+});
 
-//Batch Schema
-const BatchSchema: Schema = new mongoose.Schema({
+const BatchSchema: Schema = new mongoose.Schema(
+  {
     batchId: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     courseId: {
-        type: String,
-        ref: "Course",
-        unique: true
+      type: String,
+      ref: "Course",
+      unique: true,
     },
     trainerId: {
-        type: String,
-        ref: "Employee",
-        required: true
+      type: String,
+      ref: "Employee",
+      required: true,
     },
     batchName: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     students: [StudentsSchema],
     startDate: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     endDate: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     creatorRole: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     updatorRole: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     createdBy: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     updatedBy: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
-}, { versionKey: false, timestamps: true });
+  },
+  { versionKey: false, timestamps: true }
+);
 
-export default mongoose.model<Batch>('batch', BatchSchema);
+export default mongoose.model<Batch>("batch", BatchSchema);

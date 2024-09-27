@@ -4,7 +4,7 @@ import {
   counsellorAuthenticateJWT,
   getAllLeadsController,
   getLeadByIdController,
-  updateCourseApplicationStatusController,
+  updateCourseCategoryStatusController,
   createUserAndStudentController,
 } from "../controller/counsellorController";
 
@@ -17,7 +17,7 @@ counsellorRouter.get("/getAllLeads", getAllLeadsController);
 counsellorRouter.get("/getLeadById/:leadId", getLeadByIdController);
 counsellorRouter.put(
   "/leads/course-application/status",
-  updateCourseApplicationStatusController
+  updateCourseCategoryStatusController
 );
 counsellorRouter.post("/createUserAndStudent", createUserAndStudentController);
 

@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-// Conversation interface
 interface Conversation {
   sender: string;
   email: string;
@@ -9,7 +8,6 @@ interface Conversation {
   role: string;
 }
 
-// Query interface extending mongoose Document
 interface Query extends Document {
   queryId: string;
   userEmail: string;
@@ -20,7 +18,6 @@ interface Query extends Document {
   conversation: Conversation[];
 }
 
-// Conversation Schema
 const ConversationSchema: Schema = new Schema({
   sender: {
     type: String,
@@ -44,7 +41,6 @@ const ConversationSchema: Schema = new Schema({
   },
 });
 
-// Query Schema
 const QuerySchema: Schema = new Schema(
   {
     queryId: {

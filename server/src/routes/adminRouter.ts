@@ -2,7 +2,6 @@ import express from "express";
 import {
   adminAddContactNumberController,
   adminAddNewBatchController,
-  // adminAddNewBatchController,
   adminAddNewRoleController,
   adminAuthenticateJWT,
   adminGetQueryDataController,
@@ -27,7 +26,6 @@ adminRouter.get("/", (request: express.Request, response: express.Response) => {
   }
 });
 
-// adminRouter.post("/adminLogin", adminLoginController);
 // adminRouter.get("/adminAuthentication", adminAuthenticationController);
 
 adminRouter.use(adminAuthenticateJWT);
@@ -60,10 +58,6 @@ adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 adminRouter.post("/addNewRole", adminAddNewRoleController);
 
 adminRouter.post("/addNewBatch", adminAddNewBatchController);
-adminRouter.get("/getBatches",);
-
-
-
-
+adminRouter.get("/getBatches");
 
 export default adminRouter;

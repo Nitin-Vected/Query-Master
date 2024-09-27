@@ -3,11 +3,10 @@ import userModel from "../model/userModel";
 import { tokenVerifier } from "../utilities/jwt";
 import { generateUniqueId, StatusCodes, USER_SECRET_KEY } from "../config";
 import queryModel from "../model/queryModel";
-import roleModel from "../model/roleModel";
 
 export const userViewProfileController = async (
   request: any,
-  response: Response,
+  response: Response
 ) => {
   try {
     console.log("result", request.payload);
@@ -19,7 +18,9 @@ export const userViewProfileController = async (
     }
     const result = await userModel.findOne({ userId });
     if (!result) {
-      return response.status(StatusCodes.NOT_FOUND).json({ message: "The Account You are Trying to Access not find..!" });
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "The Account You are Trying to Access not find..!" });
     } else if (result?.status) {
       console.log("result", result?.roleId);
       const userData = {
@@ -27,9 +28,12 @@ export const userViewProfileController = async (
         email: result?.email,
         contactNumber: result?.contactNumber,
         profileImg: result?.profileImg,
-        role: request.payload.roleName
+        role: request.payload.roleName,
       };
-      response.status(StatusCodes.OK).json({ userData: userData, message: "UserData fetched successfully ..!" });
+      response.status(StatusCodes.OK).json({
+        userData: userData,
+        message: "UserData fetched successfully ..!",
+      });
     }
   } catch (error) {
     console.log(error);
@@ -223,12 +227,18 @@ export const userManageQueryStatusController = async (
     console.log("Query Status :", result);
 
     if (!result?.acknowledged) {
-      response.status(StatusCodes.NOT_FOUND).json({ error: "Query not found or email mismatch" });
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: "Query not found or email mismatch" });
     }
     console.log("Query status updated successfully");
-    response.status(StatusCodes.CREATED).json({ message: "Query status updated successfully" });
+    response
+      .status(StatusCodes.CREATED)
+      .json({ message: "Query status updated successfully" });
   } catch (error) {
-    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Failed to find query" });
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Failed to find query" });
   }
 };
 
@@ -246,7 +256,7 @@ export const userAuthenticationController = async (
         .json({ message: "Authorization token is missing or invalid" });
     }
     const token = authHeader.split(" ")[1];
-    console.log('token inside userAuthenticationController -> ', token);
+    console.log("token inside userAuthenticationController -> ", token);
     const payload = await tokenVerifier(token, USER_SECRET_KEY);
     const result = await userModel.findOne({ email: payload.email });
     const userData = {

@@ -37,7 +37,6 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
         switch (mode) {
             case 'query': {
                 const latestQuery = await queryModel.findOne({ userEmail: email, userRole: role }).sort({ createdAt: -1 }).limit(1);
-                console.log("Latest Query ---> ", latestQuery);
                 let newCounter = 1;
                 if (latestQuery && latestQuery.queryId) {
                     const numericPart = latestQuery.queryId.match(/\d+$/);
@@ -60,7 +59,6 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
             }
             case 'role': {
                 const latestRole = await roleModel.find().sort({ createdAt: -1 }).limit(1);
-                console.log("Latest Role ---> ", latestRole);
                 let newCounter = 1;
 
                 if (latestRole.length > 0) {
@@ -91,7 +89,6 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
             }
             case 'course': {
                 const latestCourse = await courseModel.find().sort({ createdAt: -1 }).limit(1);
-                console.log("Latest Role ---> ", latestCourse);
                 let newCounter = 1;
 
                 if (latestCourse.length > 0) {
@@ -120,7 +117,6 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
             }
             case 'user': {
                 const latestUser = await userModel.find().sort({ createdAt: -1 }).limit(1);
-                console.log("Latest User ---> ", latestUser);
                 let newCounter = 1;
 
                 if (latestUser.length > 0) {
@@ -149,7 +145,6 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
             }
             case 'batch': {
                 const latestBatch = await batchModel.find().sort({ createdAt: -1 }).limit(1);
-                console.log("Latest Batch ---> ", latestBatch);
                 let newCounter = 1;
 
                 if (latestBatch.length > 0) {
@@ -165,7 +160,7 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
                 while (!isUnique) {
                     const uniqueId = shortid.generate();
                     newUniqueId = `BATCH${uniqueId}0${newCounter}`;
-                    // console.log(`Generated Batch ID: ${newUniqueId}`);
+                    console.log(`Generated Batch ID: ${newUniqueId}`);
 
                     const existingBatchWithSameId = await batchModel.findOne({ batchId: newUniqueId });
                     if (!existingBatchWithSameId) {

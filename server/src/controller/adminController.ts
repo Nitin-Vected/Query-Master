@@ -1,6 +1,11 @@
 import express from "express";
 import { tokenVerifier } from "../utilities/jwt";
-import { ADMIN_SECRET_KEY, generateUniqueId, StatusCodes, STUDENT_ROLE_ID } from "../config";
+import {
+  ADMIN_SECRET_KEY,
+  generateUniqueId,
+  StatusCodes,
+  STUDENT_ROLE_ID,
+} from "../config";
 import queryModel from "../model/queryModel";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
@@ -424,7 +429,6 @@ export const adminAuthenticationController = async (
   }
 };
 
-
 export const adminGetQueryDataController = async (
   request: express.Request,
   response: express.Response
@@ -490,14 +494,17 @@ export const adminAddNewRoleController = async (
       message: "Something went wrong!",
     });
   }
-}
+};
 
-//Batch Controllers
-export const adminAddNewBatchController = async (request: any, response: express.Response) => {
+export const adminAddNewBatchController = async (
+  request: any,
+  response: express.Response
+) => {
   try {
     const { email, roleId } = request.payload;
-    const { batchName, startDate, endDate, trainerId, courseId, students } = request.body;
-    const batchId = await generateUniqueId('batch')
+    const { batchName, startDate, endDate, trainerId, courseId, students } =
+      request.body;
+    const batchId = await generateUniqueId("batch");
     const data = {
       batchId,
       courseId: courseId,
@@ -509,29 +516,29 @@ export const adminAddNewBatchController = async (request: any, response: express
       createdBy: email,
       updatedBy: email,
       creatorRole: roleId,
-      updatorRole: roleId
-    }
-    console.log(data)
+      updatorRole: roleId,
+    };
+    console.log(data);
     const newBatch = await batchModel.create(data);
     if (newBatch) {
       response.status(StatusCodes.CREATED).json({
-        message: 'Batch Added successfully ..!',
+        message: "Batch Added successfully ..!",
       });
     } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Something Went Wrong ..!',
+        message: "Something Went Wrong ..!",
       });
     }
   } catch (error) {
-    console.log("Add Batch Error", error)
+    console.log("Add Batch Error", error);
   }
-}
+};
 
-export const adminGetAllBatchController = async (request: any, response: express.Response) => {
+export const adminGetAllBatchController = async (
+  request: any,
+  response: express.Response
+) => {};
 
-}
-
-// for backend
 export const adminAuthenticateJWT = async (
   request: any,
   response: express.Response,
