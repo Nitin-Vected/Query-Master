@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Paper,
@@ -7,38 +7,25 @@ import {
   Button,
   Grid,
   Chip,
+  CardContent,
+  Card,
+  IconButton,
 } from "@mui/material";
-import { Email, LocationOn, Camera, Verified } from "@mui/icons-material";
-const newData = [
-  {
-    title: "Resume",
-    subTitle: "Update",
-  },
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
+import LanguageIcon from "@mui/icons-material/Language";
+import DescriptionIcon from "@mui/icons-material/Description";
+import EditIcon from "@mui/icons-material/Edit";
+import VerifiedIcon from "@mui/icons-material/CheckCircle";
 
-  {
-    title: "Resume headline",
-  },
-  {
-    title: "Key skills",
-  },
-  {
-    title: "Employment",
-    subTitle: "Add",
-  },
-  {
-    title: "IT skills",
-    subTitle: "Add",
-  },
-  {
-    title: "Profile summary",
-  },
-  {
-    title: "Accomplishments",
-  },
-  {
-    title: "Career profile",
-  },
-];
+import {
+  Email,
+  LocationOn,
+  Camera,
+  Verified,
+  DonutSmall,
+  ArrowOutward,
+} from "@mui/icons-material";
+
 const Data = [
   {
     title: "Add phots",
@@ -53,31 +40,75 @@ const Data = [
 ];
 
 const ShowDeities = () => {
+  const [fileName, setFileName] = useState("");
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFileName(file.name);
+    }
+  };
+
+  const handleBoxClick = () => {
+    document.getElementById("fileInput").click();
+  };
+
+  const newData = [
+    {
+      title: "Resume",
+      subTitle: "Update",
+      onPress: handleBoxClick
+    },
+
+    {
+      title: "Resume headline",
+    },
+    {
+      title: "Key skills",
+    },
+    {
+      title: "Employment",
+      subTitle: "Add",
+    },
+    {
+      title: "IT skills",
+      subTitle: "Add",
+    },
+    {
+      title: "Profile summary",
+    },
+    {
+      title: "Accomplishments",
+    },
+    {
+      title: "Career profile",
+    },
+  ];
+
   const ProfileCard: React.FC = () => {
     return (
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
-          p: 2,
-          borderRadius: 2,
-          boxShadow: "0px 0.6px 6px rgba(0, 0, 0, 0.1)", // Adjust shadow size as needed
-          backgroundColor: "white",
+          p: "20px 20px 20px 30px",
+          minHeight: "264px",
+          boxShadow: "0px 6px 12px rgba(30, 10, 58, 0.04)",
+          borderRadius: "10px",
+          position: "relative",
           maxWidth: {
-            xs: "1070px", // for extra-small screens
-            sm: "1070px", // for small screens
-            md: "1070px", // for medium screens
-            lg: "1300px", // for large screens
+            xs: "1070px",
+            sm: "1100px",
+            md: "1100px",
+            lg: "1200px",
           },
-
+          background: "white",
           mx: "auto",
           width: "100%",
-
-          marginTop: 3.5,
-          padding: 2,
+          boxSizing: "inherit",
         }}
       >
-        <Grid container spacing={2}>
+        <Grid container spacing={20}>
           <Grid
             item
             xs={12}
@@ -89,7 +120,14 @@ const ShowDeities = () => {
             }}
           >
             <Avatar
-              sx={{ width: 140, height: 140 }}
+              sx={{
+                width: "150px", // Set width as per your style
+                height: "150px", // Set height as per your style
+                padding: 0, // Set padding to 0
+                display: "flex", // Flexbox display
+                cursor: "pointer", // Set cursor to pointer for clickable interaction
+                position: "relative", // Relative positioning
+              }}
               src=""
               alt="Profile Picture"
             />
@@ -98,10 +136,17 @@ const ShowDeities = () => {
                 ml: { xs: 0, sm: 4 },
                 mt: { xs: 2, sm: 1 },
                 textAlign: "left",
-                
               }}
-             >
-              <Typography style={{ fontSize: 15 }} fontWeight="bold">
+            >
+              <Typography
+                sx={{
+                  wordWrap: "break-word", // Enabling word wrapping
+                  color: "var(--N800)", // Using your custom color variable
+                  fontWeight: 700, // Set font-weight to 700 (bold)
+                  fontSize: "24px", // Set font size to 24px
+                  lineHeight: "31px", // Set line-height to 31px
+                }}
+              >
                 Aman Gurjar
               </Typography>
               <Box
@@ -109,32 +154,52 @@ const ShowDeities = () => {
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
+                  justifyContent: "space-between",
+                  width: 520,
                 }}
               >
-                <Typography variant="body1">
-                  React Native Mobile Application Developer
-                </Typography>
                 <Typography
-                  variant="body2"
                   sx={{
-                    ml: { xs: 0, sm: 2 },
-                    fontSize: 14.8,
-                    color: "gray",
-                    mt: { xs: 1, sm: 0 }, // Space on small screens
+                    marginTop: "4px!important",
+
+                    fontSize: 15,
+                    color: "#474D6A",
+                    fontWeight: "500",
                   }}
                 >
-                  Profile last updated: 23 Sep, 2024
-                  Profile  
+                  React Native Mobile Application
+                  <br />
+                  Developer
+                </Typography>
+                <Typography
+                  sx={{
+                    ml: { xs: 0, sm: 2 },
+                    fontSize: 14.5,
+                    mt: { xs: 1, sm: 0 }, // Space on small screens
+                    color: "gray",
+                    textAlign: "left",
+                  }}
+                >
+                  Profile last updated: 23 Sep
                 </Typography>
               </Box>
 
-              <Typography variant="body2"  >
+              <Typography
+                sx={{
+                  marginTop: "4px!important",
+
+                  fontSize: 14,
+                  color: "black",
+                }}
+              >
                 Vhitural Height
               </Typography>
               <hr
                 style={{
                   borderWidth: 0.2,
-                  marginTop: 10,
+                  borderRight: "1px solid var(--N400)",
+                  marginTop: 5,
+                  width: "84%",
                 }}
               />
 
@@ -142,8 +207,13 @@ const ShowDeities = () => {
                 sx={{
                   display: "flex",
                   mt: 2,
-                  
-                  flexDirection: { xs: "column", sm: "row" },
+
+                  flexDirection: {
+                    xs: "column",
+                    sm: "row",
+                    lg: "row",
+                    md: "column",
+                  },
                 }}
               >
                 <Box
@@ -166,9 +236,14 @@ const ShowDeities = () => {
                     <LocationOn sx={{ fontSize: 20 }} />
                     <Typography
                       variant="body2"
-                      sx={{ fontSize: 13, ml: 1, color: "gray" ,mr: { sm: 18 },}}
+                      sx={{
+                        fontSize: 13,
+                        ml: 1,
+                        color: "gray",
+                        mr: { sm: 18 },
+                      }}
                       style={{
-                        width:120
+                        width: 120,
                       }}
                     >
                       2 Years 2 Months
@@ -186,41 +261,80 @@ const ShowDeities = () => {
                   </Box>
                 </Box>
 
-                {/* <Box sx={{ display: "flex", flexDirection: "column" }}>
-                  <Box sx={{ display: "flex", alignItems: "center", mt: 1,  sm:12}}>
-                    <Email sx={{ fontSize: 20 }} />
+                <hr
+                  style={{
+                    borderWidth: 0.2,
+                    width: "46.667%",
+                    borderColor: "#3c3b3b",
+                    borderRight: "1px solid var(--N400)",
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    mr: { sm: 3 },
+                    marginLeft: 1,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+                    <LocationOn sx={{ fontSize: 20 }} />
                     <Typography
                       variant="body2"
                       sx={{ fontSize: 13, ml: 1, color: "gray" }}
                     >
-                      amangurjar1507@gmail.com
+                      Mp Indore, INDIA
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+                    <LocationOn sx={{ fontSize: 20 }} />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: 13,
+                        ml: 1,
+                        color: "gray",
+                        mr: { sm: 18 },
+                      }}
+                      style={{
+                        width: 120,
+                      }}
+                    >
+                      2 Years 2 Months
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+                    <LocationOn sx={{ fontSize: 20 }} />
+                    <Typography
+                      variant="body2"
+                      sx={{ fontSize: 13, ml: 1, color: "gray" }}
+                    >
+                      45 Days or less notice period
                     </Typography>
                     <Verified sx={{ fontSize: 20, color: "green", ml: 1 }} />
                   </Box>
-                </Box> */}
+                </Box>
               </Box>
             </Box>
           </Grid>
 
-          {/* Right Section with Action Buttons */}
           <Grid
             item
             xs={12} // Full width on extra-small screens
             sm={15} // Half width on small screens
             md={5} // One-third width on medium screens
-            sx={{
-              marginTop: 2,
-              marginBottom: 1,
-            }}
           >
             <Box
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                height: "100%",
-                p: 2,
-                borderRadius: 2,
+                width: "380px",
+                padding: "22px",
+                margin: 0,
+                boxShadow: "none",
+                backgroundColor: "#FFF2E3",
+                borderRadius: "10px",
+                position: "relative", // Added position: relative
+                left: 2,
               }}
             >
               {Data.map((item, index) => (
@@ -230,27 +344,52 @@ const ShowDeities = () => {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    mb: 1,
+                    marginBottom: 1,
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 1,
+                    }}
+                  >
                     <Camera />
                     <Typography
                       sx={{
                         ml: 2,
-                        fontSize: 13.5,
-                        fontWeight: "500",
-                        color: "gray",
+                        fontSize: 15.5,
+                        fontWeight: "5",
+                        color: "#474d6a",
+                        margin: "auto 20px",
                       }}
                     >
                       {item.title}
                     </Typography>
                   </Box>
-                  <Typography
-                    sx={{ fontSize: 14, fontWeight: "600", color: "green" }}
+
+                  <Box
+                    sx={{
+                      background: "white",
+                      padding: "3px", // Updated padding
+                      width: "47px", // Updated width
+                      textAlign: "center", // Center align the text
+                      borderRadius: "10px", // Rounded border
+                      margin: "auto 0", // Center align the box vertically
+                      border: "1px solid var(--N300)", // Updated border style,
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
-                    5%
-                  </Typography>
+                    <ArrowOutward style={{ height: 12, width: 12 }} />
+                    <Typography
+                      sx={{ fontSize: 12, fontWeight: "500", color: "#47b749" }}
+                    >
+                      10%
+                    </Typography>
+                  </Box>
                 </Box>
               ))}
 
@@ -259,10 +398,14 @@ const ShowDeities = () => {
                 fullWidth
                 sx={{
                   mt: 1,
-                  backgroundColor: "#F05537",
-                  fontSize: 13.5,
+                  backgroundColor: "#f05537",
+                  fontSize: 12.8,
                   color: "white",
-                  borderRadius: 5,
+                  borderRadius: "60px",
+                  padding: "10px 14px",
+                  margin: "auto",
+                  width: 200,
+                  fontWeight: "bold",
                 }}
               >
                 Add 3 missing details
@@ -274,25 +417,255 @@ const ShowDeities = () => {
     );
   };
 
+  // const ProfileCard: React.FC = () => {
+  //   return (
+
+  //     <Box
+  //       sx={{
+  //         display: "flex",
+  //         flexDirection: "column",
+  //         p: 2,
+  //         borderRadius: 2,
+  //         boxShadow: "0px 0.6px 6px rgba(0, 0, 0, 0.1)", // Adjust shadow size as needed
+  //         backgroundColor: "white",
+  //         maxWidth: {
+  //           xs: "1070px", // for extra-small screens
+  //           sm: "1070px", // for small screens
+  //           md: "1070px", // for medium screens
+  //           lg: "1200px", // for large screens
+  //         },
+
+  //         mx: "auto",
+  //         width: "100%",
+
+  //         marginTop: 3.5,
+  //        }}
+  //     >
+  //       <Grid container spacing={20} sx={{
+  //                       padding:2
+
+  //       }}>
+  //         <Grid
+  //           item
+  //           xs={12}
+  //           sm={7}
+  //           sx={{
+  //             display: "flex",
+  //             flexDirection: { xs: "column", sm: "row" }, // Stack in column for small screens
+  //             alignItems: "center",
+  //           }}
+  //         >
+  //           <Avatar
+  //             sx={{ width: 140, height: 140 }}
+  //             src=""
+  //             alt="Profile Picture"
+  //           />
+  //           <Box
+  //             sx={{
+  //               ml: { xs: 0, sm: 4 },
+  //               mt: { xs: 2, sm: 1 },
+  //               textAlign: "left",
+
+  //             }}
+  //            >
+  //             <Typography style={{ fontSize: 15 }} fontWeight="bold">
+  //               Aman Gurjar
+  //             </Typography>
+  //             <Box
+  //               sx={{
+  //                 display: "flex",
+  //                 flexDirection: "row",
+  //                 alignItems: "center",
+  //               }}
+  //             >
+  //               <Typography variant="body1">
+  //                 React Native Mobile Application Developer
+  //               </Typography>
+  //               <Typography
+  //                 variant="body2"
+  //                 sx={{
+  //                   ml: { xs: 0, sm: 2 },
+  //                   fontSize: 14.8,
+  //                   color: "gray",
+  //                   mt: { xs: 1, sm: 0 }, // Space on small screens
+  //                 }}
+  //               >
+  //                 Profile last updated: 23 Sep, 2024
+  //                 Profile
+  //               </Typography>
+  //             </Box>
+
+  //             <Typography variant="body2"  >
+  //               Vhitural Height
+  //             </Typography>
+  //             <hr
+  //               style={{
+  //                 borderWidth: 0.2,
+  //                 marginTop: 10,
+  //               }}
+  //             />
+
+  //             <Box
+  //               sx={{
+  //                 display: "flex",
+  //                 mt: 2,
+
+  //                 flexDirection: { xs: "column", sm: "row" },
+  //               }}
+  //             >
+  //               <Box
+  //                 sx={{
+  //                   display: "flex",
+  //                   flexDirection: "column",
+  //                   mr: { sm: 3 },
+  //                 }}
+  //               >
+  //                 <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+  //                   <LocationOn sx={{ fontSize: 20 }} />
+  //                   <Typography
+  //                     variant="body2"
+  //                     sx={{ fontSize: 13, ml: 1, color: "gray" }}
+  //                   >
+  //                     Mp Indore, INDIA
+  //                   </Typography>
+  //                 </Box>
+  //                 <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+  //                   <LocationOn sx={{ fontSize: 20 }} />
+  //                   <Typography
+  //                     variant="body2"
+  //                     sx={{ fontSize: 13, ml: 1, color: "gray" ,mr: { sm: 18 },}}
+  //                     style={{
+  //                       width:120
+  //                     }}
+  //                   >
+  //                     2 Years 2 Months
+  //                   </Typography>
+  //                 </Box>
+  //                 <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+  //                   <LocationOn sx={{ fontSize: 20 }} />
+  //                   <Typography
+  //                     variant="body2"
+  //                     sx={{ fontSize: 13, ml: 1, color: "gray" }}
+  //                   >
+  //                     45 Days or less notice period
+  //                   </Typography>
+  //                   <Verified sx={{ fontSize: 20, color: "green", ml: 1 }} />
+  //                 </Box>
+  //               </Box>
+
+  //               {/* <Box sx={{ display: "flex", flexDirection: "column" }}>
+  //                 <Box sx={{ display: "flex", alignItems: "center", mt: 1,  sm:12}}>
+  //                   <Email sx={{ fontSize: 20 }} />
+  //                   <Typography
+  //                     variant="body2"
+  //                     sx={{ fontSize: 13, ml: 1, color: "gray" }}
+  //                   >
+  //                     amangurjar1507@gmail.com
+  //                   </Typography>
+  //                   <Verified sx={{ fontSize: 20, color: "green", ml: 1 }} />
+  //                 </Box>
+  //               </Box> */}
+  //             </Box>
+  //           </Box>
+  //         </Grid>
+
+  //         {/* Right Section with Action Buttons */}
+  //         <Grid
+  //           item
+  //           xs={12} // Full width on extra-small screens
+  //           sm={15} // Half width on small screens
+  //           md={5} // One-third width on medium screens
+  //           sx={{
+  //             marginTop: 2,
+  //             marginBottom: 1,
+  //           }}
+  //         >
+  //           <Box
+  //             sx={{
+  //               display: "flex",
+  //               flexDirection: "column",
+  //               justifyContent: "space-between",
+  //               height: "100%",
+  //               p: 3,
+  //               borderRadius: 2,
+  //               background:"#FFF2E3"
+
+  //             }}
+  //           >
+  //             {Data.map((item, index) => (
+  //               <Box
+  //                 key={index}
+  //                 sx={{
+  //                   display: "flex",
+  //                   justifyContent: "space-between",
+  //                   alignItems: "center",
+  //                   mb: 1,
+  //                 }}
+  //               >
+  //                 <Box sx={{ display: "flex", alignItems: "center" }}>
+  //                   <Camera />
+  //                   <Typography
+  //                     sx={{
+  //                       ml: 2,
+  //                       fontSize: 13.5,
+  //                       fontWeight: "500",
+  //                       color: "gray",
+  //                     }}
+  //                   >
+  //                     {item.title}
+  //                   </Typography>
+  //                 </Box>
+  //                 <Typography
+  //                   sx={{ fontSize: 14, fontWeight: "600", color: "green" }}
+  //                 >
+  //                   5%
+  //                 </Typography>
+  //               </Box>
+  //             ))}
+
+  //             <Button
+  //               variant="contained"
+  //               fullWidth
+  //               sx={{
+  //                 mt: 1,
+  //                 backgroundColor: "#F05537",
+  //                 fontSize: 13.5,
+  //                 color: "white",
+  //                 borderRadius: 5,
+  //               }}
+  //             >
+  //               Add 3 missing details
+  //             </Button>
+  //           </Box>
+  //         </Grid>
+  //       </Grid>
+  //     </Box>
+  //   );
+  // };
+
   return (
-    <Box>
-      {/* <Box sx={{ padding: 3, minHeight: "100vh" }}> */}
-      <ProfileCard />
-      <Grid container spacing={4} style={{ justifyContent: "center" }}>
-        <Grid item xs={12} sm={11.9} md={16} lg={2.3} >
+    <Box
+      sx={{
+        background: "#F8F8F8",
+      }}
+    >
+      <Box sx={{ padding: 5 }}>
+        <ProfileCard />
+      </Box>
+      <Grid container spacing={2} style={{ justifyContent: "center" }}>
+        <Grid item xs={12} sm={11.9} md={16} lg={1.5}>
           <Paper
-             elevation={1}
+            elevation={1}
             style={{
               width: "100%",
               borderRadius: 10,
               borderColor: "red",
               borderWidth: 3,
-              marginTop: 30,
               boxShadow: "0px 0.6px 6px rgba(0, 0, 0, 0.1)", // Adjust shadow size as needed
+              padding: 8,
             }}
           >
             <Box
- 
               sx={{
                 display: "flex",
                 flexDirection: "row",
@@ -316,7 +689,7 @@ const ShowDeities = () => {
             </Box>
 
             <Box
-               sx={{
+              sx={{
                 display: "flex",
                 flexDirection: "column", // Stack items in a column for better layout
                 alignItems: "flex-start",
@@ -354,14 +727,14 @@ const ShowDeities = () => {
                         sx={{
                           color: "blue",
                           fontSize: {
-                            xs: "16px", // for extra-small screens
-                            sm: "16px", // for small screens
-                            md: "15px", // for medium screens
+                            xs: "1px", // for extra-small screens
+                            sm: "1px", // for small screens
+                            md: "5px", // for medium screens
                             lg: "15px", // for large screens
                           },
 
                           fontWeight: 500,
-                          ml: { xs: 18, sm: 16, lg: 8 },
+                          ml: { xs: 1, sm: 1, lg: 2 },
                         }}
                       >
                         {item.subTitle}
@@ -384,7 +757,6 @@ const ShowDeities = () => {
               borderColor: "gray",
               borderWidth: 3,
               marginBottom: "30px",
-              marginTop: 30,
               boxShadow: "0px 0.6px 6px rgba(0, 0, 0, 0.1)", // Adjust shadow size as needed
             }}
           >
@@ -468,7 +840,44 @@ const ShowDeities = () => {
                 flexDirection: "column",
               }}
             >
-              <Box
+              <div>
+                <input
+                  type="file"
+                  id="fileInput"
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                />
+                <Box
+                  sx={{
+                    padding: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 6,
+                    borderColor: "#2E5DF5",
+                    color: "grey",
+                    borderWidth: 1,
+                    borderStyle: "solid",
+                    flexDirection: "column",
+                    cursor: "pointer", // Change cursor to pointer
+                  }}
+                  onClick={handleBoxClick} // Click to open file dialog
+                >
+                  <Typography
+                    variant="h6"
+                    style={{
+                      color: "#2E5DF5",
+                      fontSize: 14,
+                      fontWeight: "bold",
+                      fontStyle: "normal",
+                    }}
+                  >
+                    {fileName || "Upload Resume"}
+                  </Typography>
+                </Box>
+              </div>
+
+              {/* <Box
                 sx={{
                   padding: 1,
                   display: "flex",
@@ -493,7 +902,7 @@ const ShowDeities = () => {
                 >
                   Resume Uploaded
                 </Typography>
-              </Box>
+              </Box> */}
               <Typography
                 variant="h6"
                 style={{
@@ -522,7 +931,6 @@ const ShowDeities = () => {
               boxShadow: "0px 0.6px 6px rgba(0, 0, 0, 0.1)", // Adjust shadow size as needed
             }}
           >
-            {/* Resume Headline Section */}
             <Typography
               style={{
                 color: "black",
