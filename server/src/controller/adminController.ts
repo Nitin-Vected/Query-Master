@@ -10,6 +10,7 @@ import queryModel from "../model/queryModel";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
 import batchModel from "../model/batchModel";
+import courseModel from "../model/courseModel";
 
 export const adminViewProfileController = async (
   request: any,
@@ -530,14 +531,105 @@ export const adminAddNewBatchController = async (
       });
     }
   } catch (error) {
-    console.log("Add Batch Error", error);
+    console.log("Error occure in adminAddNewBatchController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
   }
 };
 
 export const adminGetAllBatchController = async (
   request: any,
   response: express.Response
-) => {};
+) => {
+  try {
+    const batchList = await batchModel
+      .find({}, { _id: 0 })
+      .select("batchId batchName courseId trainerId startDate endDate")
+      .sort({ updatedAt: -1, createdAt: -1 });
+    console.log(batchList)
+
+    if (batchList && batchList.length > 0) {
+      response.status(StatusCodes.OK).json({
+        batchList: batchList,
+        message: "Batches fetched successfully  ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Batch list not found ..!" });
+    }
+  } catch (error) {
+    console.log("Error occure in adminGetAllBatchController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminAddNewCourseController = async (request: any, response: express.Response) => {
+  try {
+    const { email, roleId } = request.payload;
+    const { courseName, courseCategory, courseFees, courseDescription, } = request.body;
+    const courseId = await generateUniqueId('course')
+    const data = {
+      courseId,
+      courseName: courseName,
+      courseCategory: courseCategory,
+      courseFees: courseFees,
+      courseDescription: courseDescription,
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: roleId,
+      updaterRole: roleId
+    }
+    console.log(data)
+    const newCourse = await courseModel.create(data);
+    if (newCourse) {
+      response.status(StatusCodes.CREATED).json({
+        message: 'Course Added successfully ..!',
+      });
+    } else {
+      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Something Went Wrong ..!',
+      });
+    }
+  } catch (error) {
+    console.log("Error occure in adminAddNewCourseController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+}
+
+export const adminGetAllCourseController = async (
+  request: any,
+  response: express.Response
+) => {
+  try {
+    const courseList = await courseModel
+      .find({}, { _id: 0 })
+      .select("courseName courseCategory courseFees courseDescription ")
+      .sort({ updatedAt: -1, createdAt: -1 });
+    console.log(courseList)
+
+    if (courseList && courseList.length > 0) {
+      response.status(StatusCodes.OK).json({
+        courseList: courseList,
+        message: "Courses fetched successfully  ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Course list not found ..!" });
+    }
+  } catch (error) {
+    console.log("Error occure in adminGetAllCourseController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
 
 export const adminAuthenticateJWT = async (
   request: any,

@@ -2,8 +2,11 @@ import express from "express";
 import {
   adminAddContactNumberController,
   adminAddNewBatchController,
+  adminAddNewCourseController,
   adminAddNewRoleController,
   adminAuthenticateJWT,
+  adminGetAllBatchController,
+  adminGetAllCourseController,
   adminGetQueryDataController,
   adminManageQueryStatusController,
   adminManageStudentStatusController,
@@ -58,6 +61,9 @@ adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 adminRouter.post("/addNewRole", adminAddNewRoleController);
 
 adminRouter.post("/addNewBatch", adminAddNewBatchController);
-adminRouter.get("/getBatches");
+adminRouter.get("/getAllBatches", adminGetAllBatchController);
+
+adminRouter.post("/addNewCourse", adminAddNewCourseController);
+adminRouter.get("/getAllCourses", adminGetAllCourseController);
 
 export default adminRouter;

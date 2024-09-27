@@ -31,7 +31,7 @@ export const tokenGenerator = (data: Payload) => {
     }
     case "Counsellor": {
       console.log("Data ==> ", data);
-      console.log("User Token ==> ", token);
+      console.log("Counsellor Token ==> ", token);
       token = jwt.sign(data, COUNSELLOR_SECRET_KEY, { expiresIn: "1d" });
       break;
     }
@@ -42,10 +42,10 @@ export const tokenGenerator = (data: Payload) => {
 
 export const tokenVerifier = (token: any, secretKey: string) => {
   try {
-    console.log("token --> ", token);
-    const payload = jwt.verify(token, secretKey);
-    console.log("Verified Payload ", payload);
-    return payload;
+    console.log("token --> ", token, secretKey);
+    // const payload = jwt.verify(token, secretKey);
+    // console.log("Verified Payload ", payload);
+    // return payload;
   } catch (error: any) {
     console.log("Token verification failed:", error.message);
     return error;
