@@ -30,16 +30,15 @@ const BatchSchema: Schema = new mongoose.Schema(
     batchId: {
       type: String,
       required: true,
+      unique: true
     },
     courseId: {
       type: String,
       ref: "Course",
-      unique: true,
     },
     trainerId: {
       type: String,
       ref: "Employee",
-      required: true,
     },
     batchName: {
       type: String,
