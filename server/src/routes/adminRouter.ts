@@ -20,6 +20,8 @@ import {
   adminViewStudentListController,
   adminViewSupportAdminListController,
   adminViewUserListController,
+  getBatchByIdController,
+  getCourseByIdController,
 } from "../controller/adminController";
 
 const adminRouter = express.Router();
@@ -69,8 +71,10 @@ adminRouter.post("/adminAddAccessRights", adminManageUsersAccessRightsController
 
 adminRouter.post("/addNewBatch", adminAddNewBatchController);
 adminRouter.get("/getAllBatches", adminGetAllBatchController);
+adminRouter.get("/getBatchById/:batchId", getBatchByIdController);
 
 adminRouter.post("/addNewCourse", adminAddNewCourseController);
 adminRouter.get("/getAllCourses", adminGetAllCourseController);
+adminRouter.get("/getCourseById/:courseId", getCourseByIdController);
 
 export default adminRouter;

@@ -547,7 +547,7 @@ export const adminAddNewBatchController = async (
   response: express.Response
 ) => {
   try {
-    const { email, roleId } = request.payload;
+    const { email, roleName } = request.payload;
     const { batchName, startDate, endDate, trainerId, courseId, students } =
       request.body;
     const batchId = await generateUniqueId("batch");
@@ -561,8 +561,8 @@ export const adminAddNewBatchController = async (
       endDate: endDate,
       createdBy: email,
       updatedBy: email,
-      creatorRole: roleId,
-      updatorRole: roleId,
+      creatorRole: roleName,
+      updatorRole: roleName,
     };
     console.log(data);
     const newBatch = await batchModel.create(data);
@@ -612,9 +612,27 @@ export const adminGetAllBatchController = async (
   }
 };
 
+export const getBatchByIdController = async (request: express.Request, response: express.Response) => {
+  const { batchId } = request.params;
+  try {
+    const batch = await batchModel.findOne({ batchId: batchId });
+    if (!batch) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Batch not found" });
+    }
+    response.status(200).json({ data: batch, message: "Batch of given id" });
+  } catch (error) {
+    console.log("Error occured in getBatchById : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+}
+
 export const adminAddNewCourseController = async (request: any, response: express.Response) => {
   try {
-    const { email, roleId } = request.payload;
+    const { email, roleName } = request.payload;
     const { courseName, courseCategory, courseFees, courseDescription, } = request.body;
     const courseId = await generateUniqueId('course')
     const data = {
@@ -625,8 +643,8 @@ export const adminAddNewCourseController = async (request: any, response: expres
       courseDescription: courseDescription,
       createdBy: email,
       updatedBy: email,
-      creatorRole: roleId,
-      updaterRole: roleId
+      creatorRole: roleName,
+      updaterRole: roleName
     }
     console.log(data)
     const newCourse = await courseModel.create(data);
@@ -675,6 +693,24 @@ export const adminGetAllCourseController = async (
       .json({ message: "Something went wrong ..!" });
   }
 };
+
+export const getCourseByIdController = async (request: express.Request, response: express.Response) => {
+  const { courseId } = request.params;
+  try {
+    const course = await courseModel.findOne({ courseId: courseId });
+    if (!course) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Course not found" });
+    }
+    response.status(200).json({ data: course, message: "Course of given id" });
+  } catch (error) {
+    console.log("Error occured in getCourseById : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+}
 
 export const adminRegisterEmployeesController = async (request: any, response: express.Response) => {
   try {

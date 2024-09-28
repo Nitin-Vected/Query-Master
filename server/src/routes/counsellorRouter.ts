@@ -6,6 +6,7 @@ import {
   getLeadByIdController,
   updateCourseCategoryStatusController,
   createUserAndStudentController,
+  counsellorViewProfileController,
   counsellorManageLeadStatusController,
   consellorRegisterLeadAsUserController,
   counsellorAddTransactionDetailsController,
@@ -19,6 +20,11 @@ counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusC
 counsellorRouter.post("/counsellorEnrollStudent", consellorRegisterLeadAsUserController, counsellorAddTransactionDetailsController);
 
 
+counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusController);
+counsellorRouter.post("/counsellorEnrollStudent", consellorRegisterLeadAsUserController, counsellorAddTransactionDetailsController);
+
+
+counsellorRouter.get("/counsellorViewProfile", counsellorViewProfileController);
 counsellorRouter.post("/addNewLeads", addNewLeadsController);
 counsellorRouter.get("/getAllLeads", getAllLeadsController);
 counsellorRouter.get("/getLeadById/:leadId", getLeadByIdController);
