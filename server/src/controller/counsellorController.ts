@@ -10,6 +10,7 @@ import { Request, Response, NextFunction } from "express";
 import { tokenVerifier } from "../utilities/jwt";
 import studentModel from "../model/studentModel";
 import userModel from "../model/userModel";
+import orderModel from "../model/orderModel";
 
 export const counsellorViewProfileController = async (
   request: any,
@@ -132,6 +133,44 @@ export const counsellorAddTransactionDetailsController = async (request: any, re
       .json({ error: "Something went wrong, please try again." });
   }
 };
+
+export const addNewOrderController = async (request: any, response: Response) => {
+  try {
+    const { email, roleName } = request.payload;
+    console.log("request.payload ", request.payload);
+
+    const { userId, transactionId, discount, finalAmount, coursesPurchased } = request.body;
+    const orderId = await generateUniqueId("order");
+    const data = {
+      orderId,
+      userId: userId,
+      transactionId: transactionId,
+      finalAmount: finalAmount,
+      discount: discount,
+      coursesPurchased: coursesPurchased,
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: roleName,
+      updaterRole: roleName
+    }
+    console.log(data)
+    const newOrder = await orderModel.create(data);
+    if (newOrder) {
+      response.status(StatusCodes.CREATED).json({
+        message: 'Order Added successfully ..!',
+      });
+    } else {
+      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Something Went Wrong ..!',
+      });
+    }
+  } catch (error) {
+    console.error("Error in addNewOrderController:", error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong!",
+    });
+  }
+}
 
 const getNextEnrollmentId = async (): Promise<string> => {
   const lastStudent = await studentModel.findOne().sort({ _id: -1 });

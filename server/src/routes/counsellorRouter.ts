@@ -10,6 +10,7 @@ import {
   counsellorManageLeadStatusController,
   consellorRegisterLeadAsUserController,
   counsellorAddTransactionDetailsController,
+  addNewOrderController,
 } from "../controller/counsellorController";
 
 const counsellorRouter = express.Router();
@@ -23,6 +24,7 @@ counsellorRouter.post("/counsellorEnrollStudent", consellorRegisterLeadAsUserCon
 counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusController);
 counsellorRouter.post("/counsellorEnrollStudent", consellorRegisterLeadAsUserController, counsellorAddTransactionDetailsController);
 
+counsellorRouter.post("/addNewOrder", addNewOrderController)
 
 counsellorRouter.get("/counsellorViewProfile", counsellorViewProfileController);
 counsellorRouter.post("/addNewLeads", addNewLeadsController);

@@ -1,13 +1,29 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+interface Courses {
+    courseId: string;
+}
+
 interface Order extends Document {
     orderId: string;
     userId: string;
-    coursesPurchased: string;
+    coursesPurchased: Courses[];
     finalAmount: number;
     discount: number;
     transactionId: string;
+    createdBy: string,
+    updatedBy: string,
+    creatorRole: string,
+    updaterRole: string
 }
+
+const CoursesPurchasedSchema: Schema = new mongoose.Schema({
+    courseId: {
+        type: String,
+        required: true,
+        ref: "Course"
+    },
+});
 
 const OrderSchema = new Schema<Order>(
     {
@@ -21,13 +37,7 @@ const OrderSchema = new Schema<Order>(
             ref: "user",
             required: true,
         },
-        coursesPurchased: [
-            {
-                type: String,
-                ref: "course",
-                required: true,
-            },
-        ],
+        coursesPurchased: [CoursesPurchasedSchema],
         finalAmount: {
             type: Number,
             required: true,
@@ -41,8 +51,24 @@ const OrderSchema = new Schema<Order>(
             ref: "Transaction",
             required: true,
         },
+        createdBy: {
+            type: String,
+            required: true,
+        },
+        updatedBy: {
+            type: String,
+            required: true,
+        },
+        creatorRole: {
+            type: String,
+            required: true,
+        },
+        updaterRole: {
+            type: String,
+            required: true,
+        },
     },
     { versionKey: false, timestamps: true }
 );
 
-export default mongoose.model<Order>("Orders", OrderSchema);
+export default mongoose.model<Order>("Orders", OrderSchema, "orders");

@@ -7,6 +7,7 @@ import userModel from "./model/userModel";
 import batchModel from "./model/batchModel";
 import employeeModel from "./model/employeeModel";
 import statusModel from "./model/statusModel";
+import orderModel from "./model/orderModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string;
@@ -227,6 +228,34 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
                         isUnique = true;
                     } else {
                         console.log('Status ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
+            }
+            case 'order': {
+                const latestOrder = await orderModel.find().sort({ createdAt: -1 }).limit(1);
+                let newCounter = 1;
+
+                if (latestOrder.length > 0) {
+                    const orderData = latestOrder[0];
+                    if (orderData.orderId) {
+                        const numericPart = orderData.orderId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `ORDER${uniqueId}0${newCounter}`;
+                    console.log(`Generated Order ID: ${newUniqueId}`);
+
+                    const existingBatchWithSameId = await batchModel.findOne({ batchId: newUniqueId });
+                    if (!existingBatchWithSameId) {
+                        isUnique = true;
+                    } else {
+                        console.log('Order ID collision, regenerating...');
                     }
                 }
                 return newUniqueId;
