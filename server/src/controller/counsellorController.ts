@@ -2,13 +2,95 @@ import express from "express";
 import leadModel from "../model/leadModel";
 import {
   COUNSELLOR_SECRET_KEY,
+  STUDENT_ROLE_ID,
   StatusCodes,
   generateUniqueId,
 } from "../config";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { tokenVerifier } from "../utilities/jwt";
 import studentModel from "../model/studentModel";
 import userModel from "../model/userModel";
+
+export const counsellorManageLeadStatusController = async (request: Request, response: Response) => {
+  try {
+    const { email, courseId, statusId } = request.body;
+    console.log("Lead email: ", email, "  action: ", statusId);
+
+    if (!email || !courseId || !statusId) {
+      return response
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Email, Course ID, and action are required" });
+    }
+    const result = await leadModel.updateOne(
+      { email: email, "courses.courseId": courseId },
+      { $set: { "courses.$.statusId": statusId } }
+    );
+
+    console.log(result);
+
+    if (result?.acknowledged) {
+      return response
+        .status(StatusCodes.OK)
+        .json({ message: "Lead status has been updated successfully!" });
+    } else {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Lead or course not found." });
+    }
+
+  } catch (error) {
+    console.error("Error updating lead status: ", error);
+    return response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Something went wrong, please try again." });
+  }
+};
+
+
+export const consellorRegisterLeadAsUserController = async (request: any, response: Response, next: NextFunction) => {
+  try {
+    const { name, contactNumber, email } = request.body;
+    const missingField = Object.entries(request.body).find(([key, value]) => !value);
+    if (missingField) {
+      return response
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Please Enter all the required fields and try again ..!" });
+    }
+    const [firstName, lastName] = name.split(" ");
+    const userId = await generateUniqueId("user");
+    const result = await userModel.create({
+      userId,
+      email,
+      firstName,
+      lastName,
+      status: true,
+      roleId: STUDENT_ROLE_ID,
+      contactNumber,
+    });
+    if (result) {
+      request.userId = userId;
+      next();
+    }
+  } catch (error) {
+    return response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Something went wrong, please try again." });
+  }
+};
+
+export const counsellorAddTransactionDetailsController = async (request: any, response: Response, next: NextFunction) => {
+  try {
+    const userId = request.userId;
+    const transactionId = await generateUniqueId('transaction');
+    const {paymentMode,paymentType, transactionDate, transactionAmount, transactionProof} = request.body;
+
+
+  } catch (error) {
+    return response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Something went wrong, please try again." });
+  }
+};
 
 const getNextEnrollmentId = async (): Promise<string> => {
   const lastStudent = await studentModel.findOne().sort({ _id: -1 });
@@ -44,12 +126,12 @@ export const addNewLeadsController = async (
       if (existingLead) {
         console.log("Lead already exists. Updating courseCategory.");
 
-        const existingCourse = existingLead.courseCategory.find(
+        const existingCourse = existingLead.courses.find(
           (category) => category.courseId === courseCategory[0].courseId
         );
 
         if (!existingCourse) {
-          existingLead.courseCategory.push(courseCategory[0]);
+          existingLead.courses.push(courseCategory[0]);
           await existingLead.save();
         } else {
           console.log("Course already exists in the lead’s courseCategory.");
@@ -135,7 +217,7 @@ export const updateCourseCategoryStatusController = async (
         .json({ message: "Lead not found" });
     }
 
-    const courseApp = lead.courseCategory.find(
+    const courseApp = lead.courses.find(
       (app) => app.courseId === courseId
     );
 

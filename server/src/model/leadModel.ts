@@ -1,12 +1,12 @@
 import { Schema, model, Document } from "mongoose";
 
-interface CourseCategory {
+interface Courses {
   courseId: string;
   statusId: string;
   appliedAt: Date;
 }
 
-const courseCategorySchema = new Schema<CourseCategory>(
+const coursesSchema = new Schema<Courses>(
   {
     courseId: { type: String, required: true, ref: "Course" },
     statusId: { type: String, required: true, ref: "Status" },
@@ -29,7 +29,7 @@ interface Lead extends Document {
   updatedAt?: Date;
   updatedBy?: string;
   updaterRole?: string;
-  courseCategory: CourseCategory[];
+  courses: Courses[];
 }
 
 const leadSchema = new Schema<Lead>(
@@ -45,7 +45,7 @@ const leadSchema = new Schema<Lead>(
     createrRole: { type: String, required: true },
     updatedBy: { type: String, ref: "user" },
     updaterRole: { type: String },
-    courseCategory: [courseCategorySchema],
+    courses: [coursesSchema],
   },
   { versionKey: false, timestamps: true }
 );

@@ -4,6 +4,7 @@ import {
   adminAddNewBatchController,
   adminAddNewCourseController,
   adminAddNewRoleController,
+  adminAddNewStatusController,
   adminAuthenticateJWT,
   adminGetAllBatchController,
   adminGetAllCourseController,
@@ -55,12 +56,14 @@ adminRouter.get(
   adminManageStudentStatusController
 );
 
+
 adminRouter.post("/adminRaiseQuery", adminRaiseQueryController);
 adminRouter.post("/adminAddResponseToQuery/:queryId", adminResponseController);
 adminRouter.post("/adminAddResponseToQuery/:queryId", adminResponseController);
 adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 
 adminRouter.post("/addNewRole", adminAddNewRoleController);
+adminRouter.post("/adminAddNewStatus", adminAddNewStatusController);
 adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
 adminRouter.post("/adminAddAccessRights", adminManageUsersAccessRightsController);
 

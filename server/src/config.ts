@@ -6,6 +6,7 @@ import roleModel from "./model/roleModel";
 import userModel from "./model/userModel";
 import batchModel from "./model/batchModel";
 import employeeModel from "./model/employeeModel";
+import statusModel from "./model/statusModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string;
@@ -202,10 +203,38 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
                 }
                 return newUniqueId;
             }
+            case 'status': {
+                const latestStatus = await statusModel.find().sort({ createdAt: -1 }).limit(1);
+                let newCounter = 1;
+
+                if (latestStatus.length > 0) {
+                    const statusData = latestStatus[0];
+                    if (statusData.statusId) {
+                        const numericPart = statusData.statusId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `STATUS${uniqueId}0${newCounter}`;
+                    console.log(`Generated Status ID: ${newUniqueId}`);
+
+                    const existingStatusWithSameId = await statusModel.findOne({ statusId: newUniqueId });
+                    if (!existingStatusWithSameId) {
+                        isUnique = true;
+                    } else {
+                        console.log('Status ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
+            }
         }
 
     } catch (error) {
-        console.error('Error generating Query ID:', error);
+        console.error('Error generating Status ID:', error);
         throw error;
     }
 }

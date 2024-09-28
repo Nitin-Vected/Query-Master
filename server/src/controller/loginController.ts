@@ -32,6 +32,7 @@ export const loginController = async (
   response: express.Response
 ) => {
   try {
+
     const { tokenResponse } = request.body;
     const decodedToken = await verifyGoogleToken(tokenResponse);
 
@@ -39,8 +40,8 @@ export const loginController = async (
       const { given_name, family_name, picture, email, email_verified } =
         decodedToken;
 
-      let user = await userModel.findOne({ email: email }, { _id: 0 });
-
+      let user = await userModel.findOne({ email: email });
+      console.log(user);
       if (user && user?.status) {
         user.email = email;
         user.profileImg = picture;
@@ -61,6 +62,8 @@ export const loginController = async (
           contactNumber: "9755554545",
         });
       }
+
+      console.log('User.roleId ==> ',user.roleId);
 
       const roleDetails = await roleModel.findOne({ roleId: user.roleId });
       const result = {

@@ -16,6 +16,7 @@ import batchModel from "../model/batchModel";
 import courseModel from "../model/courseModel";
 import employeeModel from "../model/employeeModel";
 import { AccessRights } from "../model/accessRightsModel";
+import statusModel from "../model/statusModel";
 
 export const adminViewProfileController = async (
   request: any,
@@ -502,6 +503,45 @@ export const adminAddNewRoleController = async (
   }
 };
 
+
+export const adminAddNewStatusController = async (
+  request: any,
+  response: express.Response
+) => {
+  try {
+    const { email, roleName } = request.payload;
+    console.log("request.payload ", request.payload);
+
+    const { statusName } = request.body;
+    const statusId = await generateUniqueId("status");
+    const data = {
+      statusId,
+      statusName,
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: roleName,
+      updaterRole: roleName,
+    };
+    console.log("data ", data);
+
+    const newStatus = await statusModel.create(data);
+    if (newStatus) {
+      response.status(StatusCodes.CREATED).json({
+        message: "Status Added successfully ..!",
+      });
+    } else {
+      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Something Went Wrong ..!",
+      });
+    }
+  } catch (error) {
+    console.error("Error in adminAddNewStatusController:", error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong!",
+    });
+  }
+};
+
 export const adminAddNewBatchController = async (
   request: any,
   response: express.Response
@@ -711,6 +751,7 @@ export const adminManageUsersAccessRightsController = async (request: any, respo
 }
 
 
+
 export const adminAuthenticateJWT = async (
   request: any,
   response: express.Response,
@@ -734,4 +775,3 @@ export const adminAuthenticateJWT = async (
   }
 };
 
-// view student, view 

@@ -2,8 +2,8 @@ import mongoose, { Schema, Document } from "mongoose";
 
 interface Transaction extends Document {
   transactionId: string;
-  mode: string;
-  type: string;
+  paymentMode: string;
+  paymentType: string;
   transactionDate: Date;
   transactionAmount: number;
   transactionProof?: string;
@@ -48,12 +48,12 @@ const TransactionSchema = new Schema<Transaction>(
       required: true,
       unique: true,
     },
-    mode: {
+    paymentMode: {
       type: String,
       enum: ["Online", "Offline"],
       required: true,
     },
-    type: {
+    paymentType: {
       type: String,
       enum: ["Full", "EMI"],
       required: true,
