@@ -26,7 +26,7 @@ const InstallmentSchema = new Schema(
       required: true,
     },
     paymentDate: {
-      type: Date, // When the installment was paid
+      type: Date,
     },
     amount: {
       type: Number,

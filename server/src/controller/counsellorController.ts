@@ -1,6 +1,10 @@
 import express from "express";
 import leadModel from "../model/leadModel";
-import { COUNSELLOR_SECRET_KEY, StatusCodes, generateUniqueId } from "../config";
+import {
+  COUNSELLOR_SECRET_KEY,
+  StatusCodes,
+  generateUniqueId,
+} from "../config";
 import { Request, Response } from "express";
 import { tokenVerifier } from "../utilities/jwt";
 import studentModel from "../model/studentModel";
@@ -24,24 +28,57 @@ const getNextEnrollmentId = async (): Promise<string> => {
   return newEnrollmentNumber;
 };
 
-export const addNewLeadsController = async (request: Request, response: Response) => {
+export const addNewLeadsController = async (
+  request: Request,
+  response: Response
+) => {
   try {
     const leads = Array.isArray(request.body) ? request.body : [request.body];
-    const result = await leadModel.insertMany(leads);
-    console.log('lead : ',leads)
-    console.log('result : ',result)
+
+    const result = [];
+    for (const leadData of leads) {
+      const { email, courseCategory } = leadData;
+
+      let existingLead = await leadModel.findOne({ email });
+
+      if (existingLead) {
+        console.log("Lead already exists. Updating courseCategory.");
+
+        const existingCourse = existingLead.courseCategory.find(
+          (category) => category.courseId === courseCategory[0].courseId
+        );
+
+        if (!existingCourse) {
+          existingLead.courseCategory.push(courseCategory[0]);
+          await existingLead.save();
+        } else {
+          console.log("Course already exists in the lead’s courseCategory.");
+        }
+
+        result.push(existingLead);
+      } else {
+        console.log("Lead does not exist. Creating a new lead.");
+        const newLead = await leadModel.create(leadData);
+        result.push(newLead);
+      }
+    }
+
+    console.log("Result: ", result);
     response
       .status(StatusCodes.CREATED)
-      .json({ data: result, message: "Leads created Successfully..." });
+      .json({ data: result, message: "Leads processed successfully." });
   } catch (error) {
-    console.log("Error occured in addNewLeads : ", error);
+    console.error("Error occurred in addNewLeads: ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: "Something went wrong!" });
   }
 };
 
-export const getAllLeadsController = async (request: Request, response: Response) => {
+export const getAllLeadsController = async (
+  request: Request,
+  response: Response
+) => {
   try {
     const leads = await leadModel.find();
     if (leads) {
@@ -62,7 +99,10 @@ export const getAllLeadsController = async (request: Request, response: Response
   }
 };
 
-export const getLeadByIdController = async (request: Request, response: Response) => {
+export const getLeadByIdController = async (
+  request: Request,
+  response: Response
+) => {
   const { id } = request.params;
 
   try {
@@ -198,24 +238,24 @@ export const createUserAndStudentController = async (
 };
 
 export const counsellorAuthenticateJWT = async (
-    request: any,
-    response: express.Response,
-    next: Function
-  ) => {
-    try {
-      const authHeader = request.headers["authorization"];
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        response
-          .status(401)
-          .json({ message: "Authorization token is missing or invalid" });
-      }
-      const token = authHeader.split(" ")[1];
-      const payload = await tokenVerifier(token, COUNSELLOR_SECRET_KEY);
-      request.payload = payload;
-      next();
-    } catch (error) {
+  request: any,
+  response: express.Response,
+  next: Function
+) => {
+  try {
+    const authHeader = request.headers["authorization"];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       response
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Invalid or expired Candidate token" });
+        .status(401)
+        .json({ message: "Authorization token is missing or invalid" });
     }
-  };
+    const token = authHeader.split(" ")[1];
+    const payload = await tokenVerifier(token, COUNSELLOR_SECRET_KEY);
+    request.payload = payload;
+    next();
+  } catch (error) {
+    response
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "Invalid or expired Candidate token" });
+  }
+};
