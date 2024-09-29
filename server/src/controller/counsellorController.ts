@@ -10,6 +10,8 @@ import { Request, Response, NextFunction } from "express";
 import { tokenVerifier } from "../utilities/jwt";
 import studentModel from "../model/studentModel";
 import userModel from "../model/userModel";
+import transactionModel from "../model/transactionModel";
+import { deleteFile } from "../utilities/deleteUploadedFile";
 import orderModel from "../model/orderModel";
 
 export const counsellorViewProfileController = async (
@@ -90,14 +92,20 @@ export const counsellorManageLeadStatusController = async (request: Request, res
 
 
 export const consellorRegisterLeadAsUserController = async (request: any, response: Response, next: NextFunction) => {
+  let uploadedFilePath = '';
   try {
     const { name, contactNumber, email } = request.body;
     const missingField = Object.entries(request.body).find(([key, value]) => !value);
+    
     if (missingField) {
       return response
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: "Please Enter all the required fields and try again ..!" });
     }
+
+    const transactionProof = request.file?.path;
+    uploadedFilePath = transactionProof;
+    
     const [firstName, lastName] = name.split(" ");
     const userId = await generateUniqueId("user");
     const result = await userModel.create({
@@ -114,6 +122,7 @@ export const consellorRegisterLeadAsUserController = async (request: any, respon
       next();
     }
   } catch (error) {
+    deleteFile(uploadedFilePath);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: "Something went wrong, please try again." });
@@ -121,13 +130,52 @@ export const consellorRegisterLeadAsUserController = async (request: any, respon
 };
 
 export const counsellorAddTransactionDetailsController = async (request: any, response: Response, next: NextFunction) => {
+  let uploadedFilePath = '';
   try {
     const userId = request.userId;
     const transactionId = await generateUniqueId('transaction');
-    const {paymentMode,paymentType, transactionDate, transactionAmount, transactionProof} = request.body;
+    const { paymentMode, paymentType, transactionDate, transactionAmount, emiDetails } = request.body;
 
+    const transactionProof = request.file?.path;
+    uploadedFilePath = transactionProof;
+
+    const transactionData = {
+      transactionId,
+      paymentMode,
+      paymentType,
+      transactionDate,
+      transactionAmount,
+      transactionProof,
+      emiDetails: {} 
+    };
+
+    if (paymentType === "EMI" && emiDetails) {
+      transactionData.emiDetails = {
+        emiCount: emiDetails.emiCount,
+        installments: emiDetails.installments,
+      };
+    } else if (paymentType === "OneTime Payment") {
+      transactionData.emiDetails = {
+        emiCount: 1,
+        installments: [{
+          dueDate: "2024-09-25"	,
+          transactionAmount: transactionAmount,
+          status: "Paid",
+        }]
+      };
+    }
+    const newTransaction = await transactionModel.create(transactionData);
+    console.log(`newTransaction ${newTransaction}`);
+    if (newTransaction) {
+      request.transactionId = transactionId;
+      return response
+        .status(StatusCodes.CREATED)
+        .json({ message: "Transaction added successfully", transactionId });
+    }
 
   } catch (error) {
+    deleteFile(uploadedFilePath);
+    console.log(error)
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: "Something went wrong, please try again." });

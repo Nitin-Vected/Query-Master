@@ -12,13 +12,15 @@ import {
   counsellorAddTransactionDetailsController,
   addNewOrderController,
 } from "../controller/counsellorController";
+import multer from "multer";
+import { uploadTransactionProof } from "../utilities/multer";
 
 const counsellorRouter = express.Router();
 
 counsellorRouter.use(counsellorAuthenticateJWT);
 
 counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusController);
-counsellorRouter.post("/counsellorEnrollStudent", consellorRegisterLeadAsUserController, counsellorAddTransactionDetailsController);
+counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single('transactionProof'), consellorRegisterLeadAsUserController, counsellorAddTransactionDetailsController);
 
 
 counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusController);

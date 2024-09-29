@@ -6,6 +6,7 @@ import {
   adminAddNewRoleController,
   adminAddNewStatusController,
   adminAuthenticateJWT,
+  adminAuthenticationController,
   adminGetAllBatchController,
   adminGetAllCourseController,
   adminGetQueryDataController,
@@ -34,7 +35,7 @@ adminRouter.get("/", (request: express.Request, response: express.Response) => {
   }
 });
 
-// adminRouter.get("/adminAuthentication", adminAuthenticationController);
+adminRouter.get("/adminAuthentication", adminAuthenticationController);
 
 adminRouter.use(adminAuthenticateJWT);
 
@@ -67,7 +68,7 @@ adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 adminRouter.post("/addNewRole", adminAddNewRoleController);
 adminRouter.post("/adminAddNewStatus", adminAddNewStatusController);
 adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
-adminRouter.post("/adminAddAccessRights", adminManageUsersAccessRightsController);
+adminRouter.post("/adminAddAccessRights", adminManageUsersAccessRightsController);2
 
 adminRouter.post("/addNewBatch", adminAddNewBatchController);
 adminRouter.get("/getAllBatches", adminGetAllBatchController);
