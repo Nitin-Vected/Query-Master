@@ -84,6 +84,7 @@ adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
  *         description: Query data retrieved
  */
 adminRouter.get("/adminGetQueryData/:queryId", adminGetQueryDataController);
+
 adminRouter.get("/adminGetAllPaymentDetails",adminGetAllTransactionsController);
 
 /**
