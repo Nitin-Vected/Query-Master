@@ -562,7 +562,7 @@ export const adminAddNewBatchController = async (
       createdBy: email,
       updatedBy: email,
       creatorRole: roleName,
-      updatorRole: roleName,
+      updaterRole: roleName,
     };
     console.log(data);
     const newBatch = await batchModel.create(data);
@@ -736,7 +736,7 @@ export const adminRegisterEmployeesController = async (request: any, response: e
         createdBy: request.payload.email,
         updatedBy: request.payload.email,
         creatorRole: request.payload.roleName,
-        updatorRole: request.payload.roleName,
+        updaterRole: request.payload.roleName,
       });
       if (employeeData) {
         response.status(StatusCodes.CREATED).json({

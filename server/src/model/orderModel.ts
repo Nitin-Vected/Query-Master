@@ -1,29 +1,19 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface Courses {
-    courseId: string;
-}
-
 interface Order extends Document {
     orderId: string;
-    userId: string;
-    coursesPurchased: Courses[];
+    userId: string;  // opt
+    transactionId: string;
+    coursesPurchased: [string];
     finalAmount: number;
     discount: number;
-    transactionId: string;
     createdBy: string,
     updatedBy: string,
     creatorRole: string,
     updaterRole: string
 }
 
-const CoursesPurchasedSchema: Schema = new mongoose.Schema({
-    courseId: {
-        type: String,
-        required: true,
-        ref: "Course"
-    },
-});
+
 
 const OrderSchema = new Schema<Order>(
     {
@@ -37,7 +27,13 @@ const OrderSchema = new Schema<Order>(
             ref: "user",
             required: true,
         },
-        coursesPurchased: [CoursesPurchasedSchema],
+        coursesPurchased: [
+            {
+                type: String,
+                ref: "Course",
+                required: true,
+            },
+        ],
         finalAmount: {
             type: Number,
             required: true,

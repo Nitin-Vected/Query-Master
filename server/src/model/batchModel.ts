@@ -13,7 +13,7 @@ interface Batch extends Document {
   startDate: string;
   endDate: string;
   creatorRole: string;
-  updatorRole: string;
+  updaterRole: string;
   createdBy: string;
   updatedBy: string;
 }
@@ -57,7 +57,7 @@ const BatchSchema: Schema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    updatorRole: {
+    updaterRole: {
       type: String,
       required: true,
     },

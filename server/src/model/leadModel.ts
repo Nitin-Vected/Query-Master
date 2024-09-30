@@ -2,14 +2,12 @@ import { Schema, model, Document } from "mongoose";
 
 interface Courses {
   courseId: string;
-  statusId: string;
   appliedAt: Date;
 }
 
 const coursesSchema = new Schema<Courses>(
   {
     courseId: { type: String, required: true, ref: "Course" },
-    statusId: { type: String, required: true, ref: "Status" },
     appliedAt: { type: Date, default: Date.now },
   },
   { _id: false }
@@ -29,6 +27,7 @@ interface Lead extends Document {
   updatedAt?: Date;
   updatedBy?: string;
   updaterRole?: string;
+  statusId: string;
   courses: Courses[];
 }
 
@@ -45,6 +44,7 @@ const leadSchema = new Schema<Lead>(
     createrRole: { type: String, required: true },
     updatedBy: { type: String, ref: "user" },
     updaterRole: { type: String },
+    statusId: { type: String, required: true, ref: "Status" },
     courses: [coursesSchema],
   },
   { versionKey: false, timestamps: true }

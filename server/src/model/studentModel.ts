@@ -3,9 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IStudent extends Document {
   enrollmentNumber: string;
   userId: string;
-  batchId: string;
-  courseId: string;
-  queryId: string;
+  coursesEnrolled: [string];
   transactions: [string];
   fees: string;
   discount: number;
@@ -13,7 +11,7 @@ export interface IStudent extends Document {
   createdBy: string;
   updatedBy: string;
   creatorRole: string;
-  updatorRole: string;
+  updaterRole: string;
 }
 
 const StudentSchema: mongoose.Schema = new Schema(
@@ -28,25 +26,17 @@ const StudentSchema: mongoose.Schema = new Schema(
       ref: "user",
       required: true,
     },
-    batchId: {
-      type: String,
-      ref: "batch",
-      required: true,
-    },
-    courseId: {
-      type: String,
-      ref: "course",
-      required: true,
-    },
-    queryId: {
-      type: String,
-      ref: "querylists",
-      required: true,
-    },
+    coursesEnrolled: [
+      {
+        type: String,
+        ref: "Course",
+        required: true,
+      },
+    ],
     transactions: [
       {
         type: String,
-        ref: "transactions",
+        ref: "Transaction",
       },
     ],
     fees: {
@@ -73,7 +63,7 @@ const StudentSchema: mongoose.Schema = new Schema(
       type: String,
       required: true,
     },
-    updatorRole: {
+    updaterRole: {
       type: String,
       required: true,
     },

@@ -6,7 +6,7 @@ export interface IEmployee extends Document {
   createdBy: string;
   updatedBy: string;
   creatorRole: string;
-  updatorRole: string;
+  updaterRole: string;
 }
 
 const EmployeeSchema: mongoose.Schema = new Schema(
@@ -33,7 +33,7 @@ const EmployeeSchema: mongoose.Schema = new Schema(
       type: String,
       required: true,
     },
-    updatorRole: {
+    updaterRole: {
       type: String,
       required: true,
     },

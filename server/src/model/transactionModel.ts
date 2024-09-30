@@ -2,44 +2,20 @@ import mongoose, { Schema, Document } from "mongoose";
 
 interface Transaction extends Document {
   transactionId: string;
+  userId: string;
   paymentMode: string;
   paymentType: string;
   transactionDate: Date;
   transactionAmount: number;
   transactionProof?: string;
-  emiDetails?: {
-    emiCount: number;
-    installments: Array<{
-      dueDate: Date;
-      paymentDate?: Date;
-      amount: number;
-      status: string;
-    }>;
-  };
+  createdBy: string,
+  updatedBy: string,
+  creatorRole: string,
+  updaterRole: string
 }
 
 // Sub-schema for EMI details
-const InstallmentSchema = new Schema(
-  {
-    dueDate: {
-      type: Date,
-      required: true,
-    },
-    paymentDate: {
-      type: Date,
-    },
-    amount: {
-      type: Number,
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ["Paid", "Unpaid"],
-      default: "Unpaid",
-    },
-  },
-  { _id: false }
-);
+
 
 const TransactionSchema = new Schema<Transaction>(
   {
@@ -48,6 +24,10 @@ const TransactionSchema = new Schema<Transaction>(
       required: true,
       unique: true,
     },
+    userId: {
+      type: String,
+      required: true,
+    },
     paymentMode: {
       type: String,
       enum: ["Online", "Offline"],
@@ -55,7 +35,7 @@ const TransactionSchema = new Schema<Transaction>(
     },
     paymentType: {
       type: String,
-      enum: ["Full", "EMI"],
+      enum: ["OneTime Payment", "EMI"],
       required: true,
     },
     transactionDate: {
@@ -70,14 +50,21 @@ const TransactionSchema = new Schema<Transaction>(
     transactionProof: {
       type: String, // URL for the proof of transaction
     },
-    emiDetails: {
-      emiCount: {
-        type: Number,
-        required: function () {
-          return this.type === "EMI";
-        },
-      },
-      installments: [InstallmentSchema],
+    createdBy: {
+      type: String,
+      required: true,
+    },
+    updatedBy: {
+      type: String,
+      required: true,
+    },
+    creatorRole: {
+      type: String,
+      required: true,
+    },
+    updaterRole: {
+      type: String,
+      required: true,
     },
   },
   { versionKey: false, timestamps: true }

@@ -8,6 +8,9 @@ import batchModel from "./model/batchModel";
 import employeeModel from "./model/employeeModel";
 import statusModel from "./model/statusModel";
 import orderModel from "./model/orderModel";
+import paymentModel from "./model/paymentModel";
+import transactionModel from "./model/transactionModel";
+import studentModel from "./model/studentModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env.CONNECTION_STRING as string;
@@ -251,11 +254,95 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
                     newUniqueId = `ORDER${uniqueId}0${newCounter}`;
                     console.log(`Generated Order ID: ${newUniqueId}`);
 
-                    const existingBatchWithSameId = await batchModel.findOne({ batchId: newUniqueId });
-                    if (!existingBatchWithSameId) {
+                    const existingOrderWithSameId = await orderModel.findOne({ orderId: newUniqueId });
+                    if (!existingOrderWithSameId) {
                         isUnique = true;
                     } else {
-                        console.log('Order ID collision, regenerating...');
+                        console.log('Status ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
+            }
+            case 'payment': {
+                const latestPayment = await paymentModel.find().sort({ createdAt: -1 }).limit(1);
+                let newCounter = 1;
+
+                if (latestPayment.length > 0) {
+                    const paymentData = latestPayment[0];
+                    if (paymentData.paymentId) {
+                        const numericPart = paymentData.paymentId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `PYMT${uniqueId}0${newCounter}`;
+                    console.log(`Generated Payment ID: ${newUniqueId}`);
+
+                    const existingPaymentWithSameId = await paymentModel.findOne({ paymentId: newUniqueId });
+                    if (!existingPaymentWithSameId) {
+                        isUnique = true;
+                    } else {
+                        console.log('Payment ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
+            }
+            case 'transaction': {
+                const latestTransaction = await transactionModel.find().sort({ createdAt: -1 }).limit(1);
+                let newCounter = 1;
+
+                if (latestTransaction.length > 0) {
+                    const transactionData = latestTransaction[0];
+                    if (transactionData.transactionId) {
+                        const numericPart = transactionData.transactionId.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `TRNS${uniqueId}0${newCounter}`;
+                    console.log(`Generated Transaction ID: ${newUniqueId}`);
+
+                    const existingTransactionWithSameId = await transactionModel.findOne({ transactionId: newUniqueId });
+                    if (!existingTransactionWithSameId) {
+                        isUnique = true;
+                    } else {
+                        console.log('Transaction ID collision, regenerating...');
+                    }
+                }
+                return newUniqueId;
+            }
+            case 'enrollment': {
+                const latestStudent = await studentModel.find().sort({ createdAt: -1 }).limit(1);
+                let newCounter = 1;
+
+                if (latestStudent.length > 0) {
+                    const studentData = latestStudent[0];
+                    if (studentData.enrollmentNumber) {
+                        const numericPart = studentData.enrollmentNumber.match(/\d+$/);
+                        if (numericPart) {
+                            newCounter = parseInt(numericPart[0]) + 1;
+                        }
+                    }
+                }
+
+                while (!isUnique) {
+                    const uniqueId = shortid.generate();
+                    newUniqueId = `10VSA000${newCounter}`;
+                    console.log(`Generated Student Enrollment Number: ${newUniqueId}`);
+
+                    const existingEnrollmentNumber = await studentModel.findOne({ enrollmentNumber: newUniqueId });
+                    if (!existingEnrollmentNumber) {
+                        isUnique = true;
+                    } else {
+                        console.log('Enrollment Number collision, regenerating...');
                     }
                 }
                 return newUniqueId;

@@ -12,20 +12,23 @@ import studentModel from "../model/studentModel";
 import userModel from "../model/userModel";
 import transactionModel from "../model/transactionModel";
 import { deleteFile } from "../utilities/deleteUploadedFile";
+import orderModel from "../model/orderModel";
+import paymentModel from "../model/paymentModel";
+import mongoose from "mongoose";
 
 export const counsellorManageLeadStatusController = async (request: Request, response: Response) => {
   try {
-    const { email, courseId, statusId } = request.body;
+    const { email, statusId } = request.body;
     console.log("Lead email: ", email, "  action: ", statusId);
 
-    if (!email || !courseId || !statusId) {
+    if (!email || !statusId) {
       return response
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: "Email, Course ID, and action are required" });
     }
     const result = await leadModel.updateOne(
-      { email: email, "courses.courseId": courseId },
-      { $set: { "courses.$.statusId": statusId } }
+      { email: email },
+      { $set: { "statusId": statusId } }
     );
 
     console.log(result);
@@ -49,12 +52,15 @@ export const counsellorManageLeadStatusController = async (request: Request, res
 };
 
 
+
+
+
 export const consellorRegisterLeadAsUserController = async (request: any, response: Response, next: NextFunction) => {
   let uploadedFilePath = '';
   try {
     const { name, contactNumber, email } = request.body;
     const missingField = Object.entries(request.body).find(([key, value]) => !value);
-    
+
     if (missingField) {
       return response
         .status(StatusCodes.BAD_REQUEST)
@@ -63,9 +69,10 @@ export const consellorRegisterLeadAsUserController = async (request: any, respon
 
     const transactionProof = request.file?.path;
     uploadedFilePath = transactionProof;
-    
+
     const [firstName, lastName] = name.split(" ");
     const userId = await generateUniqueId("user");
+
     const result = await userModel.create({
       userId,
       email,
@@ -75,108 +82,163 @@ export const consellorRegisterLeadAsUserController = async (request: any, respon
       roleId: STUDENT_ROLE_ID,
       contactNumber,
     });
-    if (result) {
-      request.userId = userId;
-      next();
+
+    if (!result) {
+      throw new Error('Failed to create user');
     }
+
+    request.userId = userId;
+    request.leadEmail = email;
+    next();
+
   } catch (error) {
+    await userModel.deleteOne({ email: request.body.email });
     deleteFile(uploadedFilePath);
+    console.error("Error registering lead as user: ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: "Something went wrong, please try again." });
   }
 };
 
-export const counsellorAddTransactionDetailsController = async (request: any, response: Response, next: NextFunction) => {
+export const counsellorAddTransactionDetailsController = async (request: any, response: Response) => {
   let uploadedFilePath = '';
+  let session: mongoose.ClientSession | null = null;
+
   try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+    const { email, roleName } = request.payload;
     const userId = request.userId;
+    const leadEmail = request.leadEmail;
     const transactionId = await generateUniqueId('transaction');
-    const { paymentMode, paymentType, transactionDate, transactionAmount, emiDetails } = request.body;
+    let { paymentMode, paymentType, transactionDate, transactionAmount,
+      emiDetails, discount, finalAmount, coursesPurchased, statusId } = request.body;
 
     const transactionProof = request.file?.path;
     uploadedFilePath = transactionProof;
 
     const transactionData = {
       transactionId,
+      userId,
       paymentMode,
       paymentType,
       transactionDate,
       transactionAmount,
       transactionProof,
-      emiDetails: {} 
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: roleName,
+      updaterRole: roleName
     };
 
+    const newTransaction = await transactionModel.create([transactionData], { session });
+    if (!newTransaction) {
+      throw new Error('Transaction creation failed');
+    }
+
+    const orderId = await generateUniqueId("order");
+    const orderData = {
+      orderId,
+      userId,
+      transactionId,
+      coursesPurchased: coursesPurchased,
+      finalAmount: finalAmount,
+      discount: discount,
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: roleName,
+      updaterRole: roleName
+    };
+
+    const newOrder = await orderModel.create([orderData], { session });
+    if (!newOrder) {
+      throw new Error('Order creation failed');
+    }
+
+    const paymentId = await generateUniqueId("payment");
     if (paymentType === "EMI" && emiDetails) {
-      transactionData.emiDetails = {
+      emiDetails = {
         emiCount: emiDetails.emiCount,
         installments: emiDetails.installments,
       };
     } else if (paymentType === "OneTime Payment") {
-      transactionData.emiDetails = {
+      emiDetails = {
         emiCount: 1,
         installments: [{
-          dueDate: "2024-09-25"	,
-          transactionAmount: transactionAmount,
+          dueDate: Date.now(),
+          transactionAmount,
           status: "Paid",
         }]
       };
     }
-    const newTransaction = await transactionModel.create(transactionData);
-    console.log(`newTransaction ${newTransaction}`);
-    if (newTransaction) {
-      request.transactionId = transactionId;
-      return response
-        .status(StatusCodes.CREATED)
-        .json({ message: "Transaction added successfully", transactionId });
+
+    const paymentDetails = {
+      paymentId,
+      orderId,
+      emiDetails,
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: roleName,
+      updaterRole: roleName
+    };
+
+    const paymentResult = await paymentModel.create([paymentDetails], { session });
+    if (!paymentResult) {
+      throw new Error('Payment creation failed');
     }
 
-  } catch (error) {
-    deleteFile(uploadedFilePath);
-    console.log(error)
-    return response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Something went wrong, please try again." });
-  }
-};
+    const result = await leadModel.updateOne(
+      { email: leadEmail },
+      { $set: { "statusId": statusId } },
+      { session }
+    );
 
-export const addNewOrderController = async (request: any, response: Response) => {
-  try {
-    const { email, roleName } = request.payload;
-    console.log("request.payload ", request.payload);
+    if (!result?.acknowledged) {
+      throw new Error('Lead status update failed');
+    }
 
-    const { userId, transactionId, discount, finalAmount, coursesPurchased } = request.body;
-    const orderId = await generateUniqueId("order");
-    const data = {
-      orderId,
-      userId: userId,
-      transactionId: transactionId,
-      finalAmount: finalAmount,
-      discount: discount,
-      coursesPurchased: coursesPurchased,
+    const enrollmentNumber = await generateUniqueId("enrollment");
+
+    const studentData = {
+      enrollmentNumber,
+      coursesEnrolled: coursesPurchased,
+      userId,
+      transactions: [transactionId],
+      fees: finalAmount,
+      discount,
+      enrollmentDate: transactionDate,
       createdBy: email,
       updatedBy: email,
       creatorRole: roleName,
       updaterRole: roleName
     }
-    console.log(data)
-    const newOrder = await orderModel.create(data);
-    if (newOrder) {
-      response.status(StatusCodes.CREATED).json({
-        message: 'Order Added successfully ..!',
-      });
-    } else {
-      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Something Went Wrong ..!',
-      });
+    const studentResult = await studentModel.create([studentData], { session });
+    if (!studentResult) {
+      throw new Error('Student registration failed');
     }
+
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    response.status(StatusCodes.CREATED).json({ message: 'Student Enrolled Successfully ..!' });
+
   } catch (error) {
-    console.error("Error in addNewOrderController:", error);
-    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Something went wrong!",
-    });
+    if (session) {
+      await session.abortTransaction();
+      session.endSession();
+    }
+    deleteFile(uploadedFilePath);
+    console.error("Error in transaction process: ", error);
+    return response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Something went wrong, rolling back changes." });
   }
-}
+};
+
+
 
 const getNextEnrollmentId = async (): Promise<string> => {
   const lastStudent = await studentModel.findOne().sort({ _id: -1 });
@@ -283,122 +345,6 @@ export const getLeadByIdController = async (
     response.status(200).json({ data: lead, message: "Lead of given id" });
   } catch (error) {
     console.log("Error occured in getLeadById : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
-
-export const updateCourseCategoryStatusController = async (
-  request: Request,
-  response: Response
-) => {
-  const { leadId, courseId, newStatusId } = request.body;
-  try {
-    const lead = await leadModel.findById(leadId);
-
-    if (!lead) {
-      return response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Lead not found" });
-    }
-
-    const courseApp = lead.courses.find(
-      (app) => app.courseId === courseId
-    );
-
-    if (!courseApp) {
-      return response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Course application not found" });
-    }
-
-    courseApp.statusId = newStatusId;
-    await lead.save();
-    response
-      .status(StatusCodes.OK)
-      .json({ data: lead, message: "Status Updated Successfully" });
-  } catch (error) {
-    console.log("Error occured in addNewLeads : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
-
-export const createUserAndStudentController = async (
-  request: Request,
-  response: Response
-) => {
-  const {
-    firstName,
-    lastName,
-    email,
-    contactNumber,
-    profileImg,
-    roleId,
-    status,
-    batchId,
-    courseId,
-    queryId,
-    transactions,
-    fees,
-    discount,
-    enrollmentDate,
-    createdBy,
-    creatorRole,
-  } = request.body;
-
-  try {
-    const userId = generateUniqueId("user");
-
-    const enrollmentNumber = await getNextEnrollmentId();
-
-    if (!transactions || transactions.length === 0) {
-      return response.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: "Transactions field must not be empty",
-      });
-    }
-
-    const newUser = new userModel({
-      userId,
-      firstName,
-      lastName,
-      email,
-      contactNumber,
-      profileImg,
-      roleId,
-      status,
-    });
-
-    await newUser.save();
-
-    const newStudent = new studentModel({
-      enrollmentNumber,
-      userId: newUser.userId,
-      batchId,
-      courseId,
-      queryId,
-      transactions,
-      fees,
-      discount,
-      enrollmentDate,
-      createdBy,
-      updatedBy: createdBy,
-      creatorRole,
-      updatorRole: creatorRole,
-    });
-
-    await newStudent.save();
-
-    response.status(StatusCodes.CREATED).json({
-      message: "User and Student created successfully",
-      user: newUser,
-      student: newStudent,
-    });
-  } catch (error) {
-    console.log("Error occured in createUserAndStudentController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
