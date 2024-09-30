@@ -24,7 +24,7 @@ counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single(
 
 
 counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusController);
-counsellorRouter.post("/counsellorEnrollStudent", consellorRegisterLeadAsUserController, counsellorAddTransactionDetailsController);
+counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single('transactionProof'), consellorRegisterLeadAsUserController, counsellorAddTransactionDetailsController);
 
 counsellorRouter.post("/addNewOrder", addNewOrderController)
 
