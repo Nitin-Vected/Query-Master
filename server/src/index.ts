@@ -7,20 +7,24 @@ import counsellorRouter from "./routes/counsellorRouter";
 import { PORT } from "./config";
 import http from "http";
 import { Server } from "socket.io";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocs from "./swaggerConfig"; // Import your Swagger config
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+    },
 });
 
 connectDB();
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);

@@ -315,6 +315,9 @@ export const userAuthenticateJWT = async (
 ) => {
   try {
     const authHeader = request.headers["authorization"];
+    console.log("request.headers", request.headers);
+    console.log("authHeader", authHeader);
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
