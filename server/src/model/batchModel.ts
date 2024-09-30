@@ -33,17 +33,17 @@ const BatchSchema: Schema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    students: {
+      type: [String],
+      ref: "Student",
+      required: true
+    },
     startDate: {
       type: String,
       required: true,
     },
     endDate: {
       type: String,
-      required: true,
-    },
-    students: {
-      type: [String],
-      ref: "Student",
       required: true,
     },
     creatorRole: {

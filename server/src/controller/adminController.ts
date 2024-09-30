@@ -17,6 +17,8 @@ import courseModel from "../model/courseModel";
 import employeeModel from "../model/employeeModel";
 import { AccessRights } from "../model/accessRightsModel";
 import statusModel from "../model/statusModel";
+import paymentModel from "../model/paymentModel";
+import orderModel from "../model/orderModel";
 
 export const adminViewProfileController = async (
   request: any,
@@ -627,6 +629,8 @@ export const getBatchByIdController = async (
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Batch not found" });
     }
+    console.log(batch);
+    
     response.status(200).json({ data: batch, message: "Batch of given id" });
   } catch (error) {
     console.log("Error occured in getBatchById : ", error);
@@ -811,6 +815,73 @@ export const adminManageUsersAccessRightsController = async (
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something Went Wrong" });
+  }
+}
+
+export const adminGetAllTransactionsController = async (request: any, response: express.Response) => {
+  try {
+    const payments = await paymentModel.aggregate([
+      {
+        $lookup: {
+          from: 'orders',
+          localField: 'orderId',
+          foreignField: 'orderId',
+          as: 'orderDetails'
+        }
+      },
+      { $unwind: '$orderDetails' },
+      {
+        $project: {
+          _id: 0,
+          paymentId: 1,
+          orderId: 1,
+          emiDetails: 1,
+          'orderDetails.coursesPurchased': 1, 
+          'orderDetails.finalAmount': 1,    
+          'orderDetails.discount': 1,  
+          createdBy: 1,
+          updatedBy: 1,
+          creatorRole: 1,
+          updaterRole: 1
+        }
+      }
+    ]);
+
+    console.log(payments)
+
+    // const orderDetails = await orderModel.findOne({ orderId: payments[0].orderId })
+    //   .populate({
+    //     path: 'userId',
+    //     model: 'User',
+    //     select: 'name email contactNumber'
+    //   })
+    //   .populate({
+    //     path: 'transactionId',
+    //     model: 'Transaction',
+    //     select: 'transactionAmount paymentMode paymentType transactionDate'
+    //   });
+
+    // // Check if the order was found
+    // if (!orderDetails) {
+    //   return response.status(StatusCodes.NOT_FOUND).json({
+    //     success: false,
+    //     message: 'Order not found for the given orderId',
+    //   });
+    // }
+
+    // console.log(orderDetails);
+
+    // Return the populated order details, user details, and transaction details
+    // response.status(200).json({
+    //   success: true,
+    //   data: orderDetails,
+    // });
+    console.log(payments[0].orderId);
+    console.log(payments[0]['orderDetails'])
+    response.status(200).json({ success: true, data: payments });
+  } catch (error) {
+    console.error(error);
+    response.status(500).json({ success: false, message: 'Error fetching payment details', error });
   }
 };
 

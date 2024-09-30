@@ -50,7 +50,7 @@ const PaymentSchema = new Schema<Order>(
         },
         orderId: {
             type: String,
-            ref: "Order",
+            ref: "Orders",
             required: true,
         },
         emiDetails: {

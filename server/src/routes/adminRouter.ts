@@ -9,6 +9,7 @@ import {
   adminAuthenticateJWT,
   adminGetAllBatchController,
   adminGetAllCourseController,
+  adminGetAllTransactionsController,
   adminGetQueryDataController,
   adminManageQueryStatusController,
   adminManageStudentStatusController,
@@ -83,6 +84,7 @@ adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
  *         description: Query data retrieved
  */
 adminRouter.get("/adminGetQueryData/:queryId", adminGetQueryDataController);
+adminRouter.get("/adminGetAllPaymentDetails",adminGetAllTransactionsController);
 
 /**
  * @swagger
