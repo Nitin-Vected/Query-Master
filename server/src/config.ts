@@ -140,7 +140,7 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
                 while (!isUnique) {
                     const uniqueId = shortid.generate();
                     newUniqueId = `USER${uniqueId}0${newCounter}`;
-                    console.log(`Generated Course ID: ${newUniqueId}`);
+                    console.log(`Generated User ID: ${newUniqueId}`);
 
                     const existingUserWithSameId = await userModel.findOne({ userId: newUniqueId });
                     if (!existingUserWithSameId) {
@@ -196,7 +196,7 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
                 while (!isUnique) {
                     const uniqueId = shortid.generate();
                     newUniqueId = `EMP${uniqueId}0${newCounter}`;
-                    console.log(`Generated Batch ID: ${newUniqueId}`);
+                    console.log(`Generated Employee ID: ${newUniqueId}`);
 
                     const existingEmployeeWithSameId = await employeeModel.findOne({ employeeId: newUniqueId });
                     if (!existingEmployeeWithSameId) {

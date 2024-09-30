@@ -27,7 +27,7 @@ import {
 
 const adminRouter = express.Router();
 
-adminRouter.use(adminAuthenticateJWT)
+adminRouter.use(adminAuthenticateJWT);
 
 /**
  * @swagger
@@ -94,7 +94,10 @@ adminRouter.get("/adminGetQueryData/:queryId", adminGetQueryDataController);
  *       200:
  *         description: Successful operation
  */
-adminRouter.get("/adminViewSupportAdminList", adminViewSupportAdminListController);
+adminRouter.get(
+  "/adminViewSupportAdminList",
+  adminViewSupportAdminListController
+);
 
 /**
  * @swagger
@@ -131,7 +134,10 @@ adminRouter.get("/adminViewUserList", adminViewUserListController);
  *       200:
  *         description: Query status updated
  */
-adminRouter.post("/adminManageQueryStatus/:queryId/:status", adminManageQueryStatusController);
+adminRouter.post(
+  "/adminManageQueryStatus/:queryId/:status",
+  adminManageQueryStatusController
+);
 
 /**
  * @swagger
@@ -151,12 +157,15 @@ adminRouter.post("/adminManageQueryStatus/:queryId/:status", adminManageQuerySta
  *         required: true
  *         schema:
  *           type: string
- *         description: Action to be taken on the student (activate/deactivate)
+ *         description: Action to be taken on the student (true/false)
  *     responses:
  *       200:
  *         description: Student status updated
  */
-adminRouter.get("/adminManageStudentStatus/:email/:action", adminManageStudentStatusController);
+adminRouter.get(
+  "/adminManageStudentStatus/:email/:action",
+  adminManageStudentStatusController
+);
 
 /**
  * @swagger
@@ -247,8 +256,12 @@ adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
  *           schema:
  *             type: object
  *             properties:
- *               roleName:
+ *               userRole:
  *                 type: string
+ *               access:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       201:
  *         description: Role added
@@ -295,6 +308,10 @@ adminRouter.post("/adminAddNewStatus", adminAddNewStatusController);
  *                 type: string
  *               email:
  *                 type: string
+ *               contactNumber:
+ *                 type: string
+ *               roleId:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Employees registered
@@ -317,7 +334,9 @@ adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
  *             properties:
  *               userId:
  *                 type: string
- *               accessRights:
+ *               roleId:
+ *                 type: string
+ *               permissions:
  *                 type: array
  *                 items:
  *                   type: string
@@ -325,7 +344,10 @@ adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
  *       201:
  *         description: Access rights updated
  */
-adminRouter.post("/adminAddAccessRights", adminManageUsersAccessRightsController);
+adminRouter.post(
+  "/adminAddAccessRights",
+  adminManageUsersAccessRightsController
+);
 
 /**
  * @swagger
@@ -343,11 +365,35 @@ adminRouter.post("/adminAddAccessRights", adminManageUsersAccessRightsController
  *             properties:
  *               batchName:
  *                 type: string
+ *                 example: "Batch 1"
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-09-30"
+ *               endDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-12-30"
+ *               trainerId:
+ *                 type: string
+ *                 example: "trainer123"
+ *               courseId:
+ *                 type: string
+ *                 example: "course123"
+ *               students:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["student1", "student2", "student3"]
  *     responses:
  *       201:
  *         description: Batch created
+ *       400:
+ *         description: Invalid input
  */
 adminRouter.post("/addNewBatch", adminAddNewBatchController);
+
+// batchName, startDate, endDate, trainerId, courseId, students
 
 /**
  * @swagger
@@ -360,6 +406,7 @@ adminRouter.post("/addNewBatch", adminAddNewBatchController);
  *         description: List of all batches
  */
 adminRouter.get("/getAllBatches", adminGetAllBatchController);
+
 
 /**
  * @swagger
@@ -378,7 +425,7 @@ adminRouter.get("/getAllBatches", adminGetAllBatchController);
  *       200:
  *         description: Batch details retrieved
  */
-adminRouter.get("/getBatchById/:batchId", getBatchByIdController);
+adminRouter.get("/getBatchById/:batchId", getBatchByIdController); // students not coming
 
 /**
  * @swagger

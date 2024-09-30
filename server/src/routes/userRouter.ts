@@ -83,9 +83,9 @@ userRouter.get("/userViewProfile", userViewProfileController);
  *           schema:
  *             type: object
  *             properties:
- *               queryTitle:
+ *               subject:
  *                 type: string
- *               queryDescription:
+ *               message:
  *                 type: string
  *     responses:
  *       201:
@@ -195,7 +195,7 @@ userRouter.post(
  *           schema:
  *             type: object
  *             properties:
- *               comment:
+ *               message:
  *                 type: string
  *     responses:
  *       200:

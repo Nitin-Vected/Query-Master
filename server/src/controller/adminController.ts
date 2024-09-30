@@ -363,8 +363,7 @@ export const adminManageQueryStatusController = async (
 ) => {
   try {
     const { queryId, status } = request.params;
-    const { userEmail } = request.body;
-    console.log("query id : ", queryId, userEmail);
+    console.log("query id : ", queryId, status);
     if (!queryId || !status) {
       return response
         .status(StatusCodes.BAD_REQUEST)
@@ -372,7 +371,7 @@ export const adminManageQueryStatusController = async (
     }
 
     const result = await queryModel.updateOne(
-      { queryId: queryId, userEmail: userEmail },
+      { queryId: queryId },
       { $set: { status: status } }
     );
 
@@ -503,7 +502,6 @@ export const adminAddNewRoleController = async (
   }
 };
 
-
 export const adminAddNewStatusController = async (
   request: any,
   response: express.Response
@@ -592,7 +590,7 @@ export const adminGetAllBatchController = async (
       .find({}, { _id: 0 })
       .select("batchId batchName courseId trainerId startDate endDate")
       .sort({ updatedAt: -1, createdAt: -1 });
-    console.log(batchList)
+    console.log(batchList);
 
     if (batchList && batchList.length > 0) {
       response.status(StatusCodes.OK).json({
@@ -612,10 +610,18 @@ export const adminGetAllBatchController = async (
   }
 };
 
-export const getBatchByIdController = async (request: express.Request, response: express.Response) => {
+export const getBatchByIdController = async (
+  request: express.Request,
+  response: express.Response
+) => {
   const { batchId } = request.params;
   try {
-    const batch = await batchModel.findOne({ batchId: batchId });
+    const batch = await batchModel.findOne(
+        { batchId: batchId },
+        { "students._id": 0, _id: 0 }
+    );
+    console.log(batch);
+    
     if (!batch) {
       return response
         .status(StatusCodes.NOT_FOUND)
@@ -628,13 +634,17 @@ export const getBatchByIdController = async (request: express.Request, response:
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
-}
+};
 
-export const adminAddNewCourseController = async (request: any, response: express.Response) => {
+export const adminAddNewCourseController = async (
+  request: any,
+  response: express.Response
+) => {
   try {
     const { email, roleName } = request.payload;
-    const { courseName, courseCategory, courseFees, courseDescription, } = request.body;
-    const courseId = await generateUniqueId('course')
+    const { courseName, courseCategory, courseFees, courseDescription } =
+      request.body;
+    const courseId = await generateUniqueId("course");
     const data = {
       courseId,
       courseName: courseName,
@@ -644,17 +654,17 @@ export const adminAddNewCourseController = async (request: any, response: expres
       createdBy: email,
       updatedBy: email,
       creatorRole: roleName,
-      updaterRole: roleName
-    }
-    console.log(data)
+      updaterRole: roleName,
+    };
+    console.log(data);
     const newCourse = await courseModel.create(data);
     if (newCourse) {
       response.status(StatusCodes.CREATED).json({
-        message: 'Course Added successfully ..!',
+        message: "Course Added successfully ..!",
       });
     } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Something Went Wrong ..!',
+        message: "Something Went Wrong ..!",
       });
     }
   } catch (error) {
@@ -663,7 +673,7 @@ export const adminAddNewCourseController = async (request: any, response: expres
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
-}
+};
 
 export const adminGetAllCourseController = async (
   request: any,
@@ -674,7 +684,7 @@ export const adminGetAllCourseController = async (
       .find({}, { _id: 0 })
       .select("courseName courseCategory courseFees courseDescription ")
       .sort({ updatedAt: -1, createdAt: -1 });
-    console.log(courseList)
+    console.log(courseList);
 
     if (courseList && courseList.length > 0) {
       response.status(StatusCodes.OK).json({
@@ -694,7 +704,10 @@ export const adminGetAllCourseController = async (
   }
 };
 
-export const getCourseByIdController = async (request: express.Request, response: express.Response) => {
+export const getCourseByIdController = async (
+  request: express.Request,
+  response: express.Response
+) => {
   const { courseId } = request.params;
   try {
     const course = await courseModel.findOne({ courseId: courseId });
@@ -710,9 +723,12 @@ export const getCourseByIdController = async (request: express.Request, response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
-}
+};
 
-export const adminRegisterEmployeesController = async (request: any, response: express.Response) => {
+export const adminRegisterEmployeesController = async (
+  request: any,
+  response: express.Response
+) => {
   try {
     const { name, email, contactNumber, roleId } = request.body;
     const [firstName, lastName] = name.split(" ");
@@ -724,7 +740,12 @@ export const adminRegisterEmployeesController = async (request: any, response: e
       firstName,
       lastName,
       status: true,
-      roleId: (roleId === COUNSELLOR_ROLE_ID) ? COUNSELLOR_ROLE_ID : (roleId === TRAINER_ROLE_ID) ? TRAINER_ROLE_ID : SUPPORT_ADIMIN_ROLE_ID,
+      roleId:
+        roleId === COUNSELLOR_ROLE_ID
+          ? COUNSELLOR_ROLE_ID
+          : roleId === TRAINER_ROLE_ID
+          ? TRAINER_ROLE_ID
+          : SUPPORT_ADIMIN_ROLE_ID,
       contactNumber,
     });
 
@@ -760,12 +781,17 @@ export const adminRegisterEmployeesController = async (request: any, response: e
   }
 };
 
-export const adminManageUsersAccessRightsController = async (request: any, response: express.Response) => {
+export const adminManageUsersAccessRightsController = async (
+  request: any,
+  response: express.Response
+) => {
   try {
-    const { email, roleName } = request.payload
+    const { email, roleName } = request.payload;
     const { userId, roleId, permissions } = request.body;
     if (!userId || !roleId || !(permissions.length > 0)) {
-      response.status(StatusCodes.BAD_REQUEST).json({ message: "Please fill up all the required fields ..! " })
+      response
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Please fill up all the required fields ..! " });
     } else {
       const accessRight = await AccessRights.create({
         userId,
@@ -782,11 +808,11 @@ export const adminManageUsersAccessRightsController = async (request: any, respo
       });
     }
   } catch (error) {
-    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Something Went Wrong" });
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something Went Wrong" });
   }
-}
-
-
+};
 
 export const adminAuthenticateJWT = async (
   request: any,
@@ -810,4 +836,3 @@ export const adminAuthenticateJWT = async (
       .json({ message: "Invalid or expired Candidate token" });
   }
 };
-

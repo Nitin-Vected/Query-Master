@@ -172,10 +172,10 @@ export const userAddCommentController = async (
   response: express.Response
 ) => {
   try {
-    const { name, email, role } = request.payload;
+    const { name, email, roleName } = request.payload;
     const { queryId } = request.params;
     const { message } = request.body;
-    console.log("QueryId : ", queryId);
+    console.log("QueryId : ", name, email, roleName);
 
     // Find the query by its _id
     const query = await queryModel.findOne({ queryId });
@@ -187,7 +187,7 @@ export const userAddCommentController = async (
         sender: name,
         email: email,
         message,
-        role: role,
+        role: roleName,
         timestamp: new Date(),
       });
       await query.save();
@@ -212,7 +212,6 @@ export const userManageQueryStatusController = async (
   response: express.Response
 ) => {
   try {
-    const { email } = request.payload;
     const { queryId, status } = request.params;
     console.log("query id : ", queryId, "   query status : ", status);
     if (!queryId || !status) {
@@ -221,7 +220,7 @@ export const userManageQueryStatusController = async (
         .json({ error: "Query ID and status are required" });
     }
     const result = await queryModel.updateOne(
-      { queryId: queryId, userEmail: email },
+      { queryId: queryId },
       { $set: { status: status } }
     );
     console.log("Query Status :", result);
