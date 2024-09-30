@@ -9,6 +9,7 @@ import {
   adminAuthenticationController,
   adminGetAllBatchController,
   adminGetAllCourseController,
+  adminGetAllTransactionsController,
   adminGetQueryDataController,
   adminManageQueryStatusController,
   adminManageStudentStatusController,
@@ -43,6 +44,7 @@ adminRouter.get("/adminViewProfile", adminViewProfileController);
 adminRouter.get("/adminViewStudentList", adminViewStudentListController);
 adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
 adminRouter.get("/adminGetQueryData/:queryId", adminGetQueryDataController);
+adminRouter.get("/adminGetAllPaymentDetails",adminGetAllTransactionsController);
 
 adminRouter.get(
   "/adminViewSupportAdminList",

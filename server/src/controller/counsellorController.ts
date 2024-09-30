@@ -51,10 +51,6 @@ export const counsellorManageLeadStatusController = async (request: Request, res
   }
 };
 
-
-
-
-
 export const consellorRegisterLeadAsUserController = async (request: any, response: Response, next: NextFunction) => {
   let uploadedFilePath = '';
   try {
@@ -237,7 +233,6 @@ export const counsellorAddTransactionDetailsController = async (request: any, re
       .json({ error: "Something went wrong, rolling back changes." });
   }
 };
-
 
 
 const getNextEnrollmentId = async (): Promise<string> => {

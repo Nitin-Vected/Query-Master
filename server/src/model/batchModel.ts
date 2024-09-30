@@ -1,15 +1,11 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface Students {
-  enrollmentNumber: string;
-}
-
 interface Batch extends Document {
   batchId: string;
   courseId: string;
   trainerId: string;
   batchName: string;
-  students: Students[];
+  students: [string];
   startDate: string;
   endDate: string;
   creatorRole: string;
@@ -18,12 +14,6 @@ interface Batch extends Document {
   updatedBy: string;
 }
 
-const StudentsSchema: Schema = new mongoose.Schema({
-  enrollmentNumber: {
-    type: String,
-    required: true,
-  },
-});
 
 const BatchSchema: Schema = new mongoose.Schema(
   {
@@ -44,7 +34,11 @@ const BatchSchema: Schema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    students: [StudentsSchema],
+    students: {
+      type: [String],
+      ref: "Student",
+      required: true
+    },
     startDate: {
       type: String,
       required: true,

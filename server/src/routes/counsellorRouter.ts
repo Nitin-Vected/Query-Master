@@ -8,7 +8,6 @@ import {
   consellorRegisterLeadAsUserController,
   counsellorAddTransactionDetailsController,
 } from "../controller/counsellorController";
-import multer from "multer";
 import { uploadTransactionProof } from "../utilities/multer";
 
 const counsellorRouter = express.Router();
