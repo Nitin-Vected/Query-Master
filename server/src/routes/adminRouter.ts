@@ -10,6 +10,7 @@ import {
   adminGetAllBatchController,
   adminGetAllCourseController,
   adminGetAllPaymentListController,
+  adminGetAllRolesController,
   adminGetQueryDataController,
   adminManageQueryStatusController,
   adminManageStudentStatusController,
