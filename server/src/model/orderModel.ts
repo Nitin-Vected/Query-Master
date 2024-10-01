@@ -24,7 +24,7 @@ const OrderSchema = new Schema<Order>(
         },
         userId: {
             type: String,
-            ref: "user",
+            ref: "User",
             required: true,
         },
         coursesPurchased: [
@@ -67,4 +67,4 @@ const OrderSchema = new Schema<Order>(
     { versionKey: false, timestamps: true }
 );
 
-export default mongoose.model<Order>("Orders", OrderSchema, "orders");
+export default mongoose.model<Order>("Orders", OrderSchema);

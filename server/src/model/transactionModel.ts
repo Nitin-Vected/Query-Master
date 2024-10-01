@@ -26,6 +26,7 @@ const TransactionSchema = new Schema<Transaction>(
     },
     userId: {
       type: String,
+      ref: "User",
       required: true,
     },
     paymentMode: {
@@ -48,7 +49,8 @@ const TransactionSchema = new Schema<Transaction>(
       required: true,
     },
     transactionProof: {
-      type: String, // URL for the proof of transaction
+      type: String, 
+      required: true
     },
     createdBy: {
       type: String,

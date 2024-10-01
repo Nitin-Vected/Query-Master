@@ -88,6 +88,17 @@ adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
  */
 adminRouter.get("/adminGetQueryData/:queryId", adminGetQueryDataController);
 
+
+/**
+ * @swagger
+ * /admin/adminGetAllPaymentDetails:
+ *   get:
+ *     summary: Get all payment List
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Payment List Retrieved
+ */
 adminRouter.get("/adminGetAllPaymentDetails",adminGetAllTransactionsController);
 
 /**
@@ -242,6 +253,7 @@ adminRouter.post("/adminAddResponseToQuery/:queryId", adminResponseController);
  *             properties:
  *               contactNumber:
  *                 type: string
+ *                 example: "9876543210"
  *     responses:
  *       201:
  *         description: Contact number added
@@ -264,10 +276,12 @@ adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
  *             properties:
  *               userRole:
  *                 type: string
+ *                 example: "Student"
  *               access:
  *                 type: array
  *                 items:
  *                   type: string
+ *                   example: "Student001"
  *     responses:
  *       201:
  *         description: Role added
@@ -355,6 +369,7 @@ adminRouter.get("/getRoleById/:roleId", getRoleByIdController);
  *             properties:
  *               statusName:
  *                 type: string
+ *                 example: "enrolled"
  *     responses:
  *       201:
  *         description: Status added
@@ -377,12 +392,16 @@ adminRouter.post("/adminAddNewStatus", adminAddNewStatusController);
  *             properties:
  *               name:
  *                 type: string
+ *                 example: "John"
  *               email:
  *                 type: string
+ *                 example: "Doe"
  *               contactNumber:
  *                 type: string
+ *                 example: "9876543210"
  *               roleId:
  *                 type: string
+ *                 example: "ROLEtEUJrkc0r04"
  *     responses:
  *       201:
  *         description: Employees registered
@@ -405,12 +424,15 @@ adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
  *             properties:
  *               userId:
  *                 type: string
+ *                 example: "USERlzRn-QO8q02"
  *               roleId:
  *                 type: string
+ *                 example: "ROLEtEUJrkc0r04"
  *               permissions:
  *                 type: array
  *                 items:
  *                   type: string
+ *                 example: ["View Trainer Profile"]
  *     responses:
  *       201:
  *         description: Access rights updated
@@ -447,15 +469,15 @@ adminRouter.post(
  *                 example: "2024-12-30"
  *               trainerId:
  *                 type: string
- *                 example: "trainer123"
+ *                 example: "USERr2T89NnpD0711"
  *               courseId:
  *                 type: string
- *                 example: "course123"
+ *                 example: "COURSEuBeLY8e0b02"
  *               students:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["student1", "student2", "student3"]
+ *                 example: ["10VSA0001", "10VSA0002", "10VSA0003"]
  *     responses:
  *       201:
  *         description: Batch created
@@ -477,7 +499,6 @@ adminRouter.post("/addNewBatch", adminAddNewBatchController);
  *         description: List of all batches
  */
 adminRouter.get("/getAllBatches", adminGetAllBatchController);
-
 
 /**
  * @swagger
@@ -514,6 +535,16 @@ adminRouter.get("/getBatchById/:batchId", getBatchByIdController); // students n
  *             properties:
  *               courseName:
  *                 type: string
+ *                 example: "MERN Stack"
+ *               courseCategory:
+ *                 type: string
+ *                 example: "Web Development"
+ *               courseFees:
+ *                 type: number
+ *                 example: 24999
+ *               courseDescription:
+ *                 type: string
+ *                 example: "This course covers modern web development techniques."
  *     responses:
  *       201:
  *         description: Course created

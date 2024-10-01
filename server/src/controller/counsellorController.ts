@@ -95,8 +95,15 @@ export const counsellorManageLeadStatusController = async (request: Request, res
 
 export const consellorRegisterLeadAsUserController = async (request: any, response: Response, next: NextFunction) => {
   let uploadedFilePath = '';
+  let session: mongoose.ClientSession | null = null;
   try {
-    const { name, contactNumber, email } = request.body;
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+    const { email: counsellorEmail, roleName } = request.payload;
+    let { email: leadEmail, name, contactNumber, paymentMode, paymentType, transactionDate,
+      transactionAmount, emiDetails, discount, finalAmount, coursesPurchased, statusId } = request.body;
+
     const missingField = Object.entries(request.body).find(([key, value]) => !value);
 
     if (missingField) {
@@ -113,7 +120,7 @@ export const consellorRegisterLeadAsUserController = async (request: any, respon
 
     const result = await userModel.create({
       userId,
-      email,
+      email: leadEmail,
       firstName,
       lastName,
       status: true,
@@ -125,38 +132,7 @@ export const consellorRegisterLeadAsUserController = async (request: any, respon
       throw new Error('Failed to create user');
     }
 
-    request.userId = userId;
-    request.leadEmail = email;
-    next();
-
-  } catch (error) {
-    await userModel.deleteOne({ email: request.body.email });
-    deleteFile(uploadedFilePath);
-    console.error("Error registering lead as user: ", error);
-    return response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Something went wrong, please try again." });
-  }
-};
-
-export const counsellorAddTransactionDetailsController = async (request: any, response: Response) => {
-  let uploadedFilePath = '';
-  let session: mongoose.ClientSession | null = null;
-
-  try {
-    session = await mongoose.startSession();
-    session.startTransaction();
-
-    const { email, roleName } = request.payload;
-    const userId = request.userId;
-    const leadEmail = request.leadEmail;
     const transactionId = await generateUniqueId('transaction');
-    let { paymentMode, paymentType, transactionDate, transactionAmount,
-      emiDetails, discount, finalAmount, coursesPurchased, statusId } = request.body;
-
-    const transactionProof = request.file?.path;
-    uploadedFilePath = transactionProof;
-
     const transactionData = {
       transactionId,
       userId,
@@ -165,8 +141,8 @@ export const counsellorAddTransactionDetailsController = async (request: any, re
       transactionDate,
       transactionAmount,
       transactionProof,
-      createdBy: email,
-      updatedBy: email,
+      createdBy: counsellorEmail,
+      updatedBy: counsellorEmail,
       creatorRole: roleName,
       updaterRole: roleName
     };
@@ -184,8 +160,8 @@ export const counsellorAddTransactionDetailsController = async (request: any, re
       coursesPurchased: coursesPurchased,
       finalAmount: finalAmount,
       discount: discount,
-      createdBy: email,
-      updatedBy: email,
+      createdBy: counsellorEmail,
+      updatedBy: counsellorEmail,
       creatorRole: roleName,
       updaterRole: roleName
     };
@@ -216,8 +192,8 @@ export const counsellorAddTransactionDetailsController = async (request: any, re
       paymentId,
       orderId,
       emiDetails,
-      createdBy: email,
-      updatedBy: email,
+      createdBy: counsellorEmail,
+      updatedBy: counsellorEmail,
       creatorRole: roleName,
       updaterRole: roleName
     };
@@ -227,13 +203,13 @@ export const counsellorAddTransactionDetailsController = async (request: any, re
       throw new Error('Payment creation failed');
     }
 
-    const result = await leadModel.updateOne(
+    const leadStatusResult = await leadModel.updateOne(
       { email: leadEmail },
       { $set: { "statusId": statusId } },
       { session }
     );
 
-    if (!result?.acknowledged) {
+    if (!leadStatusResult?.acknowledged) {
       throw new Error('Lead status update failed');
     }
 
@@ -247,8 +223,8 @@ export const counsellorAddTransactionDetailsController = async (request: any, re
       fees: finalAmount,
       discount,
       enrollmentDate: transactionDate,
-      createdBy: email,
-      updatedBy: email,
+      createdBy: counsellorEmail,
+      updatedBy: counsellorEmail,
       creatorRole: roleName,
       updaterRole: roleName
     }
@@ -264,17 +240,151 @@ export const counsellorAddTransactionDetailsController = async (request: any, re
     response.status(StatusCodes.CREATED).json({ message: 'Student Enrolled Successfully ..!' });
 
   } catch (error) {
-    if (session) {
-      await session.abortTransaction();
-      session.endSession();
-    }
+    await userModel.deleteOne({ email: request.body.email });
     deleteFile(uploadedFilePath);
-    console.error("Error in transaction process: ", error);
+    console.error("Error registering lead as user: ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Something went wrong, rolling back changes." });
+      .json({ error: "Something went wrong, please try again." });
   }
 };
+
+// export const counsellorAddTransactionDetailsController = async (request: any, response: Response) => {
+//   let uploadedFilePath = '';
+//   let session: mongoose.ClientSession | null = null;
+
+//   try {
+//     session = await mongoose.startSession();
+//     session.startTransaction();
+
+//     const { email:counsellorEmail, roleName } = request.payload;
+//     const userId = request.userId;
+//     const leadEmail = request.leadEmail;
+//     const transactionId = await generateUniqueId('transaction');
+//     let { paymentMode, paymentType, transactionDate, transactionAmount,
+//       emiDetails, discount, finalAmount, coursesPurchased, statusId } = request.body;
+
+//     const transactionProof = request.file?.path;
+//     uploadedFilePath = transactionProof;
+
+//     const transactionData = {
+//       transactionId,
+//       userId,
+//       paymentMode,
+//       paymentType,
+//       transactionDate,
+//       transactionAmount,
+//       transactionProof,
+//       createdBy: counsellorEmail,
+//       updatedBy: counsellorEmail,
+//       creatorRole: roleName,
+//       updaterRole: roleName
+//     };
+
+//     const newTransaction = await transactionModel.create([transactionData], { session });
+//     if (!newTransaction) {
+//       throw new Error('Transaction creation failed');
+//     }
+
+//     const orderId = await generateUniqueId("order");
+//     const orderData = {
+//       orderId,
+//       userId,
+//       transactionId,
+//       coursesPurchased: coursesPurchased,
+//       finalAmount: finalAmount,
+//       discount: discount,
+//       createdBy: counsellorEmail,
+//       updatedBy: counsellorEmail,
+//       creatorRole: roleName,
+//       updaterRole: roleName
+//     };
+
+//     const newOrder = await orderModel.create([orderData], { session });
+//     if (!newOrder) {
+//       throw new Error('Order creation failed');
+//     }
+
+//     const paymentId = await generateUniqueId("payment");
+//     if (paymentType === "EMI" && emiDetails) {
+//       emiDetails = {
+//         emiCount: emiDetails.emiCount,
+//         installments: emiDetails.installments,
+//       };
+//     } else if (paymentType === "OneTime Payment") {
+//       emiDetails = {
+//         emiCount: 1,
+//         installments: [{
+//           dueDate: Date.now(),
+//           transactionAmount,
+//           status: "Paid",
+//         }]
+//       };
+//     }
+
+//     const paymentDetails = {
+//       paymentId,
+//       orderId,
+//       emiDetails,
+//       createdBy: counsellorEmail,
+//       updatedBy: counsellorEmail,
+//       creatorRole: roleName,
+//       updaterRole: roleName
+//     };
+
+//     const paymentResult = await paymentModel.create([paymentDetails], { session });
+//     if (!paymentResult) {
+//       throw new Error('Payment creation failed');
+//     }
+
+//     const result = await leadModel.updateOne(
+//       { email: leadEmail },
+//       { $set: { "statusId": statusId } },
+//       { session }
+//     );
+
+//     if (!result?.acknowledged) {
+//       throw new Error('Lead status update failed');
+//     }
+
+//     const enrollmentNumber = await generateUniqueId("enrollment");
+
+//     const studentData = {
+//       enrollmentNumber,
+//       coursesEnrolled: coursesPurchased,
+//       userId,
+//       transactions: [transactionId],
+//       fees: finalAmount,
+//       discount,
+//       enrollmentDate: transactionDate,
+//       createdBy: counsellorEmail,
+//       updatedBy: counsellorEmail,
+//       creatorRole: roleName,
+//       updaterRole: roleName
+//     }
+//     const studentResult = await studentModel.create([studentData], { session });
+//     if (!studentResult) {
+//       throw new Error('Student registration failed');
+//     }
+
+//     // Commit transaction
+//     await session.commitTransaction();
+//     session.endSession();
+
+//     response.status(StatusCodes.CREATED).json({ message: 'Student Enrolled Successfully ..!' });
+
+//   } catch (error) {
+//     if (session) {
+//       await session.abortTransaction();
+//       session.endSession();
+//     }
+//     deleteFile(uploadedFilePath);
+//     console.error("Error in transaction process: ", error);
+//     return response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ error: "Something went wrong, rolling back changes." });
+//   }
+// };
 
 
 const getNextEnrollmentId = async (): Promise<string> => {
