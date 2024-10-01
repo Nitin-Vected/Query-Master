@@ -504,6 +504,77 @@ export const adminAddNewRoleController = async (
   }
 };
 
+export const getRoleByUserIdController = async (
+  request: express.Request,
+  response: express.Response
+) => {
+  const { userId } = request.params;
+  try {
+    const user = await userModel.findOne({ userId: userId });
+    if (!user) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not found" });
+    }
+    response.status(200).json({ data: user.roleId, message: "Role of given userId : " });
+  } catch (error) {
+    console.log("Error occured in getRoleByUserId : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const getRoleByIdController = async (
+  request: express.Request,
+  response: express.Response
+) => {
+  const { roleId } = request.params;
+  try {
+    const role = await roleModel.findOne({ roleId: roleId });
+    if (!role) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Role not found" });
+    }
+    response.status(200).json({ data: role, message: "Role of given roleId : " });
+  } catch (error) {
+    console.log("Error occured in getRoleById : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminGetAllRolesController = async (
+  request: any,
+  response: express.Response
+) => {
+  try {
+    const roleList = await roleModel
+      .find({}, { _id: 0 })
+      .select("roleId roleName access")
+      .sort({ updatedAt: -1, createdAt: -1 });
+    console.log(roleList);
+
+    if (roleList && roleList.length > 0) {
+      response.status(StatusCodes.OK).json({
+        roleList: roleList,
+        message: "Roles fetched successfully  ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Role list not found ..!" });
+    }
+  } catch (error) {
+    console.log("Error occure in adminGetAllRolesController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
 export const adminAddNewStatusController = async (
   request: any,
   response: express.Response
@@ -619,18 +690,18 @@ export const getBatchByIdController = async (
   const { batchId } = request.params;
   try {
     const batch = await batchModel.findOne(
-        { batchId: batchId },
-        { "students._id": 0, _id: 0 }
+      { batchId: batchId },
+      { "students._id": 0, _id: 0 }
     );
     console.log(batch);
-    
+
     if (!batch) {
       return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Batch not found" });
     }
     console.log(batch);
-    
+
     response.status(200).json({ data: batch, message: "Batch of given id" });
   } catch (error) {
     console.log("Error occured in getBatchById : ", error);
@@ -748,8 +819,8 @@ export const adminRegisterEmployeesController = async (
         roleId === COUNSELLOR_ROLE_ID
           ? COUNSELLOR_ROLE_ID
           : roleId === TRAINER_ROLE_ID
-          ? TRAINER_ROLE_ID
-          : SUPPORT_ADIMIN_ROLE_ID,
+            ? TRAINER_ROLE_ID
+            : SUPPORT_ADIMIN_ROLE_ID,
       contactNumber,
     });
 
@@ -836,9 +907,9 @@ export const adminGetAllTransactionsController = async (request: any, response: 
           paymentId: 1,
           orderId: 1,
           emiDetails: 1,
-          'orderDetails.coursesPurchased': 1, 
-          'orderDetails.finalAmount': 1,    
-          'orderDetails.discount': 1,  
+          'orderDetails.coursesPurchased': 1,
+          'orderDetails.finalAmount': 1,
+          'orderDetails.discount': 1,
           createdBy: 1,
           updatedBy: 1,
           creatorRole: 1,
