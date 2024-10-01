@@ -85,6 +85,17 @@ adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
  */
 adminRouter.get("/adminGetQueryData/:queryId", adminGetQueryDataController);
 
+
+/**
+ * @swagger
+ * /admin/adminGetAllPaymentDetails:
+ *   get:
+ *     summary: Get all payment List
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Payment List Retrieved
+ */
 adminRouter.get("/adminGetAllPaymentDetails",adminGetAllTransactionsController);
 
 /**

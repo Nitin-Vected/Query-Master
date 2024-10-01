@@ -619,18 +619,18 @@ export const getBatchByIdController = async (
   const { batchId } = request.params;
   try {
     const batch = await batchModel.findOne(
-        { batchId: batchId },
-        { "students._id": 0, _id: 0 }
+      { batchId: batchId },
+      { "students._id": 0, _id: 0 }
     );
     console.log(batch);
-    
+
     if (!batch) {
       return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Batch not found" });
     }
     console.log(batch);
-    
+
     response.status(200).json({ data: batch, message: "Batch of given id" });
   } catch (error) {
     console.log("Error occured in getBatchById : ", error);
@@ -748,8 +748,8 @@ export const adminRegisterEmployeesController = async (
         roleId === COUNSELLOR_ROLE_ID
           ? COUNSELLOR_ROLE_ID
           : roleId === TRAINER_ROLE_ID
-          ? TRAINER_ROLE_ID
-          : SUPPORT_ADIMIN_ROLE_ID,
+            ? TRAINER_ROLE_ID
+            : SUPPORT_ADIMIN_ROLE_ID,
       contactNumber,
     });
 
@@ -820,7 +820,7 @@ export const adminManageUsersAccessRightsController = async (
 
 export const adminGetAllTransactionsController = async (request: any, response: express.Response) => {
   try {
-    const payments = await paymentModel.aggregate([
+    const paymentsWithUserDetails = await paymentModel.aggregate([
       {
         $lookup: {
           from: 'orders',
@@ -831,56 +831,114 @@ export const adminGetAllTransactionsController = async (request: any, response: 
       },
       { $unwind: '$orderDetails' },
       {
+        $lookup: {
+          from: 'transactions',
+          localField: 'orderDetails.transactionId',
+          foreignField: 'transactionId',
+          as: 'transactionDetails'
+        }
+      },
+      {
+        $unwind: '$transactionDetails'
+      },
+      {
+        $lookup: {
+          from: 'user',
+          localField: 'orderDetails.userId',
+          foreignField: 'userId',
+          as: 'userDetails'
+        }
+      },
+      {
+        $unwind: '$userDetails'
+      },
+      {
+        $lookup: {
+          from: 'student',
+          localField: 'userDetails.userId',
+          foreignField: 'userId',
+          as: 'studentDetails'
+        }
+      },
+      {
+        $unwind: '$studentDetails'
+      },
+      {
+        $lookup: {
+          from: 'courses',
+          localField: 'studentDetails.coursesEnrolled',
+          foreignField: 'courseId',
+          as: 'courseDetails'
+        }
+      },
+      {
         $project: {
           _id: 0,
-          paymentId: 1,
-          orderId: 1,
-          emiDetails: 1,
-          'orderDetails.coursesPurchased': 1, 
-          'orderDetails.finalAmount': 1,    
-          'orderDetails.discount': 1,  
-          createdBy: 1,
-          updatedBy: 1,
-          creatorRole: 1,
-          updaterRole: 1
+          "orderDetails._id": 0,
+          "orderDetails.createdAt": 0,
+          "orderDetails.updatedAt": 0,
+          "orderDetails.createdBy": 0,
+          "orderDetails.updatedBy": 0,
+          "orderDetails.creatorRole": 0,
+          "orderDetails.updaterRole": 0,
+          "userDetails._id": 0,
+          "userDetails.createdAt": 0,
+          "userDetails.updatedAt": 0,
+          "transactionDetails._id": 0,
+          "transactionDetails.createdAt": 0,
+          "transactionDetails.updatedAt": 0,
+          "transactionDetails.createdBy": 0,
+          "transactionDetails.updatedBy": 0,
+          "transactionDetails.creatorRole": 0,
+          "transactionDetails.updaterRole": 0,
+          "studentDetails._id": 0,
+          "studentDetails.createdAt": 0,
+          "studentDetails.updatedAt": 0,
+          "studentDetails.createdBy": 0,
+          "studentDetails.updatedBy": 0,
+          "studentDetails.creatorRole": 0,
+          "studentDetails.updaterRole": 0,
+          "studentDetails.userId": 0,
         }
       }
     ]);
+    console.log(paymentsWithUserDetails);
 
-    console.log(payments)
+    const paymentList = paymentsWithUserDetails.map((payment) => ({
+      name: `${payment.userDetails.firstName} ${payment.userDetails.lastName}`,
+      email: payment.userDetails.email,
+      enrollmentNumber: payment.studentDetails.enrollmentNumber,
+      contactNumber: payment.userDetails.contactNumber,
+      profilePicture: payment.userDetails.profilePicture,
+      coursesEnrolled: payment.courseDetails.map((course: { courseName: string, courseCategory: string }) => ({
+        courseName: course.courseName,
+        courseCategory: course.courseCategory
+      })),
+      paymentId: payment.paymentId,
+      transactionId: payment.transactionDetails.transactionId,
+      transactionProof: payment.transactionDetails.transactionProof,
+      transactionAmount: payment.transactionDetails.transactionAmount,
+      transactionDate: payment.transactionDetails.transactionDate,
+      paymentMode: payment.transactionDetails.paymentMode,
+      paymentType: payment.transactionDetails.paymentType,
 
-    // const orderDetails = await orderModel.findOne({ orderId: payments[0].orderId })
-    //   .populate({
-    //     path: 'userId',
-    //     model: 'User',
-    //     select: 'name email contactNumber'
-    //   })
-    //   .populate({
-    //     path: 'transactionId',
-    //     model: 'Transaction',
-    //     select: 'transactionAmount paymentMode paymentType transactionDate'
-    //   });
+      createdBy: payment.createdBy,
+      updatedBy: payment.updatedBy,
+      creatorRole: payment.creatorRole,
+      updaterRole: payment.updaterRole,
+      createdAt: payment.createdAt,
+      updatedAt: payment.updatedAt
 
-    // // Check if the order was found
-    // if (!orderDetails) {
-    //   return response.status(StatusCodes.NOT_FOUND).json({
-    //     success: false,
-    //     message: 'Order not found for the given orderId',
-    //   });
-    // }
+    }));
 
-    // console.log(orderDetails);
+    console.log(paymentList);
 
-    // Return the populated order details, user details, and transaction details
-    // response.status(200).json({
-    //   success: true,
-    //   data: orderDetails,
-    // });
-    console.log(payments[0].orderId);
-    console.log(payments[0]['orderDetails'])
-    response.status(200).json({ success: true, data: payments });
+    // const data = await userModel.findOne({userId: "USERNnLWXoxiM090714"})
+    // console.log(data)
+
+    response.status(200).json({ success: true, data: paymentList });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching payment details:', error);
     response.status(500).json({ success: false, message: 'Error fetching payment details', error });
   }
 };

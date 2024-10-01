@@ -6,7 +6,6 @@ import {
   getLeadByIdController,
   counsellorManageLeadStatusController,
   consellorRegisterLeadAsUserController,
-  counsellorAddTransactionDetailsController,
 } from "../controller/counsellorController";
 import { uploadTransactionProof } from "../utilities/multer";
 
@@ -74,7 +73,7 @@ counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusC
  *       400:
  *         description: Invalid data or transaction proof missing
  */
-counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single('transactionProof'), consellorRegisterLeadAsUserController, counsellorAddTransactionDetailsController);
+counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single('transactionProof'), consellorRegisterLeadAsUserController);
 
 /**
  * @swagger
