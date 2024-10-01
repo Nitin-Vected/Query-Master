@@ -503,6 +503,77 @@ export const adminAddNewRoleController = async (
   }
 };
 
+export const getRoleByUserIdController = async (
+  request: express.Request,
+  response: express.Response
+) => {
+  const { userId } = request.params;
+  try {
+    const user = await userModel.findOne({ userId: userId });
+    if (!user) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not found" });
+    }
+    response.status(200).json({ data: user.roleId, message: "Role of given userId : " });
+  } catch (error) {
+    console.log("Error occured in getRoleByUserId : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const getRoleByIdController = async (
+  request: express.Request,
+  response: express.Response
+) => {
+  const { roleId } = request.params;
+  try {
+    const role = await roleModel.findOne({ roleId: roleId });
+    if (!role) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Role not found" });
+    }
+    response.status(200).json({ data: role, message: "Role of given roleId : " });
+  } catch (error) {
+    console.log("Error occured in getRoleById : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminGetAllRolesController = async (
+  request: any,
+  response: express.Response
+) => {
+  try {
+    const roleList = await roleModel
+      .find({}, { _id: 0 })
+      .select("roleId roleName access")
+      .sort({ updatedAt: -1, createdAt: -1 });
+    console.log(roleList);
+
+    if (roleList && roleList.length > 0) {
+      response.status(StatusCodes.OK).json({
+        roleList: roleList,
+        message: "Roles fetched successfully  ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Role list not found ..!" });
+    }
+  } catch (error) {
+    console.log("Error occure in adminGetAllRolesController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
 export const adminAddNewStatusController = async (
   request: any,
   response: express.Response

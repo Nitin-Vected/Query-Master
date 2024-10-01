@@ -24,6 +24,8 @@ import {
   adminViewUserListController,
   getBatchByIdController,
   getCourseByIdController,
+  getRoleByIdController,
+  getRoleByUserIdController,
 } from "../controller/adminController";
 
 const adminRouter = express.Router();
@@ -287,6 +289,71 @@ adminRouter.post("/addNewRole", adminAddNewRoleController);
 
 /**
  * @swagger
+ * /admin/getRoleByUserId/{userId}:
+ *   get:
+ *     summary: Get Role by User ID
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Role by User ID
+ *     responses:
+ *       200:
+ *         description: Role details retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 userId:
+ *                   type: string
+ *                   description: Unique ID of the role
+ *                   example: "USERxyz123"
+ *       400:
+ *         description: Bad request or missing parameters
+ *       404:
+ *         description: Role of User not found
+ */
+adminRouter.get("/getRoleByUserId/:userId", getRoleByUserIdController);
+
+/**
+ * @swagger
+ * /admin/getRoleById/{roleId}:
+ *   get:
+ *     summary: Get Role by ID
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: roleId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the role
+ *     responses:
+ *       200:
+ *         description: Role details retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 roleId:
+ *                   type: string
+ *                   description: Unique ID of the role
+ *                   example: "ROLE123"
+ *       400:
+ *         description: Bad request or missing parameters
+ *       404:
+ *         description: Role not found
+ */
+adminRouter.get("/getRoleById/:roleId", getRoleByIdController);
+
+
+/**
+ * @swagger
  * /admin/adminAddNewStatus:
  *   post:
  *     summary: Add New Status
@@ -494,6 +561,18 @@ adminRouter.post("/addNewCourse", adminAddNewCourseController);
  *         description: List of all courses
  */
 adminRouter.get("/getAllCourses", adminGetAllCourseController);
+
+/**
+ * @swagger
+ * /admin/getAllRoles:
+ *   get:
+ *     summary: Get All Roles
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: List of all Roles
+ */
+adminRouter.get("/getAllRoles", adminGetAllRolesController);
 
 /**
  * @swagger

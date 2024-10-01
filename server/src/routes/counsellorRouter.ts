@@ -6,12 +6,25 @@ import {
   getLeadByIdController,
   counsellorManageLeadStatusController,
   consellorRegisterLeadAsUserController,
+  counsellorViewProfileController,
 } from "../controller/counsellorController";
 import { uploadTransactionProof } from "../utilities/multer";
 
 const counsellorRouter = express.Router();
 
 counsellorRouter.use(counsellorAuthenticateJWT);
+
+/**
+ * @swagger
+ * /counsellor/counsellorViewProfile:
+ *   get:
+ *     summary: View Counsellor Profile
+ *     tags: [Counsellor]
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ */
+counsellorRouter.get("/counsellorViewProfile", counsellorViewProfileController);
 
 /**
  * @swagger

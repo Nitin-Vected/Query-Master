@@ -16,6 +16,48 @@ import orderModel from "../model/orderModel";
 import paymentModel from "../model/paymentModel";
 import mongoose from "mongoose";
 
+export const counsellorViewProfileController = async (
+  request: any,
+  response: express.Response
+) => {
+  try {
+    const { userId, roleId, roleName } = request.payload;
+    if (!userId || !roleId) {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Token not found" });
+    } else {
+      const result = await userModel.findOne({ userId, roleId });     
+      console.log("result : ", result);
+      const counsellorData = {
+        name: result?.firstName + " " + result?.lastName,
+        email: result?.email,
+        contactNumber: result?.contactNumber,
+        role: roleName,
+        profileImg: result?.profileImg,
+      };
+      if (result?.status) {
+        response.status(StatusCodes.OK).json({
+          counsellorData: counsellorData,
+          message: "This is your desired data ..!",
+        });
+      } else {
+        response.status(StatusCodes.NOT_FOUND).json({
+          counsellorData: null,
+          message:
+            "The Account You are Trying to Access has been Deactivated ..!",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+
 export const counsellorManageLeadStatusController = async (request: Request, response: Response) => {
   try {
     const { email, statusId } = request.body;
