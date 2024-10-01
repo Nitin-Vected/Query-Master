@@ -18,7 +18,6 @@ import employeeModel from "../model/employeeModel";
 import { AccessRights } from "../model/accessRightsModel";
 import statusModel from "../model/statusModel";
 import paymentModel from "../model/paymentModel";
-import orderModel from "../model/orderModel";
 
 export const adminViewProfileController = async (
   request: any,
@@ -818,7 +817,7 @@ export const adminManageUsersAccessRightsController = async (
   }
 };
 
-export const adminGetAllTransactionsController = async (
+export const adminGetAllPaymentListController = async (
   request: any,
   response: express.Response
 ) => {
@@ -905,7 +904,7 @@ export const adminGetAllTransactionsController = async (
         }
       }
     ]);
-    console.log(paymentsWithUserDetails);
+    // console.log(paymentsWithUserDetails);
 
     const paymentList = paymentsWithUserDetails.map((payment) => ({
       name: `${payment.userDetails.firstName} ${payment.userDetails.lastName}`,
@@ -913,6 +912,7 @@ export const adminGetAllTransactionsController = async (
       enrollmentNumber: payment.studentDetails.enrollmentNumber,
       contactNumber: payment.userDetails.contactNumber,
       profilePicture: payment.userDetails.profilePicture,
+      userAccountStatus: payment.userDetails.status,
       coursesEnrolled: payment.courseDetails.map((course: { courseName: string, courseCategory: string }) => ({
         courseName: course.courseName,
         courseCategory: course.courseCategory
@@ -934,7 +934,7 @@ export const adminGetAllTransactionsController = async (
 
     }));
 
-    console.log(paymentList);
+    // console.log(paymentList);
 
     // const data = await userModel.findOne({userId: "USERNnLWXoxiM090714"})
     // console.log(data)

@@ -9,7 +9,7 @@ import {
   adminAuthenticateJWT,
   adminGetAllBatchController,
   adminGetAllCourseController,
-  adminGetAllTransactionsController,
+  adminGetAllPaymentListController,
   adminGetQueryDataController,
   adminManageQueryStatusController,
   adminManageStudentStatusController,
@@ -96,7 +96,7 @@ adminRouter.get("/adminGetQueryData/:queryId", adminGetQueryDataController);
  *       200:
  *         description: Payment List Retrieved
  */
-adminRouter.get("/adminGetAllPaymentDetails",adminGetAllTransactionsController);
+adminRouter.get("/adminGetAllPaymentDetails",adminGetAllPaymentListController);
 
 /**
  * @swagger
