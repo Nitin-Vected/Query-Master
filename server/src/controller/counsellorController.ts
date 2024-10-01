@@ -364,27 +364,31 @@ const getNextEnrollmentId = async (): Promise<string> => {
 };
 
 export const addNewLeadsController = async (
-  request: Request,
+  request: any,
   response: Response
 ) => {
   try {
+    const { email, roleName } = request.payload;
     const leads = Array.isArray(request.body) ? request.body : [request.body];
 
     const result = [];
     for (const leadData of leads) {
-      const { email, courseCategory } = leadData;
+      const { email: leadEmail, courseCategory } = leadData;
 
-      let existingLead = await leadModel.findOne({ email });
+      let existingLead = await leadModel.findOne({ email: leadEmail });
 
       if (existingLead) {
         console.log("Lead already exists. Updating courseCategory.");
 
+        // Check if the course already exists in the lead's courses array
         const existingCourse = existingLead.courses.find(
           (category) => category.courseId === courseCategory[0].courseId
         );
 
         if (!existingCourse) {
           existingLead.courses.push(courseCategory[0]);
+          existingLead.updatedBy = email;
+          existingLead.updaterRole = roleName;
           await existingLead.save();
         } else {
           console.log("Course already exists in the lead’s courseCategory.");
@@ -393,7 +397,15 @@ export const addNewLeadsController = async (
         result.push(existingLead);
       } else {
         console.log("Lead does not exist. Creating a new lead.");
-        const newLead = await leadModel.create(leadData);
+        const newLeadData = {
+          ...leadData,
+          createdBy: email,
+          updatedBy: email,
+          createrRole: roleName,
+          updaterRole: roleName,
+        };
+
+        const newLead = await leadModel.create(newLeadData);
         result.push(newLead);
       }
     }
@@ -438,10 +450,13 @@ export const getLeadByIdController = async (
   request: Request,
   response: Response
 ) => {
-  const { id } = request.params;
+  const { leadId } = request.params;
+  console.log(request.params);
 
   try {
-    const lead = await leadModel.findById(id);
+    const lead = await leadModel.findById(leadId);
+    console.log(lead);
+    
     if (!lead) {
       return response
         .status(StatusCodes.NOT_FOUND)

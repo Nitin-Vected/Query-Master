@@ -816,18 +816,21 @@ export const adminManageUsersAccessRightsController = async (
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something Went Wrong" });
   }
-}
+};
 
-export const adminGetAllTransactionsController = async (request: any, response: express.Response) => {
+export const adminGetAllTransactionsController = async (
+  request: any,
+  response: express.Response
+) => {
   try {
     const paymentsWithUserDetails = await paymentModel.aggregate([
       {
         $lookup: {
-          from: 'orders',
-          localField: 'orderId',
-          foreignField: 'orderId',
-          as: 'orderDetails'
-        }
+          from: "orders",
+          localField: "orderId",
+          foreignField: "orderId",
+          as: "orderDetails",
+        },
       },
       { $unwind: '$orderDetails' },
       {

@@ -15,7 +15,6 @@ import { loginController } from "../controller/loginController";
 
 const userRouter = express.Router();
 
-
 /**
  * @swagger
  * /user/userLogin:
@@ -37,9 +36,9 @@ const userRouter = express.Router();
  *     responses:
  *       200:
  *         description: Login successful
-*/
+ *     security: []
+ */
 userRouter.post("/userLogin", loginController);
-
 
 /**
  * @swagger
@@ -52,7 +51,7 @@ userRouter.post("/userLogin", loginController);
  *         description: Authentication successful
  *       401:
  *         description: Unauthorized
-*/
+ */
 userRouter.get("/userAuthentication", userAuthenticationController);
 
 userRouter.use(userAuthenticateJWT);
@@ -140,6 +139,7 @@ userRouter.get("/userGetQueryData/:queryId", userGetQueryDataController);
  *             properties:
  *               contactNumber:
  *                 type: string
+ *                 example: "9876543210"
  *     responses:
  *       201:
  *         description: Contact number added
