@@ -20,8 +20,6 @@ counsellorRouter.use(counsellorAuthenticateJWT);
  *   post:
  *     summary: Manage the status of a lead
  *     tags: [Counsellor]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       description: Lead status update data
  *       required: true
@@ -30,17 +28,22 @@ counsellorRouter.use(counsellorAuthenticateJWT);
  *           schema:
  *             type: object
  *             properties:
- *               leadId:
+ *               email:
  *                 type: string
- *               status:
+ *                 example: "john.doe@gmail.com"
+ *               statusId:
  *                 type: string
+ *                 example: "STATUSD4fuSAZ_m02"
  *     responses:
  *       200:
  *         description: Lead status updated successfully
  *       400:
  *         description: Bad request or missing parameters
  */
-counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusController);
+counsellorRouter.post(
+  "/counsellorManageLeadStatus",
+  counsellorManageLeadStatusController
+);
 
 /**
  * @swagger
@@ -48,8 +51,6 @@ counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusC
  *   post:
  *     summary: Enroll a lead as a student and add transaction details
  *     tags: [Counsellor]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       description: Transaction details along with proof file
  *       required: true
@@ -64,7 +65,8 @@ counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusC
  *                 type: string
  *                 format: binary
  *               transactionAmount:
- *                 type: string
+ *                 type: number
+ *                 example: 5000
  *               transactionDate:
  *                 type: string
  *                 format: date
@@ -74,7 +76,12 @@ counsellorRouter.post("/counsellorManageLeadStatus", counsellorManageLeadStatusC
  *       400:
  *         description: Invalid data or transaction proof missing
  */
-counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single('transactionProof'), consellorRegisterLeadAsUserController, counsellorAddTransactionDetailsController);
+counsellorRouter.post(
+  "/counsellorEnrollStudent",
+  uploadTransactionProof.single("transactionProof"),
+  consellorRegisterLeadAsUserController,
+  counsellorAddTransactionDetailsController
+);
 
 /**
  * @swagger
@@ -82,8 +89,6 @@ counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single(
  *   post:
  *     summary: Add a new lead
  *     tags: [Counsellor]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       description: Lead information to add
  *       required: true
@@ -155,28 +160,9 @@ counsellorRouter.post("/addNewLeads", addNewLeadsController);
  *   get:
  *     summary: Retrieve all leads
  *     tags: [Counsellor]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of all leads
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   leadId:
- *                     type: string
- *                   name:
- *                     type: string
- *                   email:
- *                     type: string
- *                   phone:
- *                     type: string
- *                   courseInterested:
- *                     type: string
  *       401:
  *         description: Unauthorized
  */

@@ -619,18 +619,18 @@ export const getBatchByIdController = async (
   const { batchId } = request.params;
   try {
     const batch = await batchModel.findOne(
-        { batchId: batchId },
-        { "students._id": 0, _id: 0 }
+      { batchId: batchId },
+      { "students._id": 0, _id: 0 }
     );
     console.log(batch);
-    
+
     if (!batch) {
       return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Batch not found" });
     }
     console.log(batch);
-    
+
     response.status(200).json({ data: batch, message: "Batch of given id" });
   } catch (error) {
     console.log("Error occured in getBatchById : ", error);
@@ -816,38 +816,41 @@ export const adminManageUsersAccessRightsController = async (
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something Went Wrong" });
   }
-}
+};
 
-export const adminGetAllTransactionsController = async (request: any, response: express.Response) => {
+export const adminGetAllTransactionsController = async (
+  request: any,
+  response: express.Response
+) => {
   try {
     const payments = await paymentModel.aggregate([
       {
         $lookup: {
-          from: 'orders',
-          localField: 'orderId',
-          foreignField: 'orderId',
-          as: 'orderDetails'
-        }
+          from: "orders",
+          localField: "orderId",
+          foreignField: "orderId",
+          as: "orderDetails",
+        },
       },
-      { $unwind: '$orderDetails' },
+      { $unwind: "$orderDetails" },
       {
         $project: {
           _id: 0,
           paymentId: 1,
           orderId: 1,
           emiDetails: 1,
-          'orderDetails.coursesPurchased': 1, 
-          'orderDetails.finalAmount': 1,    
-          'orderDetails.discount': 1,  
+          "orderDetails.coursesPurchased": 1,
+          "orderDetails.finalAmount": 1,
+          "orderDetails.discount": 1,
           createdBy: 1,
           updatedBy: 1,
           creatorRole: 1,
-          updaterRole: 1
-        }
-      }
+          updaterRole: 1,
+        },
+      },
     ]);
 
-    console.log(payments)
+    console.log(payments);
 
     // const orderDetails = await orderModel.findOne({ orderId: payments[0].orderId })
     //   .populate({
@@ -877,11 +880,17 @@ export const adminGetAllTransactionsController = async (request: any, response: 
     //   data: orderDetails,
     // });
     console.log(payments[0].orderId);
-    console.log(payments[0]['orderDetails'])
+    console.log(payments[0]["orderDetails"]);
     response.status(200).json({ success: true, data: payments });
   } catch (error) {
     console.error(error);
-    response.status(500).json({ success: false, message: 'Error fetching payment details', error });
+    response
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching payment details",
+        error,
+      });
   }
 };
 
