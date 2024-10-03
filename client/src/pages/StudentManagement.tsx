@@ -95,12 +95,6 @@ const StudentManagement: React.FC = () => {
       headerAlign: "center",
     },
     {
-      field: "role",
-      headerName: "Role",
-      minWidth: 150,
-      flex: 1,
-    },
-    {
       field: "status",
       headerName: "Status",
       minWidth: 150,
@@ -137,13 +131,13 @@ const StudentManagement: React.FC = () => {
           <DataGrid
             rows={students.map((student, index) => ({
               id: index,
-              name: student.name,
-              email: student.email,
-              contactNumber: student.contactNumber
-                ? student.contactNumber
+              name: student.profileDetails.firstName+" "+student.profileDetails.lastName,
+              email: student.profileDetails.email,
+              contactNumber: student.profileDetails.contactNumber
+                ? student.profileDetails.contactNumber
                 : "-",
-              role: student.role,
-              status: student.status,
+              role: student.roleDetails.roleName,
+              status: student.profileDetails.status,
             }))}
             columns={columns}
             initialState={{

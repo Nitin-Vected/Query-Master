@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import dotenv from "dotenv";
 import queryModel from "./model/queryModel";
 import courseModel from "./model/courseModel";
@@ -36,6 +37,18 @@ export const StatusCodes = {
     INTERNAL_SERVER_ERROR: 500,
     SERVICE_UNAVAILABLE: 503,
 };
+
+interface UserPayload {
+    userId: string;
+    name: string;
+    email: string;
+    roleId: string;
+    roleName: string;
+}
+
+export interface CustomRequest extends Request {
+    payload?: UserPayload;
+}
 
 export const generateUniqueId = async (mode: string, email?: string, role?: string) => {
     try {

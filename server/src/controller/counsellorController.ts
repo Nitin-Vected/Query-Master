@@ -1,7 +1,7 @@
-import express from "express";
 import leadModel from "../model/leadModel";
 import {
   COUNSELLOR_SECRET_KEY,
+  CustomRequest,
   STUDENT_ROLE_ID,
   StatusCodes,
   generateUniqueId,
@@ -17,10 +17,13 @@ import paymentModel from "../model/paymentModel";
 import mongoose from "mongoose";
 
 export const counsellorViewProfileController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     const { userId, roleId, roleName } = request.payload;
     if (!userId || !roleId) {
       response
@@ -93,10 +96,13 @@ export const counsellorManageLeadStatusController = async (request: Request, res
   }
 };
 
-export const consellorRegisterLeadAsUserController = async (request: any, response: Response, next: NextFunction) => {
+export const counsellorRegisterLeadAsUserController = async (request: CustomRequest, response: Response, next: NextFunction) => {
   let uploadedFilePath = '';
   let session: mongoose.ClientSession | null = null;
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     session = await mongoose.startSession();
     session.startTransaction();
 
@@ -138,7 +144,9 @@ export const consellorRegisterLeadAsUserController = async (request: any, respon
     }
 
     const transactionProof = request.file?.path;
-    uploadedFilePath = transactionProof;
+    if (transactionProof){
+      uploadedFilePath = transactionProof;
+    }
 
     const userId = await generateUniqueId("user");
     const dataToRegister = {
@@ -293,10 +301,13 @@ const getNextEnrollmentId = async (): Promise<string> => {
 };
 
 export const addNewLeadsController = async (
-  request: any,
+  request: CustomRequest,
   response: Response
 ) => {
   try {
+     if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({message: "User payload is missing or invalid."});
+    }
     const { email, roleName } = request.payload;
     const leads = Array.isArray(request.body) ? request.body : [request.body];
 
@@ -401,8 +412,8 @@ export const getLeadByIdController = async (
 };
 
 export const counsellorAuthenticateJWT = async (
-  request: any,
-  response: express.Response,
+  request: CustomRequest,
+  response: Response,
   next: Function
 ) => {
   try {
@@ -412,7 +423,7 @@ export const counsellorAuthenticateJWT = async (
         .status(401)
         .json({ message: "Authorization token is missing or invalid" });
     }
-    const token = authHeader.split(" ")[1];
+    const token = authHeader?.split(" ")[1];
     const payload = await tokenVerifier(token, COUNSELLOR_SECRET_KEY);
     request.payload = payload;
     next();

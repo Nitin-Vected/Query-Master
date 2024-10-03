@@ -1,11 +1,11 @@
 import express, { Request, Response, NextFunction } from "express";
 import userModel from "../model/userModel";
 import { tokenVerifier } from "../utilities/jwt";
-import { generateUniqueId, StatusCodes, USER_SECRET_KEY } from "../config";
+import { CustomRequest, generateUniqueId, StatusCodes, USER_SECRET_KEY } from "../config";
 import queryModel from "../model/queryModel";
 
 export const userViewProfileController = async (
-  request: any,
+  request: CustomRequest,
   response: Response
 ) => {
   try {
@@ -28,7 +28,7 @@ export const userViewProfileController = async (
         email: result?.email,
         contactNumber: result?.contactNumber,
         profileImg: result?.profileImg,
-        role: request.payload.roleName,
+        role: request.payload?.roleName,
       };
       response.status(StatusCodes.OK).json({
         userData: userData,
@@ -44,11 +44,11 @@ export const userViewProfileController = async (
 };
 
 export const userAddContactNumberController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
-    const userEmail = request.payload.email;
+    const userEmail = request.payload?.email;
     const { contactNumber } = request.body;
     if (!userEmail) {
       response
@@ -80,10 +80,13 @@ export const userAddContactNumberController = async (
 };
 
 export const userRaiseQueryController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({message: "User payload is missing or invalid."});
+    }
     const { name, email, roleName } = request.payload;
     const { subject, message } = request.body;
 
@@ -136,11 +139,15 @@ export const userRaiseQueryController = async (
   }
 };
 
+
 export const userViewMyQueriesController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({message: "User payload is missing or invalid."});
+    }
     const { email, roleName } = request.payload;
     const myQueries = await queryModel
       .find(
@@ -169,7 +176,7 @@ export const userViewMyQueriesController = async (
 
 export const userAddCommentController = async (
   request: any,
-  response: express.Response
+  response: Response
 ) => {
   try {
     const { name, email, roleName } = request.payload;
@@ -208,10 +215,13 @@ export const userAddCommentController = async (
 };
 
 export const userManageQueryStatusController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({message: "User payload is missing or invalid."});
+    }
     const { queryId, status } = request.params;
     console.log("query id : ", queryId, "   query status : ", status);
     if (!queryId || !status) {
@@ -242,12 +252,11 @@ export const userManageQueryStatusController = async (
 };
 
 export const userAuthenticationController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
     console.log("Inside userAuthenticationController");
-
     const authHeader = request.headers["authorization"];
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return response
@@ -279,8 +288,8 @@ export const userAuthenticationController = async (
 };
 
 export const userGetQueryDataController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   try {
     const { queryId } = request.params;
@@ -308,8 +317,8 @@ export const userGetQueryDataController = async (
 
 // for backend
 export const userAuthenticateJWT = async (
-  request: any,
-  response: express.Response,
+  request: CustomRequest,
+  response: Response,
   next: Function
 ) => {
   try {
@@ -322,7 +331,7 @@ export const userAuthenticateJWT = async (
         .status(StatusCodes.UNAUTHORIZED)
         .json({ message: "Authorization token is missing or invalid" });
     }
-    const token = authHeader.split(" ")[1];
+    const token = authHeader?.split(" ")[1];
     const payload = await tokenVerifier(token, USER_SECRET_KEY);
     request.payload = payload;
     next();

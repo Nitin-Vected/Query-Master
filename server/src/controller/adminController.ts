@@ -1,8 +1,11 @@
 import express from "express";
 import { tokenVerifier } from "../utilities/jwt";
+import { Request, Response, NextFunction } from "express";
+
 import {
   ADMIN_SECRET_KEY,
   COUNSELLOR_ROLE_ID,
+  CustomRequest,
   generateUniqueId,
   StatusCodes,
   STUDENT_ROLE_ID,
@@ -21,10 +24,13 @@ import paymentModel from "../model/paymentModel";
 import studentModel from "../model/studentModel";
 
 export const adminViewProfileController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     const { userId, roleId, roleName } = request.payload;
     if (!userId || !roleId) {
       response
@@ -62,8 +68,8 @@ export const adminViewProfileController = async (
 };
 
 export const adminViewRaisedQueryListController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   try {
     const raisedQueries = await queryModel
@@ -73,7 +79,7 @@ export const adminViewRaisedQueryListController = async (
     if (raisedQueries) {
       response.status(StatusCodes.OK).json({
         raisedQueries: raisedQueries,
-        message: "These are the recently raised queries ..!",
+        message: "These are the recently raised querijes ..!",
       });
     } else {
       response.status(StatusCodes.NOT_FOUND).json({
@@ -90,8 +96,8 @@ export const adminViewRaisedQueryListController = async (
 };
 
 export const adminViewStudentListController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   try {
       const studentList = await studentModel.aggregate([
@@ -109,14 +115,13 @@ export const adminViewStudentListController = async (
           _id: 0,
           "profileDetails._id": 0,
           "profileDetails.userId": 0,
-          "profileDetails.roleId": 0,
           "profileDetails.createdAt": 0,
-          "profileDetails.updatedAt": 0
+          "profileDetails.updatedAt": 0,
         }
       }
     ]);
 
-    console.log(studentList)
+    console.log(studentList);
 
     if (studentList && studentList.length > 0) {
       response.status(StatusCodes.OK).json({
@@ -134,8 +139,8 @@ export const adminViewStudentListController = async (
 };
 
 export const adminViewSupportAdminListController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   try {
     const adminList = await userModel
@@ -161,8 +166,8 @@ export const adminViewSupportAdminListController = async (
 };
 
 export const adminViewUserListController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   try {
     const userList = await userModel
@@ -189,8 +194,8 @@ export const adminViewUserListController = async (
 };
 
 export const adminManageStudentStatusController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
     const { email, action } = request.params;
@@ -230,20 +235,23 @@ export const adminManageStudentStatusController = async (
 };
 
 export const adminAddContactNumberController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
-    const { email, role } = request.payload;
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
+    const { email } = request.payload;
     const { contactNumber } = request.body;
     console.log("Hello from adminAddContactNumberController ..!");
-    if (!email || !role) {
+    if (!email ) {
       response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Token not found" });
     } else {
       const result = await userModel.updateOne(
-        { email, role },
+        { email },
         { $set: { contactNumber: contactNumber } }
       );
       if (result?.acknowledged) {
@@ -266,10 +274,13 @@ export const adminAddContactNumberController = async (
 };
 
 export const adminRaiseQueryController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     const { name, email, roleName } = request.payload;
     const { subject, message } = request.body;
     if (!subject || !message) {
@@ -319,10 +330,13 @@ export const adminRaiseQueryController = async (
 };
 
 export const adminResponseController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     const { name, email, roleName } = request.payload;
     const { queryId } = request.params;
     const { message } = request.body;
@@ -363,8 +377,8 @@ export const adminResponseController = async (
 };
 
 export const adminManageQueryStatusController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
     const { queryId, status } = request.params;
@@ -398,8 +412,8 @@ export const adminManageQueryStatusController = async (
 };
 
 export const adminAuthenticationController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   try {
     const authHeader = request.headers["authorization"];
@@ -441,8 +455,8 @@ export const adminAuthenticationController = async (
 };
 
 export const adminGetQueryDataController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   try {
     const { queryId } = request.params;
@@ -469,10 +483,13 @@ export const adminGetQueryDataController = async (
 };
 
 export const adminAddNewRoleController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     const { email, roleName } = request.payload;
     console.log("request.payload ", request.payload);
 
@@ -508,8 +525,8 @@ export const adminAddNewRoleController = async (
 };
 
 export const getRoleByUserIdController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   const { userId } = request.params;
   try {
@@ -529,8 +546,8 @@ export const getRoleByUserIdController = async (
 };
 
 export const getRoleByIdController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   const { roleId } = request.params;
   try {
@@ -550,8 +567,8 @@ export const getRoleByIdController = async (
 };
 
 export const adminGetAllRolesController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
     const roleList = await roleModel
@@ -579,10 +596,13 @@ export const adminGetAllRolesController = async (
 };
 
 export const adminAddNewStatusController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     const { email, roleName } = request.payload;
     console.log("request.payload ", request.payload);
 
@@ -617,10 +637,13 @@ export const adminAddNewStatusController = async (
 };
 
 export const adminAddNewBatchController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     const { email, roleName } = request.payload;
     const { batchName, startDate, endDate, trainerId, courseId, students } =
       request.body;
@@ -658,8 +681,8 @@ export const adminAddNewBatchController = async (
 };
 
 export const adminGetAllBatchController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
     const batchList = await batchModel
@@ -687,8 +710,8 @@ export const adminGetAllBatchController = async (
 };
 
 export const getBatchByIdController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   const { batchId } = request.params;
   try {
@@ -715,10 +738,13 @@ export const getBatchByIdController = async (
 };
 
 export const adminAddNewCourseController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     const { email, roleName } = request.payload;
     const { courseName, courseCategory, courseFees, courseDescription } =
       request.body;
@@ -754,8 +780,8 @@ export const adminAddNewCourseController = async (
 };
 
 export const adminGetAllCourseController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
     const courseList = await courseModel
@@ -783,8 +809,8 @@ export const adminGetAllCourseController = async (
 };
 
 export const getCourseByIdController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   const { courseId } = request.params;
   try {
@@ -804,10 +830,14 @@ export const getCourseByIdController = async (
 };
 
 export const adminRegisterEmployeesController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
+    const {email: adminEmail, roleName: adminRoleName } = request.payload;
     const { name, email, contactNumber, roleId } = request.body;
     const [firstName, lastName] = name.split(" ");
     const userId = await generateUniqueId("user");
@@ -832,10 +862,10 @@ export const adminRegisterEmployeesController = async (
       const employeeData = await employeeModel.create({
         employeeId,
         userId: userData.userId,
-        createdBy: request.payload.email,
-        updatedBy: request.payload.email,
-        creatorRole: request.payload.roleName,
-        updaterRole: request.payload.roleName,
+        createdBy: adminEmail,
+        updatedBy: adminEmail,
+        creatorRole: adminRoleName,
+        updaterRole: adminRoleName,
       });
       if (employeeData) {
         response.status(StatusCodes.CREATED).json({
@@ -860,10 +890,13 @@ export const adminRegisterEmployeesController = async (
 };
 
 export const adminManageUsersAccessRightsController = async (
-  request: any,
-  response: express.Response
+  request: CustomRequest,
+  response: Response
 ) => {
   try {
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+    }
     const { email, roleName } = request.payload;
     const { userId, roleId, permissions } = request.body;
     if (!userId || !roleId || !(permissions.length > 0)) {
@@ -893,8 +926,8 @@ export const adminManageUsersAccessRightsController = async (
 };
 
 export const adminGetAlltransactionListController = async (
-  request: express.Request,
-  response: express.Response
+  request: Request,
+  response: Response
 ) => {
   try {
     const paymentsWithUserDetails = await paymentModel.aggregate([
@@ -1017,8 +1050,8 @@ export const adminGetAlltransactionListController = async (
 };
 
 export const adminAuthenticateJWT = async (
-  request: any,
-  response: express.Response,
+  request: CustomRequest,
+  response: Response,
   next: Function
 ) => {
   try {
@@ -1028,7 +1061,7 @@ export const adminAuthenticateJWT = async (
         .status(401)
         .json({ message: "Authorization token is missing or invalid" });
     }
-    const token = authHeader.split(" ")[1];
+    const token = authHeader?.split(" ")[1];
     const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
     request.payload = payload;
     next();
