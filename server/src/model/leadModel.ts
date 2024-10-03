@@ -5,25 +5,17 @@ interface Courses {
   appliedAt: Date;
 }
 
-const coursesSchema = new Schema<Courses>(
-  {
-    courseId: { type: String, required: true, ref: "Course" },
-    appliedAt: { type: Date, default: Date.now },
-  },
-  { _id: false }
-);
-
 interface Lead extends Document {
   firstName: string;
   lastName: string;
   contactNumber: string;
   email: string;
-  feesAmount?: number;
+  finalAmount?: number;
   discount?: number;
   channel?: string;
   createdAt: Date;
   createdBy: string;
-  createrRole: string;
+  creatorRole: string;
   updatedAt?: Date;
   updatedBy?: string;
   updaterRole?: string;
@@ -37,15 +29,21 @@ const leadSchema = new Schema<Lead>(
     lastName: { type: String, required: true },
     contactNumber: { type: String, default: "" },
     email: { type: String, required: true },
-    feesAmount: { type: Number, min: 0 },
+    finalAmount: { type: Number, min: 0 },
     discount: { type: Number, min: 0, max: 15 },
     channel: { type: String },
     createdBy: { type: String, ref: "user", required: true },
-    createrRole: { type: String, required: true },
+    creatorRole: { type: String, required: true },
     updatedBy: { type: String, ref: "user" },
     updaterRole: { type: String },
     statusId: { type: String, required: true, ref: "Status" },
-    courses: [coursesSchema],
+    courses: [
+      {
+        type: String,
+        ref: "Course",
+        required: true,
+      },
+    ],
   },
   { versionKey: false, timestamps: true }
 );
