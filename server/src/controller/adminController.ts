@@ -18,6 +18,7 @@ import employeeModel from "../model/employeeModel";
 import { AccessRights } from "../model/accessRightsModel";
 import statusModel from "../model/statusModel";
 import paymentModel from "../model/paymentModel";
+import studentModel from "../model/studentModel";
 
 export const adminViewProfileController = async (
   request: any,
@@ -93,34 +94,37 @@ export const adminViewStudentListController = async (
   response: express.Response
 ) => {
   try {
-    const studentList = await userModel
-      .find({ roleId: STUDENT_ROLE_ID }, { _id: 0 })
-      .select("firstName lastName email contactNumber roleId profileImg status")
-      .sort({ updatedAt: -1, createdAt: -1 });
+      const studentList = await studentModel.aggregate([
+      {
+        $lookup: {
+          from: "user",
+          localField: "userId",
+          foreignField: "userId",
+          as: "profileDetails",
+        },
+      },
+      { $unwind: '$profileDetails' },
+      {
+        $project: {
+          _id: 0,
+          "profileDetails._id": 0,
+          "profileDetails.userId": 0,
+          "profileDetails.roleId": 0,
+          "profileDetails.createdAt": 0,
+          "profileDetails.updatedAt": 0
+        }
+      }
+    ]);
 
-    console.log("StudentList :: ", studentList);
+    console.log(studentList)
 
     if (studentList && studentList.length > 0) {
-      const result = studentList.map((student) => ({
-        name: `${student.firstName} ${student.lastName}`,
-        email: student.email,
-        contactNumber: student.contactNumber,
-        role: "Student",
-        profileImg: student.profileImg,
-        status: student.status,
-      }));
-
-      console.log(result);
-
       response.status(StatusCodes.OK).json({
-        studentList: result,
+        studentList,
         message: "These are the registered students!",
       });
-    } else {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Student list not found!" });
-    }
+    };
+
   } catch (error) {
     console.log("Error occurred in adminViewStudentListController: ", error);
     response
@@ -888,8 +892,8 @@ export const adminManageUsersAccessRightsController = async (
   }
 };
 
-export const adminGetAllPaymentListController = async (
-  request: any,
+export const adminGetAlltransactionListController = async (
+  request: express.Request,
   response: express.Response
 ) => {
   try {
@@ -977,12 +981,11 @@ export const adminGetAllPaymentListController = async (
     ]);
     // console.log(paymentsWithUserDetails);
 
-    const paymentList = paymentsWithUserDetails.map((payment) => ({
+    const transactionList = paymentsWithUserDetails.map((payment) => ({
       name: `${payment.userDetails.firstName} ${payment.userDetails.lastName}`,
       email: payment.userDetails.email,
       enrollmentNumber: payment.studentDetails.enrollmentNumber,
       contactNumber: payment.userDetails.contactNumber,
-      profilePicture: payment.userDetails.profilePicture,
       userAccountStatus: payment.userDetails.status,
       coursesEnrolled: payment.courseDetails.map((course: { courseName: string, courseCategory: string }) => ({
         courseName: course.courseName,
@@ -1005,12 +1008,8 @@ export const adminGetAllPaymentListController = async (
 
     }));
 
-    // console.log(paymentList);
 
-    // const data = await userModel.findOne({userId: "USERNnLWXoxiM090714"})
-    // console.log(data)
-
-    response.status(200).json({ success: true, data: paymentList });
+    response.status(200).json({ success: true, data: transactionList });
   } catch (error) {
     console.error('Error fetching payment details:', error);
     response.status(500).json({ success: false, message: 'Error fetching payment details', error });

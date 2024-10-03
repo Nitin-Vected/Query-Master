@@ -71,7 +71,7 @@ counsellorRouter.post(
  *           schema:
  *             type: object
  *             properties:
- *               leadEmail:
+ *               email:
  *                 type: string
  *               name:
  *                 type: string
