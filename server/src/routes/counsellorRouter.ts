@@ -71,7 +71,25 @@ counsellorRouter.post(
  *           schema:
  *             type: object
  *             properties:
- *               leadId:
+ *               leadEmail:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               contactNumber:
+ *                 type: string
+ *               coursesPurchased:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               paymentMode:
+ *                 type: string
+ *               paymentType:
+ *                 type: string
+ *               finalAmount:
+ *                 type: string
+ *               discount:
+ *                 type: number
+ *               statusId:
  *                 type: string
  *               transactionProof:
  *                 type: string
@@ -82,6 +100,29 @@ counsellorRouter.post(
  *               transactionDate:
  *                 type: string
  *                 format: date
+ *               emiDetails:
+ *                 type: object
+ *                 properties:
+ *                   emiCount:
+ *                     type: integer
+ *                     example: 12
+ *                   installments:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         dueDate:
+ *                           type: string
+ *                           format: date
+ *                           example: "2024-10-01"
+ *                         transactionAmount:
+ *                           type: string
+ *                           format: date
+ *                           example: "2024-10-01"
+ *                         status:
+ *                           type: string
+ *                           enum: [paid, pending, overdue]
+ *                           example: "pending"
  *     responses:
  *       200:
  *         description: Student enrolled and transaction details added successfully
