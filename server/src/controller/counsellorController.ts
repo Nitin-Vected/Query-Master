@@ -108,7 +108,6 @@ export const consellorRegisterLeadAsUserController = async (request: any, respon
     const [firstName, lastName] = name.split(" ");
 
     const existingLead = await leadModel.findOne({ email: leadEmail });
-    console.log(existingLead)
     if (!existingLead) {
       const leadData = {
         firstName,
