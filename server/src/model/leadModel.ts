@@ -2,7 +2,6 @@ import { Schema, model, Document } from "mongoose";
 
 interface Courses {
   courseId: string;
-  appliedAt: Date;
 }
 
 interface Lead extends Document {

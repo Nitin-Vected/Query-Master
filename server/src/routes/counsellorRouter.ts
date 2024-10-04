@@ -182,6 +182,7 @@ counsellorRouter.post("/counsellorEnrollStudent", counsellorValidateRegisterLead
  *                 type: array
  *                 items:
  *                   type: string
+ *                 
  *     responses:
  *       201:
  *         description: Lead added successfully
