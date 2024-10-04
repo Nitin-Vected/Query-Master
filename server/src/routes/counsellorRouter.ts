@@ -9,6 +9,7 @@ import {
   counsellorViewProfileController,
 } from "../controller/counsellorController";
 import { uploadTransactionProof } from "../utilities/multer";
+import { counsellorValidateAddNewLeads, counsellorValidateGetLeadById, counsellorValidateManageLeadStatus, counsellorValidateRegisterLeadAsUser } from "../utilities/validation/counsellorValidation";
 
 const counsellorRouter = express.Router();
 
@@ -53,7 +54,7 @@ counsellorRouter.get("/counsellorViewProfile", counsellorViewProfileController);
  *         description: Bad request or missing parameters
  */
 counsellorRouter.post(
-  "/counsellorManageLeadStatus",
+  "/counsellorManageLeadStatus", counsellorValidateManageLeadStatus,
   counsellorManageLeadStatusController
 );
 
@@ -129,11 +130,11 @@ counsellorRouter.post(
  *       400:
  *         description: Invalid data or transaction proof missing
  */
-counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single('transactionProof'), counsellorRegisterLeadAsUserController);
+counsellorRouter.post("/counsellorEnrollStudent", counsellorValidateRegisterLeadAsUser, uploadTransactionProof.single('transactionProof'), counsellorRegisterLeadAsUserController);
 
 /**
  * @swagger
- * /counsellor/counsellorAddNewLeads:
+ * /counsellor/counsellorAddNewLead:
  *   post:
  *     summary: Add a new lead
  *     tags: [Counsellor]
@@ -161,7 +162,7 @@ counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single(
  *                 type: string
  *                 description: Email address of the lead
  *                 example: "john.doe@example.com"
- *               feesAmount:
+ *               finalAmount:
  *                 type: number
  *                 description: The fees amount associated with the lead
  *                 example: 5000
@@ -169,8 +170,6 @@ counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single(
  *                 type: number
  *                 description: Discount on the fees
  *                 example: 10
- *                 minimum: 0
- *                 maximum: 15
  *               channel:
  *                 type: string
  *                 description: The channel through which the lead was acquired
@@ -178,10 +177,9 @@ counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single(
  *               statusId:
  *                 type: string
  *                 description: Status ID of the lead
- *                 example: "STATUSHqMSvRUC303"
+ *                 example: "STATUSEe-_oqeWU01"
  *               courses:
  *                 type: array
- *                 description: List of courses
  *                 items:
  *                   type: string
  *                 
@@ -191,7 +189,7 @@ counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single(
  *       400:
  *         description: Bad request or missing parameters
  */
-counsellorRouter.post("/counsellorAddNewLeads", counsellorAddNewLeadsController);
+counsellorRouter.post("/counsellorAddNewLead", counsellorValidateAddNewLeads, counsellorAddNewLeadsController);
 
 /**
  * @swagger
@@ -224,6 +222,6 @@ counsellorRouter.get("/counsellorGetAllLeads", counsellorGetAllLeadsController);
  *       200:
  *         description: Lead details retrieved
  */
-counsellorRouter.get("/counsellorGetLeadById/:leadId", counsellorGetLeadByIdController);
+counsellorRouter.get("/counsellorGetLeadById/:leadId", counsellorValidateGetLeadById, counsellorGetLeadByIdController);
 
 export default counsellorRouter;

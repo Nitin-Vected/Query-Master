@@ -305,33 +305,36 @@ export const counsellorAddNewLeadsController = async (
   response: Response
 ) => {
   try {
-     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({message: "User payload is missing or invalid."});
+    if (!request.payload) {
+      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
     }
     const { email, roleName } = request.payload;
     const leads = Array.isArray(request.body) ? request.body : [request.body];
 
     const result = [];
     for (const leadData of leads) {
-      const { email: leadEmail, courseCategory } = leadData;
+      const { email: leadEmail, courses } = leadData;
 
       let existingLead = await leadModel.findOne({ email: leadEmail });
 
       if (existingLead) {
-        console.log("Lead already exists. Updating courseCategory.");
+        console.log("Lead already exists. Updating courseCategory.", existingLead);
 
         // Check if the course already exists in the lead's courses array
         const existingCourse = existingLead.courses.find(
-          (category) => category.courseId === courseCategory[0].courseId
+          (course) => course === courses[0]
         );
-
+        console.log(existingCourse)
         if (!existingCourse) {
-          existingLead.courses.push(courseCategory[0]);
+          existingLead.courses.push(courses[0]);
           existingLead.updatedBy = email;
           existingLead.updaterRole = roleName;
           await existingLead.save();
         } else {
-          console.log("Course already exists in the lead’s courseCategory.");
+          console.log("Course already exists in the lead’s courses.");
+          return response
+            .status(StatusCodes.ALREADY_EXIST)
+            .json({ data: result, message: "Course already exists in the lead’s courses." });
         }
 
         result.push(existingLead);
@@ -351,12 +354,12 @@ export const counsellorAddNewLeadsController = async (
     }
 
     console.log("Result: ", result);
-    response
+    return response
       .status(StatusCodes.CREATED)
       .json({ data: result, message: "Leads processed successfully." });
   } catch (error) {
     console.error("Error occurred in addNewLeads: ", error);
-    response
+    return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong!" });
   }
@@ -389,11 +392,9 @@ export const counsellorGetAllLeadsController = async (
 export const counsellorGetLeadByIdController = async (
   request: Request,
   response: Response
-) => {
-  const { leadId } = request.params;
-  console.log(request.params);
-
+) => {  
   try {
+    const { leadId } = request.params;
     const lead = await leadModel.findById(leadId);
     console.log(lead);
 
