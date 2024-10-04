@@ -183,17 +183,8 @@ counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single(
  *                 type: array
  *                 description: List of courses
  *                 items:
- *                   type: object
- *                   properties:
- *                     courseId:
- *                       type: string
- *                       description: The ID of the course
- *                       example: "COURSE8Loyl3ELJ01"
- *                     appliedAt:
- *                       type: string
- *                       format: date-time
- *                       description: The date when the course was applied for
- *                       example: "2024-01-01T00:00:00.000Z"
+ *                   type: string
+ *                 
  *     responses:
  *       201:
  *         description: Lead added successfully

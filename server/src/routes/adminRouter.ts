@@ -28,7 +28,7 @@ import {
   adminGetRoleByIdController,
   adminGetRoleByUserIdController,
 } from "../controller/adminController";
-import { adminValidateStatusName } from "../utilities/validation/adminValidation";
+import { adminAccessRightsValidation, adminValidateContactNumber, adminValidateCourseDetails, adminValidateCourseId, adminValidateEmployeeDetails, adminValidateNewBatchDetails, adminValidateNewRole, adminValidateParams, adminValidateQueryData, adminValidateQueryResponse, adminValidateRoleId, adminValidateStatusName, adminValidateUserId } from "../utilities/validation/adminValidation";
 
 const adminRouter = express.Router();
 
@@ -87,7 +87,7 @@ adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
  *       200:
  *         description: Query data retrieved
  */
-adminRouter.get("/adminGetQueryData/:queryId", adminGetQueryDataController);
+adminRouter.get("/adminGetQueryData/:queryId", adminValidateParams("queryId"), adminGetQueryDataController);
 
 
 /**
@@ -199,15 +199,15 @@ adminRouter.get(
  *           schema:
  *             type: object
  *             properties:
- *               queryTitle:
+ *               subject:
  *                 type: string
- *               queryDescription:
+ *               message:
  *                 type: string
  *     responses:
  *       201:
  *         description: Query raised
  */
-adminRouter.post("/adminRaiseQuery", adminRaiseQueryController);
+adminRouter.post("/adminRaiseQuery", adminValidateQueryData, adminRaiseQueryController);
 
 /**
  * @swagger
@@ -230,13 +230,13 @@ adminRouter.post("/adminRaiseQuery", adminRaiseQueryController);
  *           schema:
  *             type: object
  *             properties:
- *               response:
+ *               message:
  *                 type: string
  *     responses:
  *       200:
  *         description: Response added
  */
-adminRouter.post("/adminAddResponseToQuery/:queryId", adminResponseController);
+adminRouter.post("/adminAddResponseToQuery/:queryId", adminValidateQueryResponse, adminResponseController);
 
 /**
  * @swagger
@@ -259,7 +259,7 @@ adminRouter.post("/adminAddResponseToQuery/:queryId", adminResponseController);
  *       201:
  *         description: Contact number added
  */
-adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
+adminRouter.post("/adminAddContactNumber", adminValidateContactNumber, adminAddContactNumberController);
 
 /**
  * @swagger
@@ -282,12 +282,13 @@ adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
  *                 type: array
  *                 items:
  *                   type: string
- *                   example: "Student001"
+ *                   example: "View Profile"
  *     responses:
  *       201:
  *         description: Role added
  */
-adminRouter.post("/adminAddNewRole", adminAddNewRoleController);
+
+adminRouter.post("/adminAddNewRole", adminValidateNewRole, adminAddNewRoleController);
 
 /**
  * @swagger
@@ -319,7 +320,7 @@ adminRouter.post("/adminAddNewRole", adminAddNewRoleController);
  *       404:
  *         description: Role of User not found
  */
-adminRouter.get("/adminGetRoleByUserId/:userId", adminGetRoleByUserIdController);
+adminRouter.get("/adminGetRoleByUserId/:userId", adminValidateUserId, adminGetRoleByUserIdController);
 
 /**
  * @swagger
@@ -351,7 +352,7 @@ adminRouter.get("/adminGetRoleByUserId/:userId", adminGetRoleByUserIdController)
  *       404:
  *         description: Role not found
  */
-adminRouter.get("/adminGetRoleById/:roleId", adminGetRoleByIdController);
+adminRouter.get("/adminGetRoleById/:roleId", adminValidateRoleId, adminGetRoleByIdController);
 
 /**
  * @swagger
@@ -406,7 +407,7 @@ adminRouter.post("/adminAddNewStatus", adminValidateStatusName, adminAddNewStatu
  *       201:
  *         description: Employees registered
  */
-adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
+adminRouter.post("/adminRegisterEmployees", adminValidateEmployeeDetails, adminRegisterEmployeesController);
 
 /**
  * @swagger
@@ -437,10 +438,7 @@ adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
  *       201:
  *         description: Access rights updated
  */
-adminRouter.post(
-  "/adminAddAccessRights",
-  adminManageUsersAccessRightsController
-);
+adminRouter.post("/adminAddAccessRights", adminAccessRightsValidation, adminManageUsersAccessRightsController);
 
 /**
  * @swagger
@@ -484,7 +482,7 @@ adminRouter.post(
  *       400:
  *         description: Invalid input
  */
-adminRouter.post("/adminAddNewBatch", adminAddNewBatchController);
+adminRouter.post("/adminAddNewBatch", adminValidateNewBatchDetails, adminAddNewBatchController);
 
 // batchName, startDate, endDate, trainerId, courseId, students
 
@@ -549,7 +547,7 @@ adminRouter.get("/adminGetBatchById/:batchId", adminGetBatchByIdController); // 
  *       201:
  *         description: Course created
  */
-adminRouter.post("/adminAddNewCourse", adminAddNewCourseController);
+adminRouter.post("/adminAddNewCourse",adminValidateCourseDetails, adminAddNewCourseController);
 
 /**
  * @swagger
@@ -592,6 +590,6 @@ adminRouter.get("/adminGetAllRoles", adminGetAllRolesController);
  *       200:
  *         description: Course details retrieved
  */
-adminRouter.get("/adminGetCourseById/:courseId", adminGetCourseByIdController);
+adminRouter.get("/adminGetCourseById/:courseId",adminValidateCourseId, adminGetCourseByIdController);
 
 export default adminRouter;
