@@ -23,11 +23,12 @@ import {
   adminViewStudentListController,
   adminViewSupportAdminListController,
   adminViewUserListController,
-  getBatchByIdController,
-  getCourseByIdController,
-  getRoleByIdController,
-  getRoleByUserIdController,
+  adminGetBatchByIdController,
+  adminGetCourseByIdController,
+  adminGetRoleByIdController,
+  adminGetRoleByUserIdController,
 } from "../controller/adminController";
+import { adminValidateStatusName } from "../utilities/validation/adminValidation";
 
 const adminRouter = express.Router();
 
@@ -99,7 +100,7 @@ adminRouter.get("/adminGetQueryData/:queryId", adminGetQueryDataController);
  *       200:
  *         description: Payment List Retrieved
  */
-adminRouter.get("/adminGetAllPaymentDetails",adminGetAlltransactionListController);
+adminRouter.get("/adminGetAllPaymentDetails", adminGetAlltransactionListController);
 
 /**
  * @swagger
@@ -262,7 +263,7 @@ adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
 
 /**
  * @swagger
- * /admin/addNewRole:
+ * /admin/adminAddNewRole:
  *   post:
  *     summary: Add New Role
  *     tags: [Admin]
@@ -286,11 +287,11 @@ adminRouter.post("/adminAddContactNumber", adminAddContactNumberController);
  *       201:
  *         description: Role added
  */
-adminRouter.post("/addNewRole", adminAddNewRoleController);
+adminRouter.post("/adminAddNewRole", adminAddNewRoleController);
 
 /**
  * @swagger
- * /admin/getRoleByUserId/{userId}:
+ * /admin/adminGetRoleByUserId/{userId}:
  *   get:
  *     summary: Get Role by User ID
  *     tags: [Admin]
@@ -318,11 +319,11 @@ adminRouter.post("/addNewRole", adminAddNewRoleController);
  *       404:
  *         description: Role of User not found
  */
-adminRouter.get("/getRoleByUserId/:userId", getRoleByUserIdController);
+adminRouter.get("/adminGetRoleByUserId/:userId", adminGetRoleByUserIdController);
 
 /**
  * @swagger
- * /admin/getRoleById/{roleId}:
+ * /admin/adminGetRoleById/{roleId}:
  *   get:
  *     summary: Get Role by ID
  *     tags: [Admin]
@@ -350,8 +351,7 @@ adminRouter.get("/getRoleByUserId/:userId", getRoleByUserIdController);
  *       404:
  *         description: Role not found
  */
-adminRouter.get("/getRoleById/:roleId", getRoleByIdController);
-
+adminRouter.get("/adminGetRoleById/:roleId", adminGetRoleByIdController);
 
 /**
  * @swagger
@@ -374,7 +374,7 @@ adminRouter.get("/getRoleById/:roleId", getRoleByIdController);
  *       201:
  *         description: Status added
  */
-adminRouter.post("/adminAddNewStatus", adminAddNewStatusController);
+adminRouter.post("/adminAddNewStatus", adminValidateStatusName, adminAddNewStatusController);
 
 /**
  * @swagger
@@ -444,7 +444,7 @@ adminRouter.post(
 
 /**
  * @swagger
- * /admin/addNewBatch:
+ * /admin/adminAddNewBatch:
  *   post:
  *     summary: Add a New Batch
  *     tags: [Admin]
@@ -484,13 +484,13 @@ adminRouter.post(
  *       400:
  *         description: Invalid input
  */
-adminRouter.post("/addNewBatch", adminAddNewBatchController);
+adminRouter.post("/adminAddNewBatch", adminAddNewBatchController);
 
 // batchName, startDate, endDate, trainerId, courseId, students
 
 /**
  * @swagger
- * /admin/getAllBatches:
+ * /admin/adminGetAllBatches:
  *   get:
  *     summary: Get All Batches
  *     tags: [Admin]
@@ -498,11 +498,11 @@ adminRouter.post("/addNewBatch", adminAddNewBatchController);
  *       200:
  *         description: List of all batches
  */
-adminRouter.get("/getAllBatches", adminGetAllBatchController);
+adminRouter.get("/adminGetAllBatches", adminGetAllBatchController);
 
 /**
  * @swagger
- * /admin/getBatchById/{batchId}:
+ * /admin/adminGetBatchById/{batchId}:
  *   get:
  *     summary: Get Batch by ID
  *     tags: [Admin]
@@ -517,11 +517,11 @@ adminRouter.get("/getAllBatches", adminGetAllBatchController);
  *       200:
  *         description: Batch details retrieved
  */
-adminRouter.get("/getBatchById/:batchId", getBatchByIdController); // students not coming
+adminRouter.get("/adminGetBatchById/:batchId", adminGetBatchByIdController); // students not coming
 
 /**
  * @swagger
- * /admin/addNewCourse:
+ * /admin/adminAddNewCourse:
  *   post:
  *     summary: Add a New Course
  *     tags: [Admin]
@@ -549,11 +549,11 @@ adminRouter.get("/getBatchById/:batchId", getBatchByIdController); // students n
  *       201:
  *         description: Course created
  */
-adminRouter.post("/addNewCourse", adminAddNewCourseController);
+adminRouter.post("/adminAddNewCourse", adminAddNewCourseController);
 
 /**
  * @swagger
- * /admin/getAllCourses:
+ * /admin/adminGetAllCourses:
  *   get:
  *     summary: Get All Courses
  *     tags: [Admin]
@@ -561,11 +561,11 @@ adminRouter.post("/addNewCourse", adminAddNewCourseController);
  *       200:
  *         description: List of all courses
  */
-adminRouter.get("/getAllCourses", adminGetAllCourseController);
+adminRouter.get("/adminGetAllCourses", adminGetAllCourseController);
 
 /**
  * @swagger
- * /admin/getAllRoles:
+ * /admin/adminGetAllRoles:
  *   get:
  *     summary: Get All Roles
  *     tags: [Admin]
@@ -573,11 +573,11 @@ adminRouter.get("/getAllCourses", adminGetAllCourseController);
  *       200:
  *         description: List of all Roles
  */
-adminRouter.get("/getAllRoles", adminGetAllRolesController);
+adminRouter.get("/adminGetAllRoles", adminGetAllRolesController);
 
 /**
  * @swagger
- * /admin/getCourseById/{courseId}:
+ * /admin/adminGetCourseById/{courseId}:
  *   get:
  *     summary: Get Course by ID
  *     tags: [Admin]
@@ -592,6 +592,6 @@ adminRouter.get("/getAllRoles", adminGetAllRolesController);
  *       200:
  *         description: Course details retrieved
  */
-adminRouter.get("/getCourseById/:courseId", getCourseByIdController);
+adminRouter.get("/adminGetCourseById/:courseId", adminGetCourseByIdController);
 
 export default adminRouter;

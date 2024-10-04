@@ -1,9 +1,9 @@
 import express from "express";
 import {
-  addNewLeadsController,
+  counsellorAddNewLeadsController,
   counsellorAuthenticateJWT,
-  getAllLeadsController,
-  getLeadByIdController,
+  counsellorGetAllLeadsController,
+  counsellorGetLeadByIdController,
   counsellorManageLeadStatusController,
   counsellorRegisterLeadAsUserController,
   counsellorViewProfileController,
@@ -133,7 +133,7 @@ counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single(
 
 /**
  * @swagger
- * /counsellor/addNewLeads:
+ * /counsellor/counsellorAddNewLeads:
  *   post:
  *     summary: Add a new lead
  *     tags: [Counsellor]
@@ -200,11 +200,11 @@ counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single(
  *       400:
  *         description: Bad request or missing parameters
  */
-counsellorRouter.post("/addNewLeads", addNewLeadsController);
+counsellorRouter.post("/counsellorAddNewLeads", counsellorAddNewLeadsController);
 
 /**
  * @swagger
- * /counsellor/getAllLeads:
+ * /counsellor/counsellorGetAllLeads:
  *   get:
  *     summary: Retrieve all leads
  *     tags: [Counsellor]
@@ -214,11 +214,11 @@ counsellorRouter.post("/addNewLeads", addNewLeadsController);
  *       401:
  *         description: Unauthorized
  */
-counsellorRouter.get("/getAllLeads", getAllLeadsController);
+counsellorRouter.get("/counsellorGetAllLeads", counsellorGetAllLeadsController);
 
 /**
  * @swagger
- * /counsellor/getLeadById/{leadId}:
+ * /counsellor/counsellorGetLeadById/{leadId}:
  *   get:
  *     summary: Get Lead by ID
  *     tags: [Counsellor]
@@ -233,6 +233,6 @@ counsellorRouter.get("/getAllLeads", getAllLeadsController);
  *       200:
  *         description: Lead details retrieved
  */
-counsellorRouter.get("/getLeadById/:leadId", getLeadByIdController);
+counsellorRouter.get("/counsellorGetLeadById/:leadId", counsellorGetLeadByIdController);
 
 export default counsellorRouter;

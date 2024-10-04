@@ -300,7 +300,7 @@ const getNextEnrollmentId = async (): Promise<string> => {
   return newEnrollmentNumber;
 };
 
-export const addNewLeadsController = async (
+export const counsellorAddNewLeadsController = async (
   request: CustomRequest,
   response: Response
 ) => {
@@ -362,7 +362,7 @@ export const addNewLeadsController = async (
   }
 };
 
-export const getAllLeadsController = async (
+export const counsellorGetAllLeadsController = async (
   request: Request,
   response: Response
 ) => {
@@ -386,7 +386,7 @@ export const getAllLeadsController = async (
   }
 };
 
-export const getLeadByIdController = async (
+export const counsellorGetLeadByIdController = async (
   request: Request,
   response: Response
 ) => {
