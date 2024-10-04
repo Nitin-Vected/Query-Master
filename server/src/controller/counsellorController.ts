@@ -93,7 +93,7 @@ export const counsellorManageLeadStatusController = async (request: Request, res
   }
 };
 
-export const consellorRegisterLeadAsUserController = async (request: any, response: Response, next: NextFunction) => {
+export const counsellorRegisterLeadAsUserController = async (request: any, response: Response, next: NextFunction) => {
   let uploadedFilePath = '';
   let session: mongoose.ClientSession | null = null;
   try {
@@ -292,7 +292,7 @@ const getNextEnrollmentId = async (): Promise<string> => {
   return newEnrollmentNumber;
 };
 
-export const addNewLeadsController = async (
+export const counsellorAddNewLeadsController = async (
   request: any,
   response: Response
 ) => {
@@ -351,7 +351,7 @@ export const addNewLeadsController = async (
   }
 };
 
-export const getAllLeadsController = async (
+export const counsellorGetAllLeadsController = async (
   request: Request,
   response: Response
 ) => {
@@ -375,7 +375,7 @@ export const getAllLeadsController = async (
   }
 };
 
-export const getLeadByIdController = async (
+export const counsellorGetLeadByIdController = async (
   request: Request,
   response: Response
 ) => {

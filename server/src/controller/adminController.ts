@@ -507,7 +507,7 @@ export const adminAddNewRoleController = async (
   }
 };
 
-export const getRoleByUserIdController = async (
+export const adminGetRoleByUserIdController = async (
   request: express.Request,
   response: express.Response
 ) => {
@@ -521,14 +521,14 @@ export const getRoleByUserIdController = async (
     }
     response.status(200).json({ data: user.roleId, message: "Role of given userId : " });
   } catch (error) {
-    console.log("Error occured in getRoleByUserId : ", error);
+    console.log("Error occured in adminGetRoleByUserId : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const getRoleByIdController = async (
+export const adminGetRoleByIdController = async (
   request: express.Request,
   response: express.Response
 ) => {
@@ -686,7 +686,7 @@ export const adminGetAllBatchController = async (
   }
 };
 
-export const getBatchByIdController = async (
+export const adminGetBatchByIdController = async (
   request: express.Request,
   response: express.Response
 ) => {
@@ -782,7 +782,7 @@ export const adminGetAllCourseController = async (
   }
 };
 
-export const getCourseByIdController = async (
+export const adminGetCourseByIdController = async (
   request: express.Request,
   response: express.Response
 ) => {
