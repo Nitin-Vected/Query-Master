@@ -51,7 +51,7 @@ const OrderSchema = new Schema<Order>(
     },
     isActive: {
       type: Boolean,
-      required: true,
+      default: true,
     },
     createdBy: {
       type: String,

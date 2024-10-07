@@ -47,7 +47,7 @@ const StudentSchema = new Schema<Student>(
     },
     isActive: {
       type: Boolean,
-      required: true,
+      default: true,
     },
     createdBy: {
       type: String,

@@ -21,13 +21,13 @@ interface Lead extends Document {
   lastName: string;
   contactNumber: number;
   email: string;
-  discount?: number;
-  channelId: string;
-  statusId: string;
+  channelId?: string;
+  statusId?: string;
+  productId?: string;
   assignedTo: string;
   description: string;
-  productId: string;
   productAmount?: number;
+  discount?: number;
   auditLogs: Audit[];
   comments: Comment[];
   isActive: boolean;
@@ -59,19 +59,19 @@ const leadSchema = new Schema<Lead>(
     lastName: { type: String, required: true },
     contactNumber: { type: Number, required: true },
     email: { type: String, required: true, lowercase: true },
-    productId: { type: String, required: true, ref: "Product" },
-    assignedTo: { type: String, required: true },
-    auditLogs: [auditSchema],
-    comments: [commentSchema],
+    channelId: { type: String, ref: "channelMaster" },
+    statusId: { type: String, ref: "Status" },
+    productId: { type: String, ref: "Product" },
+    assignedTo: { type: String, ref:"user", default: null },
     productAmount: { type: Number, min: 0 },
     discount: { type: Number, min: 0, max: 15 },
-    description: { type: String, required: true },
-    channelId: { type: String, ref: "channelMaster" },
-    statusId: { type: String, required: true, ref: "Status" },
-    isActive: { type: Boolean, required: true },
-    createdBy: { type: String, ref: "user", required: true },
+    description: { type: String, default: "" },
+    auditLogs: [auditSchema],
+    comments: [commentSchema],
+    isActive: { type: Boolean, default: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String, required: true },
     createrRole: { type: String, required: true },
-    updatedBy: { type: String, ref: "user", required: true },
     updaterRole: { type: String, required: true },
   },
   { versionKey: false, timestamps: true }

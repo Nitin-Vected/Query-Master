@@ -14,11 +14,11 @@ const statusSchema = new Schema<Status>(
   {
     id: { type: String, required: true, unique: true },
     name: { type: String, required: true },
+    isActive: { type: Boolean, default: true },
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },
     createrRole: { type: String, required: true },
     updaterRole: { type: String, required: true },
-    isActive: { type: Boolean, required: true },
   },
   { versionKey: false, timestamps: true }
 );

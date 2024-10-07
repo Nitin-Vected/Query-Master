@@ -55,28 +55,27 @@ const UserSchema = new Schema<User>(
     status: {
       type: String,
       required: true,
-      ref: "Status",
     },
     isActive: {
       type: Boolean,
-      required: true,
+      default: true,
     },
     createdBy: {
       type: String,
-    //   required: true,
+      required: true,
       
     },
     updatedBy: {
       type: String,
-    //   required: true,
+      required: true,
     },
     createrRole: {
       type: String,
-    //   required: true,
+      required: true,
     },
     updaterRole: {
       type: String,
-    //   required: true,
+      required: true,
     },
   },
   { versionKey: false, timestamps: true }

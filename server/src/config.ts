@@ -9,6 +9,7 @@ import orderModel from "./model/orderModel";
 import transactionModel from "./model/transactionModel";
 import studentModel from "./model/studentModel";
 import channelModal from "./model/channelModel";
+import leadModel from "./model/leadModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env
@@ -82,6 +83,38 @@ export const generateUniqueId = async (mode: string) => {
             isUnique = true;
           } else {
             console.log("Role ID collision, regenerating...");
+          }
+        }
+
+        return newUniqueId;
+      }
+      case "lead": {
+        const latestLead = await leadModel
+          .find()
+          .sort({ createdAt: -1 })
+          .limit(1);
+        let newCounter = 1;
+
+        if (latestLead.length > 0) {
+          const lead = latestLead[0];
+          if (lead.id) {
+            const numericPart = lead.id.match(/\d+$/);
+            if (numericPart) {
+              newCounter = parseInt(numericPart[0]) + 1;
+            }
+          }
+        }
+
+        while (!isUnique) {
+          const uniqueId = shortid.generate();
+          newUniqueId = `LEAD${uniqueId}0${newCounter}`;
+          console.log(`Generated Lead ID: ${newUniqueId}`);
+
+          const existingLead = await leadModel.findOne({ id: newUniqueId });
+          if (!existingLead) {
+            isUnique = true;
+          } else {
+            console.log("Lead ID collision, regenerating...");
           }
         }
 

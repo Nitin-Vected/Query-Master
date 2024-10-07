@@ -91,6 +91,14 @@ export const adminValidateNewRole = [
   checkValidation,
 ];
 
+export const adminValidateNewChannel = [
+  body("channelName")
+    .notEmpty()
+    .withMessage("channel name is required")
+    .isString()
+    .withMessage("channel name must be a string"),
+];
+
 export const adminValidateRoleId = [
   param("roleId")
     .notEmpty()

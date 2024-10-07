@@ -2,11 +2,11 @@
 import express from "express";
 import {
   adminAddContactNumberController,
-  adminAddNewCourseController,
+  adminAddNewProductController,
   adminAddNewRoleController,
   adminAddNewStatusController,
   adminAuthenticateJWT,
-  adminGetAllCourseController,
+  adminGetAllProductController,
 //   adminRegisterEmployeesController,
 //   adminGetAlltransactionListController,
   adminGetAllRolesController,
@@ -17,11 +17,12 @@ import {
   adminViewSupportAdminListController,
   adminViewUserListController,
 //   adminGetBatchByIdController,
-  adminGetCourseByIdController,
+  adminGetProductByIdController,
   adminGetRoleByIdController,
   adminGetRoleByUserIdController,
+  adminAddNewChannelController,
 } from "../controller/adminController";
-import { adminAccessRightsValidation, adminValidateContactNumber, adminValidateCourseDetails, adminValidateCourseId, adminValidateEmployeeDetails, adminValidateNewBatchDetails, adminValidateNewRole, adminValidateParams, adminValidateQueryData, adminValidateQueryResponse, adminValidateRoleId, adminValidateStatusName, adminValidateUserId } from "../utilities/validation/adminValidation";
+import { adminAccessRightsValidation, adminValidateContactNumber, adminValidateCourseDetails, adminValidateCourseId, adminValidateEmployeeDetails, adminValidateNewBatchDetails, adminValidateNewChannel, adminValidateNewRole, adminValidateParams, adminValidateQueryData, adminValidateQueryResponse, adminValidateRoleId, adminValidateStatusName, adminValidateUserId } from "../utilities/validation/adminValidation";
 
 const adminRouter = express.Router();
 
@@ -157,6 +158,30 @@ adminRouter.post("/adminAddContactNumber", adminValidateContactNumber, adminAddC
  */
 
 adminRouter.post("/adminAddNewRole", adminValidateNewRole, adminAddNewRoleController);
+
+/**
+ * @swagger
+ * /admin/adminAddNewChannel:
+ *   post:
+ *     summary: Add New Role
+ *     tags: [Admin]
+ *     requestBody:
+ *       description: Role details
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Student"
+ *     responses:
+ *       201:
+ *         description: Role added
+ */
+
+adminRouter.post("/adminAddNewChannel", adminValidateNewChannel, adminAddNewChannelController);
 
 /**
  * @swagger
@@ -426,7 +451,7 @@ adminRouter.post("/adminAddAccessRights", adminAccessRightsValidation, adminMana
  *       201:
  *         description: Course created
  */
-adminRouter.post("/adminAddNewCourse",adminValidateCourseDetails, adminAddNewCourseController);
+adminRouter.post("/adminAddNewProduct",adminValidateCourseDetails, adminAddNewProductController);
 
 /**
  * @swagger
@@ -438,7 +463,7 @@ adminRouter.post("/adminAddNewCourse",adminValidateCourseDetails, adminAddNewCou
  *       200:
  *         description: List of all courses
  */
-adminRouter.get("/adminGetAllCourses", adminGetAllCourseController);
+adminRouter.get("/adminGetAllCourses", adminGetAllProductController);
 
 /**
  * @swagger
@@ -469,6 +494,6 @@ adminRouter.get("/adminGetAllRoles", adminGetAllRolesController);
  *       200:
  *         description: Course details retrieved
  */
-adminRouter.get("/adminGetCourseById/:courseId",adminValidateCourseId, adminGetCourseByIdController);
+adminRouter.get("/adminGetCourseById/:courseId",adminValidateCourseId, adminGetProductByIdController);
 
 export default adminRouter;

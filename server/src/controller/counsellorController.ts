@@ -1,9 +1,9 @@
 import {
-    COUNSELLOR_SECRET_KEY,
-    CustomRequest,
-    STUDENT_ROLE_ID,
-    StatusCodes,
-    generateUniqueId,
+  COUNSELLOR_SECRET_KEY,
+  CustomRequest,
+  STUDENT_ROLE_ID,
+  StatusCodes,
+  generateUniqueId,
 } from "../config";
 import { Request, Response, NextFunction } from "express";
 import { tokenVerifier } from "../utilities/jwt";
@@ -31,8 +31,7 @@ export const counsellorViewProfileController = async (
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Token not found" });
     } else {
-      const result = await userModel.findOne({ userId });
-      console.log("result : ", result);
+      const result = await userModel.findOne({ id: userId });
       const counsellorData = {
         name: result?.firstName + " " + result?.lastName,
         email: result?.email,
@@ -54,7 +53,7 @@ export const counsellorViewProfileController = async (
       }
     }
   } catch (error) {
-    console.log(error);
+    console.log("error in counsellorViewProfileController", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
@@ -98,6 +97,95 @@ export const counsellorManageLeadStatusController = async (
   }
 };
 
+export const counsellorAddNewLeadsController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+    const { email, roleName } = request.payload;
+    const leads = Array.isArray(request.body) ? request.body : [request.body];
+    const leadId = await generateUniqueId("lead");
+
+    const result = [];
+    for (const leadData of leads) {
+      console.log("Lead does not exist. Creating a new lead.");
+      const newLeadData = {
+        id: leadId,
+        ...leadData,
+        createdBy: email,
+        updatedBy: email,
+        createrRole: roleName,
+        updaterRole: roleName,
+      };
+
+      const newLead = await leadModel.create(newLeadData);
+      result.push(newLead);
+    }
+
+    console.log("Result: ", result);
+    return response
+      .status(StatusCodes.CREATED)
+      .json({ data: result, message: "Leads processed successfully." });
+  } catch (error) {
+    console.error("Error occurred in addNewLeads: ", error);
+    return response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong!" });
+  }
+};
+
+export const counsellorGetAllLeadsController = async (
+  request: Request,
+  response: Response
+) => {
+  try {
+    const leads = await leadModel.find();
+    if (leads) {
+      response.status(StatusCodes.OK).json({
+        leads: leads,
+        message: "These are the leads created by you!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ myQueries: null, message: "No Leads are added by You!" });
+    }
+  } catch (error) {
+    console.log("Error occured in getAllLeads : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const counsellorGetLeadByIdController = async (
+  request: Request,
+  response: Response
+) => {
+  try {
+    const { leadId } = request.params;
+    const lead = await leadModel.findOne({ id: leadId });
+    console.log(lead);
+
+    if (!lead) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Lead not found" });
+    }
+    response.status(200).json({ data: lead, message: "Lead of given id" });
+  } catch (error) {
+    console.log("Error occured in getLeadById : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
 export const counsellorRegisterLeadAsUserController = async (
   request: CustomRequest,
   response: Response,
@@ -123,7 +211,6 @@ export const counsellorRegisterLeadAsUserController = async (
       paymentType,
       transactionDate,
       transactionAmount,
-      emiDetails,
       discount,
       finalAmount,
       coursesPurchased,
@@ -164,11 +251,9 @@ export const counsellorRegisterLeadAsUserController = async (
     );
 
     if (missingField) {
-      return response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({
-          message: "Please Enter all the required fields and try again ..!",
-        });
+      return response.status(StatusCodes.BAD_REQUEST).json({
+        message: "Please Enter all the required fields and try again ..!",
+      });
     }
 
     const transactionProof = request.file?.path;
@@ -178,7 +263,7 @@ export const counsellorRegisterLeadAsUserController = async (
 
     const userId = await generateUniqueId("user");
     const dataToRegister = {
-      userId,
+      id: userId,
       email: leadEmail,
       firstName,
       lastName,
@@ -194,7 +279,7 @@ export const counsellorRegisterLeadAsUserController = async (
 
     const transactionId = await generateUniqueId("transaction");
     const transactionData = {
-      transactionId,
+      id: transactionId,
       userId,
       paymentMode,
       paymentType,
@@ -216,7 +301,7 @@ export const counsellorRegisterLeadAsUserController = async (
 
     const orderId = await generateUniqueId("order");
     const orderData = {
-      orderId,
+      id: orderId,
       userId,
       transactionId,
       coursesPurchased: coursesPurchased,
@@ -277,118 +362,6 @@ export const counsellorRegisterLeadAsUserController = async (
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: "Something went wrong, please try again." });
-  }
-};
-
-// export const counsellorAddNewLeadsController = async (
-//   request: CustomRequest,
-//   response: Response
-// ) => {
-//   try {
-//     if (!request.payload) {
-//       return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
-//     }
-//     const { email, roleName } = request.payload;
-//     const leads = Array.isArray(request.body) ? request.body : [request.body];
-
-//     const result = [];
-//     for (const leadData of leads) {
-//       const { email: leadEmail, courses } = leadData;
-
-//       let existingLead = await leadModel.findOne({ email: leadEmail });
-
-//       if (existingLead) {
-//         console.log("Lead already exists. Updating courseCategory.", existingLead);
-
-//         // Check if the course already exists in the lead's courses array
-//         const existingCourse = existingLead.courses.find(
-//           (course) => course === courses[0]
-//         );
-//         console.log(existingCourse)
-//         if (!existingCourse) {
-//           existingLead.courses.push(courses[0]);
-//           existingLead.updatedBy = email;
-//           existingLead.updaterRole = roleName;
-//           await existingLead.save();
-//         } else {
-//           console.log("Course already exists in the lead’s courses.");
-//           return response
-//             .status(StatusCodes.ALREADY_EXIST)
-//             .json({ data: result, message: "Course already exists in the lead’s courses." });
-//         }
-
-//         result.push(existingLead);
-//       } else {
-//         console.log("Lead does not exist. Creating a new lead.");
-//         const newLeadData = {
-//           ...leadData,
-//           createdBy: email,
-//           updatedBy: email,
-//           createrRole: roleName,
-//           updaterRole: roleName,
-//         };
-
-//         const newLead = await leadModel.create(newLeadData);
-//         result.push(newLead);
-//       }
-//     }
-
-//     console.log("Result: ", result);
-//     return response
-//       .status(StatusCodes.CREATED)
-//       .json({ data: result, message: "Leads processed successfully." });
-//   } catch (error) {
-//     console.error("Error occurred in addNewLeads: ", error);
-//     return response
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .json({ message: "Something went wrong!" });
-//   }
-// };
-
-export const counsellorGetAllLeadsController = async (
-  request: Request,
-  response: Response
-) => {
-  try {
-    const leads = await leadModel.find();
-    if (leads) {
-      response.status(StatusCodes.OK).json({
-        leads: leads,
-        message: "These are the leads created by you!",
-      });
-    } else {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ myQueries: null, message: "No Leads are added by You!" });
-    }
-  } catch (error) {
-    console.log("Error occured in getAllLeads : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
-
-export const counsellorGetLeadByIdController = async (
-  request: Request,
-  response: Response
-) => {
-  try {
-    const { leadId } = request.params;
-    const lead = await leadModel.findById(leadId);
-    console.log(lead);
-
-    if (!lead) {
-      return response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Lead not found" });
-    }
-    response.status(200).json({ data: lead, message: "Lead of given id" });
-  } catch (error) {
-    console.log("Error occured in getLeadById : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
   }
 };
 

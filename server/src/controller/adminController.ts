@@ -11,11 +11,12 @@ import {
 } from "../config";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
-import courseModel from "../model/productModel";
+import productModel from "../model/productModel";
 import { AccessRights } from "../model/accessRightsModel";
 import statusModel from "../model/statusModel";
 import studentModel from "../model/studentModel";
 import channelModal from "../model/channelModel";
+import channelModel from "../model/channelModel";
 
 export const adminViewProfileController = async (
   request: CustomRequest,
@@ -33,7 +34,7 @@ export const adminViewProfileController = async (
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Token not found" });
     } else {
-      const result = await userModel.findOne({ userId });
+      const result = await userModel.findOne({ id: userId });
       console.log("result : ", result);
       const adminData = {
         name: result?.firstName + " " + result?.lastName,
@@ -280,7 +281,7 @@ export const adminAuthenticationController = async (
         .json({ message: "Something went wrong ..!" });
     }
   } catch (err) {
-    console.log("Error while user authentication Controller", err);
+    console.log("Error while admin authentication Controller", err);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Token Not verify please login then try to access ..!",
     });
@@ -324,7 +325,7 @@ export const adminAddNewRoleController = async (
       });
     }
   } catch (error) {
-    console.error("Error in adminManageRoleController:", error);
+    console.error("Error in adminAddNewRoleController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Something went wrong!",
     });
@@ -343,7 +344,8 @@ export const adminAddNewChannelController = async (
     }
     const { email, roleName } = request.payload;
     const { channelName } = request.body;
-    const channelId = await generateUniqueId("role");
+
+    const channelId = await generateUniqueId("channel");
     const data = {
       id: channelId,
       name: channelName,
@@ -352,7 +354,6 @@ export const adminAddNewChannelController = async (
       createrRole: roleName,
       updaterRole: roleName,
     };
-    console.log("data ", data);
 
     const newChannel = await channelModal.create(data);
     if (newChannel) {
@@ -365,7 +366,7 @@ export const adminAddNewChannelController = async (
       });
     }
   } catch (error) {
-    console.error("Error in adminManageRoleController:", error);
+    console.error("Error in adminAddNewChannelController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Something went wrong!",
     });
@@ -378,7 +379,7 @@ export const adminGetRoleByUserIdController = async (
 ) => {
   const { userId } = request.params;
   try {
-    const user = await userModel.findOne({ userId: userId }, { _id: 0 });
+    const user = await userModel.findOne({ id: userId }, { _id: 0 });
     if (!user) {
       return response
         .status(StatusCodes.NOT_FOUND)
@@ -401,7 +402,7 @@ export const adminGetRoleByIdController = async (
 ) => {
   const { roleId } = request.params;
   try {
-    const role = await roleModel.findOne({ roleId: roleId });
+    const role = await roleModel.findOne({ id: roleId });
     if (!role) {
       return response
         .status(StatusCodes.NOT_FOUND)
@@ -425,9 +426,8 @@ export const adminGetAllRolesController = async (
   try {
     const roleList = await roleModel
       .find({}, { _id: 0 })
-      .select("roleId roleName access")
+      .select("id name access")
       .sort({ updatedAt: -1, createdAt: -1 });
-    console.log(roleList);
 
     if (roleList && roleList.length > 0) {
       response.status(StatusCodes.OK).json({
@@ -441,6 +441,34 @@ export const adminGetAllRolesController = async (
     }
   } catch (error) {
     console.log("Error occure in adminGetAllRolesController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminGetAllChannelsController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    const chanelList = await channelModel
+      .find({}, { _id: 0 })
+      .select("id name")
+      .sort({ updatedAt: -1, createdAt: -1 });
+
+    if (chanelList && chanelList.length > 0) {
+      response.status(StatusCodes.OK).json({
+        chanelList: chanelList,
+        message: "Channels fetched successfully  ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Channel list not found ..!" });
+    }
+  } catch (error) {
+    console.log("Error occure in adminGetAllChannelsController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
@@ -470,7 +498,6 @@ export const adminAddNewStatusController = async (
       createrRole: roleName,
       updaterRole: roleName,
     };
-    console.log("data ", data);
 
     const newStatus = await statusModel.create(data);
     if (newStatus) {
@@ -490,110 +517,7 @@ export const adminAddNewStatusController = async (
   }
 };
 
-// export const adminAddNewBatchController = async (
-//   request: CustomRequest,
-//   response: Response
-// ) => {
-//   try {
-//     if (!request.payload) {
-//       return response
-//         .status(StatusCodes.UNAUTHORIZED)
-//         .json({ message: "User payload is missing or invalid." });
-//     }
-//     const { email, roleName } = request.payload;
-//     const { batchName, startDate, endDate, trainerId, courseId, students } =
-//       request.body;
-//     const batchId = await generateUniqueId("batch");
-//     const data = {
-//       batchId,
-//       courseId: courseId,
-//       trainerId: trainerId,
-//       batchName: batchName,
-//       startDate: startDate,
-//       students: students,
-//       endDate: endDate,
-//       createdBy: email,
-//       updatedBy: email,
-//       createrRole: roleName,
-//       updaterRole: roleName,
-//     };
-//     console.log(data);
-//     const newBatch = await batchModel.create(data);
-//     if (newBatch) {
-//       response.status(StatusCodes.CREATED).json({
-//         message: "Batch Added successfully ..!",
-//       });
-//     } else {
-//       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//         message: "Something Went Wrong ..!",
-//       });
-//     }
-//   } catch (error) {
-//     console.log("Error occure in adminAddNewBatchController : ", error);
-//     response
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .json({ message: "Something went wrong ..!" });
-//   }
-// };
-
-// export const adminGetAllBatchController = async (
-//   request: CustomRequest,
-//   response: Response
-// ) => {
-//   try {
-//     const batchList = await batchModel
-//       .find({}, { _id: 0 })
-//       .select("batchId batchName courseId trainerId startDate endDate")
-//       .sort({ updatedAt: -1, createdAt: -1 });
-//     console.log(batchList);
-
-//     if (batchList && batchList.length > 0) {
-//       response.status(StatusCodes.OK).json({
-//         batchList: batchList,
-//         message: "Batches fetched successfully  ..!",
-//       });
-//     } else {
-//       response
-//         .status(StatusCodes.NOT_FOUND)
-//         .json({ message: "Batch list not found ..!" });
-//     }
-//   } catch (error) {
-//     console.log("Error occure in adminGetAllBatchController : ", error);
-//     response
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .json({ message: "Something went wrong ..!" });
-//   }
-// };
-
-// export const adminGetBatchByIdController = async (
-//   request: Request,
-//   response: Response
-// ) => {
-//   const { batchId } = request.params;
-//   try {
-//     const batch = await batchModel.findOne(
-//       { batchId: batchId },
-//       { "students._id": 0, _id: 0 }
-//     );
-//     console.log(batch);
-
-//     if (!batch) {
-//       return response
-//         .status(StatusCodes.NOT_FOUND)
-//         .json({ message: "Batch not found" });
-//     }
-//     console.log(batch);
-
-//     response.status(200).json({ data: batch, message: "Batch of given id" });
-//   } catch (error) {
-//     console.log("Error occured in getBatchById : ", error);
-//     response
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .json({ message: "Something went wrong ..!" });
-//   }
-// };
-
-export const adminAddNewCourseController = async (
+export const adminAddNewProductController = async (
   request: CustomRequest,
   response: Response
 ) => {
@@ -604,35 +528,38 @@ export const adminAddNewCourseController = async (
         .json({ message: "User payload is missing or invalid." });
     }
     const { email, roleName } = request.payload;
-    const { courseName, courseCategory, courseFees, courseDescription } =
+    const { productName, productCategory, productFees, productDescription, image, document } =
       request.body;
-    const courseId = await generateUniqueId("course");
+    const productId = await generateUniqueId("product");
     const data = {
-      courseId,
-      courseName: courseName,
-      courseCategory: courseCategory,
-      courseFees: courseFees,
-      courseDescription: courseDescription,
+      id: productId,
+      name: productName,
+      category: productCategory,
+      price: productFees,
+      discountPrice: productFees,
+      description: productDescription,
+      assets : {
+        image,
+        document
+      },
       createdBy: email,
       updatedBy: email,
       createrRole: roleName,
       updaterRole: roleName,
     };
-    console.log(data);
-
-    const existingCourse = await courseModel.findOne({
-      courseName,
-      courseCategory,
+    const existingProduct = await productModel.findOne({
+      productName,
+      productCategory,
     });
-    if (existingCourse) {
+    if (existingProduct) {
       response.status(StatusCodes.ALREADY_EXIST).json({
-        message: "Course Already exist with same name and category ..!",
+        message: "Product Already exist with same name and category ..!",
       });
     }
-    const newCourse = await courseModel.create(data);
-    if (newCourse) {
+    const newProduct = await productModel.create(data);
+    if (newProduct) {
       response.status(StatusCodes.CREATED).json({
-        message: "Course Added successfully ..!",
+        message: "Product Added successfully ..!",
       });
     } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -640,111 +567,65 @@ export const adminAddNewCourseController = async (
       });
     }
   } catch (error) {
-    console.log("Error occure in adminAddNewCourseController : ", error);
+    console.log("Error occure in adminAddNewProductController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const adminGetAllCourseController = async (
+export const adminGetAllProductController = async (
   request: CustomRequest,
   response: Response
 ) => {
   try {
-    const courseList = await courseModel
+    const productList = await productModel
       .find({}, { _id: 0 })
-      .select("courseName courseCategory courseFees courseDescription ")
+      .select("productName productCategory productFees productDescription ")
       .sort({ updatedAt: -1, createdAt: -1 });
-    console.log(courseList);
+    console.log(productList);
 
-    if (courseList && courseList.length > 0) {
+    if (productList && productList.length > 0) {
       response.status(StatusCodes.OK).json({
-        courseList: courseList,
-        message: "Courses fetched successfully  ..!",
+        productList: productList,
+        message: "Products fetched successfully  ..!",
       });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Course list not found ..!" });
+        .json({ message: "Product list not found ..!" });
     }
   } catch (error) {
-    console.log("Error occure in adminGetAllCourseController : ", error);
+    console.log("Error occure in adminGetAllProductController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const adminGetCourseByIdController = async (
+export const adminGetProductByIdController = async (
   request: Request,
   response: Response
 ) => {
-  const { courseId } = request.params;
+  const { productId } = request.params;
   try {
-    const course = await courseModel.findOne(
-      { courseId: courseId },
+    const product = await productModel.findOne(
+      { id: productId },
       { _id: 0 }
     );
-    if (!course) {
+    if (!product) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Course not found" });
+        .json({ message: "Product not found" });
     }
-    response.status(200).json({ data: course, message: "Course of given id" });
+    response.status(200).json({ data: product, message: "Product of given id" });
   } catch (error) {
-    console.log("Error occured in getCourseById : ", error);
+    console.log("Error occured in getProductById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
-
-// export const adminRegisterEmployeesController = async (
-//   request: CustomRequest,
-//   response: Response
-// ) => {
-//   try {
-//     if (!request.payload) {
-//       return response
-//         .status(StatusCodes.UNAUTHORIZED)
-//         .json({ message: "User payload is missing or invalid." });
-//     }
-//     const { email: adminEmail, roleName: adminRoleName } = request.payload;
-//     const { name, email, contactNumber, roleId } = request.body;
-//     const [firstName, lastName] = name.split(" ");
-//     const userId = await generateUniqueId("user");
-//     if (userData) {
-//       const employeeId = await generateUniqueId("employee");
-//       const employeeData = await employeeModel.create({
-//         employeeId,
-//         userId: userData.userId,
-//         createdBy: adminEmail,
-//         updatedBy: adminEmail,
-//         createrRole: adminRoleName,
-//         updaterRole: adminRoleName,
-//       });
-//       if (employeeData) {
-//         response.status(StatusCodes.CREATED).json({
-//           message: "Employee registered successfully",
-//         });
-//       } else {
-//         response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//           message: "Employee not registered Something Went Wrong ..!",
-//         });
-//       }
-//     } else {
-//       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//         message: "Employee not registered Something Went Wrong ..!",
-//       });
-//     }
-//   } catch (error) {
-//     console.log("Error occured in addNewLeads : ", error);
-//     response
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .json({ message: "Something went wrong ..!" });
-//   }
-// };
 
 export const adminManageUsersAccessRightsController = async (
   request: CustomRequest,
@@ -781,6 +662,29 @@ export const adminManageUsersAccessRightsController = async (
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something Went Wrong" });
+  }
+};
+
+export const adminAuthenticateJWT = async (
+  request: CustomRequest,
+  response: Response,
+  next: Function
+) => {
+  try {
+    const authHeader = request.headers["authorization"];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      response
+        .status(401)
+        .json({ message: "Authorization token is missing or invalid" });
+    }
+    const token = authHeader?.split(" ")[1];
+    const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
+    request.payload = payload;
+    next();
+  } catch (error) {
+    response
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "Invalid or expired Candidate token" });
   }
 };
 
@@ -834,10 +738,10 @@ export const adminManageUsersAccessRightsController = async (
 //       },
 //       {
 //         $lookup: {
-//           from: "courses",
-//           localField: "studentDetails.coursesEnrolled",
-//           foreignField: "courseId",
-//           as: "courseDetails",
+//           from: "products",
+//           localField: "studentDetails.productsEnrolled",
+//           foreignField: "productId",
+//           as: "productDetails",
 //         },
 //       },
 //       {
@@ -879,10 +783,10 @@ export const adminManageUsersAccessRightsController = async (
 //       enrollmentNumber: payment.studentDetails.enrollmentNumber,
 //       contactNumber: payment.userDetails.contactNumber,
 //       userAccountStatus: payment.userDetails.status,
-//       coursesEnrolled: payment.courseDetails.map(
-//         (course: { courseName: string; courseCategory: string }) => ({
-//           courseName: course.courseName,
-//           courseCategory: course.courseCategory,
+//       productsEnrolled: payment.productDetails.map(
+//         (product: { productName: string; productCategory: string }) => ({
+//           productName: product.productName,
+//           productCategory: product.productCategory,
 //         })
 //       ),
 //       paymentId: payment.paymentId,
@@ -914,25 +818,151 @@ export const adminManageUsersAccessRightsController = async (
 //   }
 // };
 
-export const adminAuthenticateJWT = async (
-  request: CustomRequest,
-  response: Response,
-  next: Function
-) => {
-  try {
-    const authHeader = request.headers["authorization"];
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      response
-        .status(401)
-        .json({ message: "Authorization token is missing or invalid" });
-    }
-    const token = authHeader?.split(" ")[1];
-    const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
-    request.payload = payload;
-    next();
-  } catch (error) {
-    response
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Invalid or expired Candidate token" });
-  }
-};
+// export const adminAddNewBatchController = async (
+//   request: CustomRequest,
+//   response: Response
+// ) => {
+//   try {
+//     if (!request.payload) {
+//       return response
+//         .status(StatusCodes.UNAUTHORIZED)
+//         .json({ message: "User payload is missing or invalid." });
+//     }
+//     const { email, roleName } = request.payload;
+//     const { batchName, startDate, endDate, trainerId, productId, students } =
+//       request.body;
+//     const batchId = await generateUniqueId("batch");
+//     const data = {
+//       batchId,
+//       productId: productId,
+//       trainerId: trainerId,
+//       batchName: batchName,
+//       startDate: startDate,
+//       students: students,
+//       endDate: endDate,
+//       createdBy: email,
+//       updatedBy: email,
+//       createrRole: roleName,
+//       updaterRole: roleName,
+//     };
+//     console.log(data);
+//     const newBatch = await batchModel.create(data);
+//     if (newBatch) {
+//       response.status(StatusCodes.CREATED).json({
+//         message: "Batch Added successfully ..!",
+//       });
+//     } else {
+//       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//         message: "Something Went Wrong ..!",
+//       });
+//     }
+//   } catch (error) {
+//     console.log("Error occure in adminAddNewBatchController : ", error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };
+
+// export const adminGetAllBatchController = async (
+//   request: CustomRequest,
+//   response: Response
+// ) => {
+//   try {
+//     const batchList = await batchModel
+//       .find({}, { _id: 0 })
+//       .select("batchId batchName productId trainerId startDate endDate")
+//       .sort({ updatedAt: -1, createdAt: -1 });
+//     console.log(batchList);
+
+//     if (batchList && batchList.length > 0) {
+//       response.status(StatusCodes.OK).json({
+//         batchList: batchList,
+//         message: "Batches fetched successfully  ..!",
+//       });
+//     } else {
+//       response
+//         .status(StatusCodes.NOT_FOUND)
+//         .json({ message: "Batch list not found ..!" });
+//     }
+//   } catch (error) {
+//     console.log("Error occure in adminGetAllBatchController : ", error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };
+
+// export const adminGetBatchByIdController = async (
+//   request: Request,
+//   response: Response
+// ) => {
+//   const { batchId } = request.params;
+//   try {
+//     const batch = await batchModel.findOne(
+//       { batchId: batchId },
+//       { "students._id": 0, _id: 0 }
+//     );
+//     console.log(batch);
+
+//     if (!batch) {
+//       return response
+//         .status(StatusCodes.NOT_FOUND)
+//         .json({ message: "Batch not found" });
+//     }
+//     console.log(batch);
+
+//     response.status(200).json({ data: batch, message: "Batch of given id" });
+//   } catch (error) {
+//     console.log("Error occured in getBatchById : ", error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };
+
+// export const adminRegisterEmployeesController = async (
+//   request: CustomRequest,
+//   response: Response
+// ) => {
+//   try {
+//     if (!request.payload) {
+//       return response
+//         .status(StatusCodes.UNAUTHORIZED)
+//         .json({ message: "User payload is missing or invalid." });
+//     }
+//     const { email: adminEmail, roleName: adminRoleName } = request.payload;
+//     const { name, email, contactNumber, roleId } = request.body;
+//     const [firstName, lastName] = name.split(" ");
+//     const userId = await generateUniqueId("user");
+//     if (userData) {
+//       const employeeId = await generateUniqueId("employee");
+//       const employeeData = await employeeModel.create({
+//         employeeId,
+//         userId: userData.userId,
+//         createdBy: adminEmail,
+//         updatedBy: adminEmail,
+//         createrRole: adminRoleName,
+//         updaterRole: adminRoleName,
+//       });
+//       if (employeeData) {
+//         response.status(StatusCodes.CREATED).json({
+//           message: "Employee registered successfully",
+//         });
+//       } else {
+//         response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//           message: "Employee not registered Something Went Wrong ..!",
+//         });
+//       }
+//     } else {
+//       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//         message: "Employee not registered Something Went Wrong ..!",
+//       });
+//     }
+//   } catch (error) {
+//     console.log("Error occured in addNewLeads : ", error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };

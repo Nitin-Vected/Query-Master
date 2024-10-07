@@ -30,11 +30,11 @@ const productSchema = new Schema<Product>(
       image: { type: String },
       document: { type: String },
     },
+    isActive: { type: Boolean, default: true },
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },
     createrRole: { type: String, required: true },
     updaterRole: { type: String, required: true },
-    isActive: { type: Boolean, required: true },
   },
   { versionKey: false, timestamps: true }
 );

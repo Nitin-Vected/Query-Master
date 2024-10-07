@@ -21,6 +21,10 @@ const TransactionSchema = new Schema<Transaction>(
       type: Number,
       required: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
     createdBy: {
       type: String,
       required: true,
@@ -36,10 +40,6 @@ const TransactionSchema = new Schema<Transaction>(
     updaterRole: {
       type: String,
       required: true,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
     },
   },
   { versionKey: false, timestamps: true }
