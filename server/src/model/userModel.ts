@@ -10,12 +10,10 @@ export interface User extends Document {
   roleId: string;
   statusId: string;
   isActive: boolean;
-  createdBy: string,
-  updatedBy: string,
-  creatorRole: string,
-  updatorRole: string,
-  createdAt: Date;
-  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+  createrRole: string;
+  updaterRole: string;
 }
 
 const UserSchema = new Schema<User>(
@@ -57,7 +55,7 @@ const UserSchema = new Schema<User>(
     statusId: {
       type: String,
       required: true,
-      ref: "Status"
+      ref: "Status",
     },
     isActive: {
       type: Boolean,
@@ -71,11 +69,11 @@ const UserSchema = new Schema<User>(
       type: String,
       required: true,
     },
-    creatorRole: {
+    createrRole: {
       type: String,
       required: true,
     },
-    updatorRole: {
+    updaterRole: {
       type: String,
       required: true,
     },

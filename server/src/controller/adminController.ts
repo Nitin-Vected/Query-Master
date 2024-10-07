@@ -3,13 +3,11 @@ import { Request, Response } from "express";
 
 import {
   ADMIN_SECRET_KEY,
-  COUNSELLOR_ROLE_ID,
   CustomRequest,
   generateUniqueId,
   StatusCodes,
   STUDENT_ROLE_ID,
   SUPPORT_ADMIN_ROLE_ID,
-  TRAINER_ROLE_ID,
 } from "../config";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
@@ -190,9 +188,9 @@ export const adminManageStudentStatusController = async (
     );
     if (result) {
       console.log(`Student Status updated to ${action} successfully`);
-      response
-        .status(StatusCodes.OK)
-        .json({ message: `Student Status updated to ${action} successfully ..!` });
+      response.status(StatusCodes.OK).json({
+        message: `Student Status updated to ${action} successfully ..!`,
+      });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
@@ -290,92 +288,91 @@ export const adminAuthenticationController = async (
 };
 
 export const adminAddNewRoleController = async (
-    request: CustomRequest,
-    response: Response
-  ) => {
-    try {
-      if (!request.payload) {
-        return response
-          .status(StatusCodes.UNAUTHORIZED)
-          .json({ message: "User payload is missing or invalid." });
-      }
-      const { email, roleName } = request.payload;
-      console.log("request.payload ", request.payload);
-  
-      const { userRole, access } = request.body;
-      const roleId = await generateUniqueId("role");
-      const data = {
-        id: roleId,
-        name: userRole,
-        access,
-        createdBy: email,
-        updatedBy: email,
-        creatorRole: roleName,
-        updaterRole: roleName,
-      };
-      console.log("data ", data);
-  
-      const newRole = await roleModel.create(data);
-      if (newRole) {
-        response.status(StatusCodes.CREATED).json({
-          message: "Role Added successfully ..!",
-        });
-      } else {
-        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message: "Something Went Wrong ..!",
-        });
-      }
-    } catch (error) {
-      console.error("Error in adminManageRoleController:", error);
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+    const { email, roleName } = request.payload;
+    console.log("request.payload ", request.payload);
+
+    const { userRole, access } = request.body;
+    const roleId = await generateUniqueId("role");
+    const data = {
+      id: roleId,
+      name: userRole,
+      access,
+      createdBy: email,
+      updatedBy: email,
+      createrRole: roleName,
+      updaterRole: roleName,
+    };
+    console.log("data ", data);
+
+    const newRole = await roleModel.create(data);
+    if (newRole) {
+      response.status(StatusCodes.CREATED).json({
+        message: "Role Added successfully ..!",
+      });
+    } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Something went wrong!",
+        message: "Something Went Wrong ..!",
       });
     }
-  };
-  
-  export const adminAddNewChannelController = async (
-    request: CustomRequest,
-    response: Response
-  ) => {
-    try {
-      if (!request.payload) {
-        return response
-          .status(StatusCodes.UNAUTHORIZED)
-          .json({ message: "User payload is missing or invalid." });
-      }
-      const { email, roleName } = request.payload;
-      const { channelName } = request.body;
-      const channelId = await generateUniqueId("role");
-      const data = {
-        id: channelId,
-        name: channelName,
-        createdBy: email,
-        updatedBy: email,
-        creatorRole: roleName,
-        updaterRole: roleName,
-      };
-      console.log("data ", data);
-  
-      const newChannel = await channelModal.create(data);
-      if (newChannel) {
-        response.status(StatusCodes.CREATED).json({
-          message: "Channel Added successfully ..!",
-        });
-      } else {
-        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message: "Something Went Wrong ..!",
-        });
-      }
-    } catch (error) {
-      console.error("Error in adminManageRoleController:", error);
+  } catch (error) {
+    console.error("Error in adminManageRoleController:", error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong!",
+    });
+  }
+};
+
+export const adminAddNewChannelController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+    const { email, roleName } = request.payload;
+    const { channelName } = request.body;
+    const channelId = await generateUniqueId("role");
+    const data = {
+      id: channelId,
+      name: channelName,
+      createdBy: email,
+      updatedBy: email,
+      createrRole: roleName,
+      updaterRole: roleName,
+    };
+    console.log("data ", data);
+
+    const newChannel = await channelModal.create(data);
+    if (newChannel) {
+      response.status(StatusCodes.CREATED).json({
+        message: "Channel Added successfully ..!",
+      });
+    } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Something went wrong!",
+        message: "Something Went Wrong ..!",
       });
     }
-  };
-  
-  
-export const getRoleByUserIdController = async (
+  } catch (error) {
+    console.error("Error in adminManageRoleController:", error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong!",
+    });
+  }
+};
+
+export const adminGetRoleByUserIdController = async (
   request: Request,
   response: Response
 ) => {
@@ -387,7 +384,9 @@ export const getRoleByUserIdController = async (
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "User not found" });
     }
-    response.status(200).json({ data: user.roleId, message: "Role of given userId : " });
+    response
+      .status(200)
+      .json({ data: user.roleId, message: "Role of given userId : " });
   } catch (error) {
     console.log("Error occured in adminGetRoleByUserId : ", error);
     response
@@ -465,10 +464,10 @@ export const adminAddNewStatusController = async (
     const statusId = await generateUniqueId("status");
     const data = {
       id: statusId,
-      name:statusName,
+      name: statusName,
       createdBy: email,
       updatedBy: email,
-      creatorRole: roleName,
+      createrRole: roleName,
       updaterRole: roleName,
     };
     console.log("data ", data);
@@ -515,7 +514,7 @@ export const adminAddNewStatusController = async (
 //       endDate: endDate,
 //       createdBy: email,
 //       updatedBy: email,
-//       creatorRole: roleName,
+//       createrRole: roleName,
 //       updaterRole: roleName,
 //     };
 //     console.log(data);
@@ -566,7 +565,7 @@ export const adminAddNewStatusController = async (
 //   }
 // };
 
-// export const getBatchByIdController = async (
+// export const adminGetBatchByIdController = async (
 //   request: Request,
 //   response: Response
 // ) => {
@@ -616,14 +615,19 @@ export const adminAddNewCourseController = async (
       courseDescription: courseDescription,
       createdBy: email,
       updatedBy: email,
-      creatorRole: roleName,
+      createrRole: roleName,
       updaterRole: roleName,
     };
     console.log(data);
 
-    const existingCourse = await courseModel.findOne({ courseName, courseCategory });
+    const existingCourse = await courseModel.findOne({
+      courseName,
+      courseCategory,
+    });
     if (existingCourse) {
-      response.status(StatusCodes.ALREADY_EXIST).json({ message: 'Course Already exist with same name and category ..!' })
+      response.status(StatusCodes.ALREADY_EXIST).json({
+        message: "Course Already exist with same name and category ..!",
+      });
     }
     const newCourse = await courseModel.create(data);
     if (newCourse) {
@@ -678,7 +682,10 @@ export const adminGetCourseByIdController = async (
 ) => {
   const { courseId } = request.params;
   try {
-    const course = await courseModel.findOne({ courseId: courseId }, { _id: 0 });
+    const course = await courseModel.findOne(
+      { courseId: courseId },
+      { _id: 0 }
+    );
     if (!course) {
       return response
         .status(StatusCodes.NOT_FOUND)
@@ -714,7 +721,7 @@ export const adminGetCourseByIdController = async (
 //         userId: userData.userId,
 //         createdBy: adminEmail,
 //         updatedBy: adminEmail,
-//         creatorRole: adminRoleName,
+//         createrRole: adminRoleName,
 //         updaterRole: adminRoleName,
 //       });
 //       if (employeeData) {
@@ -762,7 +769,7 @@ export const adminManageUsersAccessRightsController = async (
         permissions,
         createdBy: email,
         updatedBy: email,
-        creatorRole: roleName,
+        createrRole: roleName,
         updaterRole: roleName,
       });
       response.status(StatusCodes.CREATED).json({
@@ -841,7 +848,7 @@ export const adminManageUsersAccessRightsController = async (
 //           "orderDetails.updatedAt": 0,
 //           "orderDetails.createdBy": 0,
 //           "orderDetails.updatedBy": 0,
-//           "orderDetails.creatorRole": 0,
+//           "orderDetails.createrRole": 0,
 //           "orderDetails.updaterRole": 0,
 //           "userDetails._id": 0,
 //           "userDetails.createdAt": 0,
@@ -851,14 +858,14 @@ export const adminManageUsersAccessRightsController = async (
 //           "transactionDetails.updatedAt": 0,
 //           "transactionDetails.createdBy": 0,
 //           "transactionDetails.updatedBy": 0,
-//           "transactionDetails.creatorRole": 0,
+//           "transactionDetails.createrRole": 0,
 //           "transactionDetails.updaterRole": 0,
 //           "studentDetails._id": 0,
 //           "studentDetails.createdAt": 0,
 //           "studentDetails.updatedAt": 0,
 //           "studentDetails.createdBy": 0,
 //           "studentDetails.updatedBy": 0,
-//           "studentDetails.creatorRole": 0,
+//           "studentDetails.createrRole": 0,
 //           "studentDetails.updaterRole": 0,
 //           "studentDetails.userId": 0,
 //         },
@@ -888,7 +895,7 @@ export const adminManageUsersAccessRightsController = async (
 
 //       createdBy: payment.createdBy,
 //       updatedBy: payment.updatedBy,
-//       creatorRole: payment.creatorRole,
+//       createrRole: payment.createrRole,
 //       updaterRole: payment.updaterRole,
 //       createdAt: payment.createdAt,
 //       updatedAt: payment.updatedAt,

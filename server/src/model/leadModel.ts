@@ -16,7 +16,7 @@ interface Audit extends Document {
 }
 
 interface Lead extends Document {
-  id: string,
+  id: string;
   firstName: string;
   lastName: string;
   contactNumber: number;
@@ -35,8 +35,8 @@ interface Lead extends Document {
   updatedAt: Date;
   createdBy: string;
   updatedBy: string;
-  creatorRole: string;
-  updatorRole: string;
+  createrRole: string;
+  updaterRole: string;
 }
 
 const auditSchema = new Schema<Audit>({
@@ -46,13 +46,13 @@ const auditSchema = new Schema<Audit>({
   editedBy: { type: String, required: true },
   editorRole: { type: String, required: true },
   editedAt: { type: Date, required: true },
-})
+});
 
 const commentSchema = new Schema<Comment>({
   comment: { type: String, required: true },
   commentedBy: { type: String, required: true },
   commentedAt: { type: Date, required: true },
-})
+});
 
 const leadSchema = new Schema<Lead>(
   {
@@ -72,9 +72,9 @@ const leadSchema = new Schema<Lead>(
     statusId: { type: String, required: true, ref: "Status" },
     isActive: { type: Boolean, required: true },
     createdBy: { type: String, ref: "user", required: true },
-    creatorRole: { type: String, required: true },
-    updatedBy: { type: String, ref: "user", required: true, },
-    updatorRole: { type: String, required: true, },
+    createrRole: { type: String, required: true },
+    updatedBy: { type: String, ref: "user", required: true },
+    updaterRole: { type: String, required: true },
   },
   { versionKey: false, timestamps: true }
 );

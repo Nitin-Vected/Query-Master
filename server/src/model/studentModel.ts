@@ -10,8 +10,8 @@ export interface Student extends Document {
   isActive: boolean;
   createdBy: string;
   updatedBy: string;
-  creatorRole: string;
-  updatorRole: string;
+  createrRole: string;
+  updaterRole: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,11 +59,11 @@ const StudentSchema = new Schema<Student>(
       type: String,
       required: true,
     },
-    creatorRole: {
+    createrRole: {
       type: String,
       required: true,
     },
-    updatorRole: {
+    updaterRole: {
       type: String,
       required: true,
     },
