@@ -105,7 +105,7 @@ counsellorRouter.post(
  *                 properties:
  *                   emiCount:
  *                     type: integer
- *                     example: 12
+ *                     example: 1
  *                   installments:
  *                     type: array
  *                     items:
@@ -115,10 +115,13 @@ counsellorRouter.post(
  *                           type: string
  *                           format: date
  *                           example: "2024-10-01"
- *                         transactionAmount:
+ *                         paymentDate:
  *                           type: string
  *                           format: date
  *                           example: "2024-10-01"
+ *                         amount:
+ *                           type: string
+ *                           example: 5000
  *                         status:
  *                           type: string
  *                           enum: [paid, pending, overdue]
@@ -129,7 +132,11 @@ counsellorRouter.post(
  *       400:
  *         description: Invalid data or transaction proof missing
  */
-counsellorRouter.post("/counsellorEnrollStudent", uploadTransactionProof.single('transactionProof'), counsellorRegisterLeadAsUserController);
+counsellorRouter.post(
+  "/counsellorEnrollStudent",
+  uploadTransactionProof.single("transactionProof"),
+  counsellorRegisterLeadAsUserController
+);
 
 /**
  * @swagger
