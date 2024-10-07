@@ -20,7 +20,7 @@ const RoleMasterSchema: Schema = new Schema(
     updatedBy: { type: String, required: true },
     createrRole: { type: String, required: true },
     updaterRole: { type: String, required: true },
-    isActive: { type: Boolean, required: true },
+    isActive: { type: Boolean, default: true },
   },
   { versionKey: false, timestamps: true }
 );

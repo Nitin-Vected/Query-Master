@@ -16,6 +16,8 @@ interface Payload {
 }
 
 const getSecretKey = (roleName: string): string | undefined => {
+  console.log("roleName", roleName);
+
   switch (roleName) {
     case "Admin":
       return ADMIN_SECRET_KEY;
@@ -30,6 +32,8 @@ const getSecretKey = (roleName: string): string | undefined => {
 
 export const tokenGenerator = (data: Payload) => {
   const { roleName } = data;
+  console.log("roleName", roleName);
+
   const secretKey = getSecretKey(roleName);
 
   if (!secretKey) {
@@ -44,6 +48,8 @@ export const tokenGenerator = (data: Payload) => {
 
 export const tokenVerifier = (token: any, secretKey: string) => {
   try {
+    console.log("secrect ley : ---------", token, secretKey);
+
     const payload = jwt.verify(token, secretKey);
     console.log("Verified Payload ", payload);
     return payload;

@@ -42,7 +42,7 @@ export const adminViewProfileController = async (
         role: roleName,
         profileImg: result?.profileImg,
       };
-      if (result?.statusId) {
+      if (result?.status) {
         response.status(StatusCodes.OK).json({
           adminData: adminData,
           message: "This is your dersired data ..!",
@@ -268,7 +268,7 @@ export const adminAuthenticationController = async (
       role: payload?.roleName,
       profileImg: result?.profileImg,
     };
-    if (result?.statusId) {
+    if (result?.status) {
       response.status(StatusCodes.OK).json({
         userData: adminData,
         token: token,

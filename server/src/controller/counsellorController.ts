@@ -40,7 +40,7 @@ export const counsellorViewProfileController = async (
         role: roleName,
         profileImg: result?.profileImg,
       };
-      if (result?.statusId) {
+      if (result?.status) {
         response.status(StatusCodes.OK).json({
           counsellorData: counsellorData,
           message: "This is your desired data ..!",

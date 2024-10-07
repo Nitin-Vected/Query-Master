@@ -18,7 +18,7 @@ export const userViewProfileController = async (
     const result = await userModel.findOne({ userId });
     if (!result) {
       return response.status(StatusCodes.NOT_FOUND).json({ message: "The Account You are Trying to Access not find..!" });
-    } else if (result?.statusId) {
+    } else if (result?.status) {
       console.log("result", result?.roleId);
       const userData = {
         name: result?.firstName + " " + result?.lastName,

@@ -58,7 +58,8 @@ export const loginController = async (
           profileImg: picture,
           status: email_verified,
           roleId: "ROLERQ80Z9Ctm01",
-          contactNumber: "9755554545",
+          contactNumber: "8319024349",
+          isActive: true
         });
       }
 

@@ -7,9 +7,7 @@ export const checkValidation = (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("Here we go !!");
   const errors = validationResult(req);
-  console.log("Errors : ",errors)
   if (!errors.isEmpty()) {
     return res.status(StatusCodes.BAD_REQUEST).json({ errors: errors.array() });
   }
