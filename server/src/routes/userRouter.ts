@@ -12,6 +12,7 @@ import {
   userViewProfileController,
 } from "../controller/userController";
 import { loginController } from "../controller/loginController";
+import { userValidateAddContactNumber, userValidateRaiseQuery } from "../utilities/validation/userValidation";
 
 const userRouter = express.Router();
 
@@ -90,7 +91,7 @@ userRouter.get("/userViewProfile", userViewProfileController);
  *       201:
  *         description: Query raised
  */
-userRouter.post("/userRaiseQuery", userRaiseQueryController);
+userRouter.post("/userRaiseQuery", userValidateRaiseQuery, userRaiseQueryController);
 
 /**
  * @swagger
@@ -144,7 +145,7 @@ userRouter.get("/userGetQueryData/:queryId", userGetQueryDataController);
  *       201:
  *         description: Contact number added
  */
-userRouter.post("/userAddContactNumber", userAddContactNumberController);
+userRouter.post("/userAddContactNumber",userValidateAddContactNumber, userAddContactNumberController);
 
 /**
  * @swagger

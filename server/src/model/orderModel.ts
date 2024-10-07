@@ -1,23 +1,27 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 interface Order extends Document {
-    orderId: string;
-    userId: string;  // opt
-    transactionId: string;
-    coursesPurchased: [string];
-    finalAmount: number;
-    discount: number;
+    id: string;
+    userId: string;
+    transactions: string[];
+    products: string[];
+    amount: number;
+    dueAmount: number;
+    dueDate: string;
+    isActive: boolean;
     createdBy: string,
     updatedBy: string,
     creatorRole: string,
-    updaterRole: string
+    updatorRole: string,
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 
 
 const OrderSchema = new Schema<Order>(
     {
-        orderId: {
+        id: {
             type: String,
             required: true,
             unique: true,
@@ -27,24 +31,30 @@ const OrderSchema = new Schema<Order>(
             ref: "User",
             required: true,
         },
-        coursesPurchased: [
-            {
-                type: String,
-                ref: "Course",
-                required: true,
-            },
-        ],
-        finalAmount: {
+        products: {
+            type: [String],
+            ref: "Product",
+            required: true
+        },
+        amount: {
             type: Number,
             required: true,
         },
-        discount: {
+        dueAmount: {
             type: Number,
             required: true,
         },
-        transactionId: {
+        dueDate: {
             type: String,
+            required: true,
+        },
+        transactions: {
+            type: [String],
             ref: "Transaction",
+            required: true,
+        },
+        isActive: {
+            type: Boolean,
             required: true,
         },
         createdBy: {
@@ -59,7 +69,7 @@ const OrderSchema = new Schema<Order>(
             type: String,
             required: true,
         },
-        updaterRole: {
+        updatorRole: {
             type: String,
             required: true,
         },
@@ -67,4 +77,4 @@ const OrderSchema = new Schema<Order>(
     { versionKey: false, timestamps: true }
 );
 
-export default mongoose.model<Order>("Orders", OrderSchema);
+export default mongoose.model<Order>("Order", OrderSchema, "orders");

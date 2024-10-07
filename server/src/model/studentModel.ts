@@ -1,54 +1,54 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IStudent extends Document {
+export interface Student extends Document {
   enrollmentNumber: string;
   userId: string;
-  coursesEnrolled: [string];
-  transactions: [string];
-  fees: string;
-  discount: number;
-  enrollmentDate: string;
+  products: string[];
+  transactions: string[];
+  amount: number;
+  enrollmentDate: Date;
+  isActive: boolean;
   createdBy: string;
   updatedBy: string;
   creatorRole: string;
-  updaterRole: string;
+  updatorRole: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const StudentSchema: mongoose.Schema = new Schema(
+const StudentSchema = new Schema<Student>(
   {
     enrollmentNumber: {
       type: String,
       required: true,
+      unique: true,
       trim: true,
     },
     userId: {
       type: String,
-      ref: "user",
+      ref: "User",
       required: true,
     },
-    coursesEnrolled: [
-      {
-        type: String,
-        ref: "Course",
-        required: true,
-      },
-    ],
-    transactions: [
-      {
-        type: String,
-        ref: "Transaction",
-      },
-    ],
-    fees: {
-      type: String,
+    products: {
+      type: [String],
+      ref: "Product",
       required: true,
     },
-    discount: {
+    transactions: {
+      type: [String],
+      ref: "Transaction",
+      required: true,
+    },
+    amount: {
       type: Number,
-      default: 0,
+      required: true,
     },
     enrollmentDate: {
-      type: String,
+      type: Date,
+      required: true,
+    },
+    isActive: {
+      type: Boolean,
       required: true,
     },
     createdBy: {
@@ -63,7 +63,7 @@ const StudentSchema: mongoose.Schema = new Schema(
       type: String,
       required: true,
     },
-    updaterRole: {
+    updatorRole: {
       type: String,
       required: true,
     },
@@ -71,4 +71,4 @@ const StudentSchema: mongoose.Schema = new Schema(
   { versionKey: false, timestamps: true }
 );
 
-export default mongoose.model<IStudent>("Student", StudentSchema, "student");
+export default mongoose.model<Student>("Student", StudentSchema, "students");
