@@ -1,6 +1,5 @@
-import express from "express";
 import { tokenVerifier } from "../utilities/jwt";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
 import {
   ADMIN_SECRET_KEY,
@@ -9,19 +8,16 @@ import {
   generateUniqueId,
   StatusCodes,
   STUDENT_ROLE_ID,
-  SUPPORT_ADIMIN_ROLE_ID,
+  SUPPORT_ADMIN_ROLE_ID,
   TRAINER_ROLE_ID,
 } from "../config";
-import queryModel from "../model/queryModel";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
-import batchModel from "../model/batchModel";
-import courseModel from "../model/courseModel";
-import employeeModel from "../model/employeeModel";
+import courseModel from "../model/productModel";
 import { AccessRights } from "../model/accessRightsModel";
 import statusModel from "../model/statusModel";
-import paymentModel from "../model/paymentModel";
 import studentModel from "../model/studentModel";
+import channelModal from "../model/channelModal";
 
 export const adminViewProfileController = async (
   request: CustomRequest,
@@ -29,15 +25,17 @@ export const adminViewProfileController = async (
 ) => {
   try {
     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
     }
-    const { userId, roleId, roleName } = request.payload;
-    if (!userId || !roleId) {
+    const { userId, roleName } = request.payload;
+    if (!userId) {
       response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Token not found" });
     } else {
-      const result = await userModel.findOne({ userId, roleId });
+      const result = await userModel.findOne({ userId });
       console.log("result : ", result);
       const adminData = {
         name: result?.firstName + " " + result?.lastName,
@@ -67,40 +65,12 @@ export const adminViewProfileController = async (
   }
 };
 
-export const adminViewRaisedQueryListController = async (
-  request: Request,
-  response: Response
-) => {
-  try {
-    const raisedQueries = await queryModel
-      .find({}, { "conversation._id": 0, _id: 0 })
-      .sort({ updatedAt: -1, createdAt: -1 });
-    console.log(`RaisedQuery by  ${raisedQueries} : `);
-    if (raisedQueries) {
-      response.status(StatusCodes.OK).json({
-        raisedQueries: raisedQueries,
-        message: "These are the recently raised querijes ..!",
-      });
-    } else {
-      response.status(StatusCodes.NOT_FOUND).json({
-        raisedQueries: null,
-        message: "No Query has been raise by the user yet ..!",
-      });
-    }
-  } catch (error) {
-    console.log("Error occure in userRaiseQueryController : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
-
 export const adminViewStudentListController = async (
   request: Request,
   response: Response
 ) => {
   try {
-      const studentList = await studentModel.aggregate([
+    const studentList = await studentModel.aggregate([
       {
         $lookup: {
           from: "user",
@@ -109,7 +79,7 @@ export const adminViewStudentListController = async (
           as: "profileDetails",
         },
       },
-      { $unwind: '$profileDetails' },
+      { $unwind: "$profileDetails" },
       {
         $project: {
           _id: 0,
@@ -117,8 +87,8 @@ export const adminViewStudentListController = async (
           "profileDetails.userId": 0,
           "profileDetails.createdAt": 0,
           "profileDetails.updatedAt": 0,
-        }
-      }
+        },
+      },
     ]);
 
     console.log(studentList);
@@ -128,8 +98,7 @@ export const adminViewStudentListController = async (
         studentList,
         message: "These are the registered students!",
       });
-    };
-
+    }
   } catch (error) {
     console.log("Error occurred in adminViewStudentListController: ", error);
     response
@@ -144,7 +113,7 @@ export const adminViewSupportAdminListController = async (
 ) => {
   try {
     const adminList = await userModel
-      .find({ roleId: SUPPORT_ADIMIN_ROLE_ID }, { _id: 0 })
+      .find({ roleId: SUPPORT_ADMIN_ROLE_ID }, { _id: 0 })
       .select("name email contactNumber role profileImg status")
       .sort({ updatedAt: -1, createdAt: -1 });
     if (adminList && adminList.length > 0) {
@@ -240,12 +209,14 @@ export const adminAddContactNumberController = async (
 ) => {
   try {
     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
     }
     const { email } = request.payload;
     const { contactNumber } = request.body;
     console.log("Hello from adminAddContactNumberController ..!");
-    if (!email ) {
+    if (!email) {
       response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Token not found" });
@@ -270,144 +241,6 @@ export const adminAddContactNumberController = async (
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
-  }
-};
-
-export const adminRaiseQueryController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
-    }
-    const { name, email, roleName } = request.payload;
-    const { subject, message } = request.body;
-    if (!subject || !message) {
-      response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: "Subject and Message are required  ..!" });
-    }
-    const similaryExistingQuery = await queryModel.findOne({
-      userEmail: email,
-      userRole: roleName,
-      subject,
-      message,
-    });
-    if (!similaryExistingQuery) {
-      const queryId = await generateUniqueId("query", email, roleName);
-      const updatedQuery = await queryModel.create({
-        queryId: queryId,
-        userEmail: email,
-        userRole: roleName,
-        subject,
-        message,
-        conversation: [
-          {
-            sender: name,
-            email: email,
-            message: message,
-            role: roleName,
-            timestamp: new Date(),
-          },
-        ],
-      });
-      if (updatedQuery)
-        response
-          .status(StatusCodes.OK)
-          .json({ message: "Your query has been successfully added ..!" });
-    } else {
-      response
-        .status(StatusCodes.ALREADY_EXIST)
-        .json({ message: "A similar query has already been added by you ..!" });
-    }
-  } catch (error) {
-    console.log(error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Failed to create query" });
-  }
-};
-
-export const adminResponseController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
-    }
-    const { name, email, roleName } = request.payload;
-    const { queryId } = request.params;
-    const { message } = request.body;
-    console.log("QueryId : ", queryId);
-
-    const query = await queryModel.findOne({ queryId: queryId });
-    console.log("Got Query ==> ", query?.status);
-    if (!query) {
-      response.status(StatusCodes.NOT_FOUND).json({ error: "Query not found" });
-    } else if (query.status !== "Closed") {
-      console.log("Name ==> ", request.payload.name);
-      console.log("Email ==> ", request.payload.email);
-      console.log("Query ", query);
-      query.conversation.push({
-        sender: name,
-        email: email,
-        message,
-        role: roleName,
-        timestamp: new Date(),
-      });
-      await query.save();
-      console.log("After conversation.push:", query.conversation);
-      response.status(StatusCodes.CREATED).json({
-        message: "Your response has been sent to the Inquirer successfully!",
-      });
-    } else {
-      response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: "Query has been closed by the user!" });
-    }
-    console.log("Query in adminResponseController : ", query);
-  } catch (error) {
-    console.log(error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Failed to find query" });
-  }
-};
-
-export const adminManageQueryStatusController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    const { queryId, status } = request.params;
-    console.log("query id : ", queryId, status);
-    if (!queryId || !status) {
-      return response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: "Query ID and status are required" });
-    }
-
-    const result = await queryModel.updateOne(
-      { queryId: queryId },
-      { $set: { status: status } }
-    );
-
-    if (result?.acknowledged) {
-      console.log("Query status updated successfully");
-      response
-        .status(StatusCodes.CREATED)
-        .json({ message: "Query status updated to Closed successfully ..!" });
-    } else {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Something went wrong ..!" });
-    }
-  } catch (error) {
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Failed to find query" });
   }
 };
 
@@ -454,41 +287,15 @@ export const adminAuthenticationController = async (
   }
 };
 
-export const adminGetQueryDataController = async (
-  request: Request,
-  response: Response
-) => {
-  try {
-    const { queryId } = request.params;
-    const queryData = await queryModel.findOne(
-      { queryId: queryId },
-      { "conversation._id": 0, _id: 0 }
-    );
-    if (queryData) {
-      response
-        .status(StatusCodes.OK)
-        .json({ queryData: queryData, message: "Query has been f ..!" });
-    } else {
-      response.status(StatusCodes.NOT_FOUND).json({
-        queryData: null,
-        message: "Query Not found with this Id  ..!",
-      });
-    }
-  } catch (err) {
-    console.log("Error while user authentication Controller", err);
-    response.status(StatusCodes.UNAUTHORIZED).json({
-      message: "Token Not verify please login then try to access ..!",
-    });
-  }
-};
-
 export const adminAddNewRoleController = async (
   request: CustomRequest,
   response: Response
 ) => {
   try {
     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
     }
     const { email, roleName } = request.payload;
     console.log("request.payload ", request.payload);
@@ -496,8 +303,8 @@ export const adminAddNewRoleController = async (
     const { userRole, access } = request.body;
     const roleId = await generateUniqueId("role");
     const data = {
-      roleId,
-      roleName: userRole,
+      id: roleId,
+      name: userRole,
       access,
       createdBy: email,
       updatedBy: email,
@@ -524,6 +331,47 @@ export const adminAddNewRoleController = async (
   }
 };
 
+export const adminAddNewChannelController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+    const { email, roleName } = request.payload;
+    const { channelName } = request.body;
+    const channelId = await generateUniqueId("role");
+    const data = {
+      id: channelId,
+      name: channelName,
+      createdBy: email,
+      updatedBy: email,
+      creatorRole: roleName,
+      updaterRole: roleName,
+    };
+    console.log("data ", data);
+
+    const newChannel = await channelModal.create(data);
+    if (newChannel) {
+      response.status(StatusCodes.CREATED).json({
+        message: "Channel Added successfully ..!",
+      });
+    } else {
+      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Something Went Wrong ..!",
+      });
+    }
+  } catch (error) {
+    console.error("Error in adminManageRoleController:", error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong!",
+    });
+  }
+};
+
 export const getRoleByUserIdController = async (
   request: Request,
   response: Response
@@ -536,7 +384,9 @@ export const getRoleByUserIdController = async (
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "User not found" });
     }
-    response.status(200).json({ data: user.roleId, message: "Role of given userId : " });
+    response
+      .status(200)
+      .json({ data: user.roleId, message: "Role of given userId : " });
   } catch (error) {
     console.log("Error occured in getRoleByUserId : ", error);
     response
@@ -551,13 +401,15 @@ export const getRoleByIdController = async (
 ) => {
   const { roleId } = request.params;
   try {
-    const role = await roleModel.findOne({ roleId: roleId });
+    const role = await roleModel.findOne({ id: roleId });
     if (!role) {
       return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Role not found" });
     }
-    response.status(200).json({ data: role, message: "Role of given roleId : " });
+    response
+      .status(200)
+      .json({ data: role, message: "Role of given roleId : " });
   } catch (error) {
     console.log("Error occured in getRoleById : ", error);
     response
@@ -601,7 +453,9 @@ export const adminAddNewStatusController = async (
 ) => {
   try {
     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
     }
     const { email, roleName } = request.payload;
     console.log("request.payload ", request.payload);
@@ -609,8 +463,8 @@ export const adminAddNewStatusController = async (
     const { statusName } = request.body;
     const statusId = await generateUniqueId("status");
     const data = {
-      statusId,
-      statusName,
+      id: statusId,
+      name:statusName,
       createdBy: email,
       updatedBy: email,
       creatorRole: roleName,
@@ -636,106 +490,108 @@ export const adminAddNewStatusController = async (
   }
 };
 
-export const adminAddNewBatchController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
-    }
-    const { email, roleName } = request.payload;
-    const { batchName, startDate, endDate, trainerId, courseId, students } =
-      request.body;
-    const batchId = await generateUniqueId("batch");
-    const data = {
-      batchId,
-      courseId: courseId,
-      trainerId: trainerId,
-      batchName: batchName,
-      startDate: startDate,
-      students: students,
-      endDate: endDate,
-      createdBy: email,
-      updatedBy: email,
-      creatorRole: roleName,
-      updaterRole: roleName,
-    };
-    console.log(data);
-    const newBatch = await batchModel.create(data);
-    if (newBatch) {
-      response.status(StatusCodes.CREATED).json({
-        message: "Batch Added successfully ..!",
-      });
-    } else {
-      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Something Went Wrong ..!",
-      });
-    }
-  } catch (error) {
-    console.log("Error occure in adminAddNewBatchController : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
+// export const adminAddNewBatchController = async (
+//   request: CustomRequest,
+//   response: Response
+// ) => {
+//   try {
+//     if (!request.payload) {
+//       return response
+//         .status(StatusCodes.UNAUTHORIZED)
+//         .json({ message: "User payload is missing or invalid." });
+//     }
+//     const { email, roleName } = request.payload;
+//     const { batchName, startDate, endDate, trainerId, courseId, students } =
+//       request.body;
+//     const batchId = await generateUniqueId("batch");
+//     const data = {
+//       batchId,
+//       courseId: courseId,
+//       trainerId: trainerId,
+//       batchName: batchName,
+//       startDate: startDate,
+//       students: students,
+//       endDate: endDate,
+//       createdBy: email,
+//       updatedBy: email,
+//       creatorRole: roleName,
+//       updaterRole: roleName,
+//     };
+//     console.log(data);
+//     const newBatch = await batchModel.create(data);
+//     if (newBatch) {
+//       response.status(StatusCodes.CREATED).json({
+//         message: "Batch Added successfully ..!",
+//       });
+//     } else {
+//       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//         message: "Something Went Wrong ..!",
+//       });
+//     }
+//   } catch (error) {
+//     console.log("Error occure in adminAddNewBatchController : ", error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };
 
-export const adminGetAllBatchController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    const batchList = await batchModel
-      .find({}, { _id: 0 })
-      .select("batchId batchName courseId trainerId startDate endDate")
-      .sort({ updatedAt: -1, createdAt: -1 });
-    console.log(batchList);
+// export const adminGetAllBatchController = async (
+//   request: CustomRequest,
+//   response: Response
+// ) => {
+//   try {
+//     const batchList = await batchModel
+//       .find({}, { _id: 0 })
+//       .select("batchId batchName courseId trainerId startDate endDate")
+//       .sort({ updatedAt: -1, createdAt: -1 });
+//     console.log(batchList);
 
-    if (batchList && batchList.length > 0) {
-      response.status(StatusCodes.OK).json({
-        batchList: batchList,
-        message: "Batches fetched successfully  ..!",
-      });
-    } else {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Batch list not found ..!" });
-    }
-  } catch (error) {
-    console.log("Error occure in adminGetAllBatchController : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
+//     if (batchList && batchList.length > 0) {
+//       response.status(StatusCodes.OK).json({
+//         batchList: batchList,
+//         message: "Batches fetched successfully  ..!",
+//       });
+//     } else {
+//       response
+//         .status(StatusCodes.NOT_FOUND)
+//         .json({ message: "Batch list not found ..!" });
+//     }
+//   } catch (error) {
+//     console.log("Error occure in adminGetAllBatchController : ", error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };
 
-export const getBatchByIdController = async (
-  request: Request,
-  response: Response
-) => {
-  const { batchId } = request.params;
-  try {
-    const batch = await batchModel.findOne(
-      { batchId: batchId },
-      { "students._id": 0, _id: 0 }
-    );
-    console.log(batch);
+// export const getBatchByIdController = async (
+//   request: Request,
+//   response: Response
+// ) => {
+//   const { batchId } = request.params;
+//   try {
+//     const batch = await batchModel.findOne(
+//       { batchId: batchId },
+//       { "students._id": 0, _id: 0 }
+//     );
+//     console.log(batch);
 
-    if (!batch) {
-      return response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Batch not found" });
-    }
-    console.log(batch);
+//     if (!batch) {
+//       return response
+//         .status(StatusCodes.NOT_FOUND)
+//         .json({ message: "Batch not found" });
+//     }
+//     console.log(batch);
 
-    response.status(200).json({ data: batch, message: "Batch of given id" });
-  } catch (error) {
-    console.log("Error occured in getBatchById : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
+//     response.status(200).json({ data: batch, message: "Batch of given id" });
+//   } catch (error) {
+//     console.log("Error occured in getBatchById : ", error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };
 
 export const adminAddNewCourseController = async (
   request: CustomRequest,
@@ -743,7 +599,9 @@ export const adminAddNewCourseController = async (
 ) => {
   try {
     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
     }
     const { email, roleName } = request.payload;
     const { courseName, courseCategory, courseFees, courseDescription } =
@@ -829,65 +687,67 @@ export const getCourseByIdController = async (
   }
 };
 
-export const adminRegisterEmployeesController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
-    }
-    const {email: adminEmail, roleName: adminRoleName } = request.payload;
-    const { name, email, contactNumber, roleId } = request.body;
-    const [firstName, lastName] = name.split(" ");
-    const userId = await generateUniqueId("user");
+// export const adminRegisterEmployeesController = async (
+//   request: CustomRequest,
+//   response: Response
+// ) => {
+//   try {
+//     if (!request.payload) {
+//       return response
+//         .status(StatusCodes.UNAUTHORIZED)
+//         .json({ message: "User payload is missing or invalid." });
+//     }
+//     const { email: adminEmail, roleName: adminRoleName } = request.payload;
+//     const { name, email, contactNumber, roleId } = request.body;
+//     const [firstName, lastName] = name.split(" ");
+//     const userId = await generateUniqueId("user");
 
-    const userData = await userModel.create({
-      userId,
-      email,
-      firstName,
-      lastName,
-      status: true,
-      roleId:
-        roleId === COUNSELLOR_ROLE_ID
-          ? COUNSELLOR_ROLE_ID
-          : roleId === TRAINER_ROLE_ID
-            ? TRAINER_ROLE_ID
-            : SUPPORT_ADIMIN_ROLE_ID,
-      contactNumber,
-    });
+//     const userData = await userModel.create({
+//       userId,
+//       email,
+//       firstName,
+//       lastName,
+//       status: true,
+//       roleId:
+//         roleId === COUNSELLOR_ROLE_ID
+//           ? COUNSELLOR_ROLE_ID
+//           : roleId === TRAINER_ROLE_ID
+//           ? TRAINER_ROLE_ID
+//           : SUPPORT_ADMIN_ROLE_ID,
+//       contactNumber,
+//     });
 
-    if (userData) {
-      const employeeId = await generateUniqueId("employee");
-      const employeeData = await employeeModel.create({
-        employeeId,
-        userId: userData.userId,
-        createdBy: adminEmail,
-        updatedBy: adminEmail,
-        creatorRole: adminRoleName,
-        updaterRole: adminRoleName,
-      });
-      if (employeeData) {
-        response.status(StatusCodes.CREATED).json({
-          message: "Employee registered successfully",
-        });
-      } else {
-        response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message: "Employee not registered Something Went Wrong ..!",
-        });
-      }
-    } else {
-      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Employee not registered Something Went Wrong ..!",
-      });
-    }
-  } catch (error) {
-    console.log("Error occured in addNewLeads : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
+//     if (userData) {
+//       const employeeId = await generateUniqueId("employee");
+//       const employeeData = await employeeModel.create({
+//         employeeId,
+//         userId: userData.userId,
+//         createdBy: adminEmail,
+//         updatedBy: adminEmail,
+//         creatorRole: adminRoleName,
+//         updaterRole: adminRoleName,
+//       });
+//       if (employeeData) {
+//         response.status(StatusCodes.CREATED).json({
+//           message: "Employee registered successfully",
+//         });
+//       } else {
+//         response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//           message: "Employee not registered Something Went Wrong ..!",
+//         });
+//       }
+//     } else {
+//       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//         message: "Employee not registered Something Went Wrong ..!",
+//       });
+//     }
+//   } catch (error) {
+//     console.log("Error occured in addNewLeads : ", error);
+//     response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong ..!" });
+//   }
+// };
 
 export const adminManageUsersAccessRightsController = async (
   request: CustomRequest,
@@ -895,7 +755,9 @@ export const adminManageUsersAccessRightsController = async (
 ) => {
   try {
     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
     }
     const { email, roleName } = request.payload;
     const { userId, roleId, permissions } = request.body;
@@ -925,129 +787,135 @@ export const adminManageUsersAccessRightsController = async (
   }
 };
 
-export const adminGetAlltransactionListController = async (
-  request: Request,
-  response: Response
-) => {
-  try {
-    const paymentsWithUserDetails = await paymentModel.aggregate([
-      {
-        $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "orderId",
-          as: "orderDetails",
-        },
-      },
-      { $unwind: '$orderDetails' },
-      {
-        $lookup: {
-          from: 'transactions',
-          localField: 'orderDetails.transactionId',
-          foreignField: 'transactionId',
-          as: 'transactionDetails'
-        }
-      },
-      {
-        $unwind: '$transactionDetails'
-      },
-      {
-        $lookup: {
-          from: 'user',
-          localField: 'orderDetails.userId',
-          foreignField: 'userId',
-          as: 'userDetails'
-        }
-      },
-      {
-        $unwind: '$userDetails'
-      },
-      {
-        $lookup: {
-          from: 'student',
-          localField: 'userDetails.userId',
-          foreignField: 'userId',
-          as: 'studentDetails'
-        }
-      },
-      {
-        $unwind: '$studentDetails'
-      },
-      {
-        $lookup: {
-          from: 'courses',
-          localField: 'studentDetails.coursesEnrolled',
-          foreignField: 'courseId',
-          as: 'courseDetails'
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          "orderDetails._id": 0,
-          "orderDetails.createdAt": 0,
-          "orderDetails.updatedAt": 0,
-          "orderDetails.createdBy": 0,
-          "orderDetails.updatedBy": 0,
-          "orderDetails.creatorRole": 0,
-          "orderDetails.updaterRole": 0,
-          "userDetails._id": 0,
-          "userDetails.createdAt": 0,
-          "userDetails.updatedAt": 0,
-          "transactionDetails._id": 0,
-          "transactionDetails.createdAt": 0,
-          "transactionDetails.updatedAt": 0,
-          "transactionDetails.createdBy": 0,
-          "transactionDetails.updatedBy": 0,
-          "transactionDetails.creatorRole": 0,
-          "transactionDetails.updaterRole": 0,
-          "studentDetails._id": 0,
-          "studentDetails.createdAt": 0,
-          "studentDetails.updatedAt": 0,
-          "studentDetails.createdBy": 0,
-          "studentDetails.updatedBy": 0,
-          "studentDetails.creatorRole": 0,
-          "studentDetails.updaterRole": 0,
-          "studentDetails.userId": 0,
-        }
-      }
-    ]);
-    // console.log(paymentsWithUserDetails);
+// export const adminGetAlltransactionListController = async (
+//   request: Request,
+//   response: Response
+// ) => {
+//   try {
+//     const paymentsWithUserDetails = await paymentModel.aggregate([
+//       {
+//         $lookup: {
+//           from: "orders",
+//           localField: "orderId",
+//           foreignField: "orderId",
+//           as: "orderDetails",
+//         },
+//       },
+//       { $unwind: "$orderDetails" },
+//       {
+//         $lookup: {
+//           from: "transactions",
+//           localField: "orderDetails.transactionId",
+//           foreignField: "transactionId",
+//           as: "transactionDetails",
+//         },
+//       },
+//       {
+//         $unwind: "$transactionDetails",
+//       },
+//       {
+//         $lookup: {
+//           from: "user",
+//           localField: "orderDetails.userId",
+//           foreignField: "userId",
+//           as: "userDetails",
+//         },
+//       },
+//       {
+//         $unwind: "$userDetails",
+//       },
+//       {
+//         $lookup: {
+//           from: "student",
+//           localField: "userDetails.userId",
+//           foreignField: "userId",
+//           as: "studentDetails",
+//         },
+//       },
+//       {
+//         $unwind: "$studentDetails",
+//       },
+//       {
+//         $lookup: {
+//           from: "courses",
+//           localField: "studentDetails.coursesEnrolled",
+//           foreignField: "courseId",
+//           as: "courseDetails",
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           "orderDetails._id": 0,
+//           "orderDetails.createdAt": 0,
+//           "orderDetails.updatedAt": 0,
+//           "orderDetails.createdBy": 0,
+//           "orderDetails.updatedBy": 0,
+//           "orderDetails.creatorRole": 0,
+//           "orderDetails.updaterRole": 0,
+//           "userDetails._id": 0,
+//           "userDetails.createdAt": 0,
+//           "userDetails.updatedAt": 0,
+//           "transactionDetails._id": 0,
+//           "transactionDetails.createdAt": 0,
+//           "transactionDetails.updatedAt": 0,
+//           "transactionDetails.createdBy": 0,
+//           "transactionDetails.updatedBy": 0,
+//           "transactionDetails.creatorRole": 0,
+//           "transactionDetails.updaterRole": 0,
+//           "studentDetails._id": 0,
+//           "studentDetails.createdAt": 0,
+//           "studentDetails.updatedAt": 0,
+//           "studentDetails.createdBy": 0,
+//           "studentDetails.updatedBy": 0,
+//           "studentDetails.creatorRole": 0,
+//           "studentDetails.updaterRole": 0,
+//           "studentDetails.userId": 0,
+//         },
+//       },
+//     ]);
+//     // console.log(paymentsWithUserDetails);
 
-    const transactionList = paymentsWithUserDetails.map((payment) => ({
-      name: `${payment.userDetails.firstName} ${payment.userDetails.lastName}`,
-      email: payment.userDetails.email,
-      enrollmentNumber: payment.studentDetails.enrollmentNumber,
-      contactNumber: payment.userDetails.contactNumber,
-      userAccountStatus: payment.userDetails.status,
-      coursesEnrolled: payment.courseDetails.map((course: { courseName: string, courseCategory: string }) => ({
-        courseName: course.courseName,
-        courseCategory: course.courseCategory
-      })),
-      paymentId: payment.paymentId,
-      transactionId: payment.transactionDetails.transactionId,
-      transactionProof: payment.transactionDetails.transactionProof,
-      transactionAmount: payment.transactionDetails.transactionAmount,
-      transactionDate: payment.transactionDetails.transactionDate,
-      paymentMode: payment.transactionDetails.paymentMode,
-      paymentType: payment.transactionDetails.paymentType,
+//     const transactionList = paymentsWithUserDetails.map((payment) => ({
+//       name: `${payment.userDetails.firstName} ${payment.userDetails.lastName}`,
+//       email: payment.userDetails.email,
+//       enrollmentNumber: payment.studentDetails.enrollmentNumber,
+//       contactNumber: payment.userDetails.contactNumber,
+//       userAccountStatus: payment.userDetails.status,
+//       coursesEnrolled: payment.courseDetails.map(
+//         (course: { courseName: string; courseCategory: string }) => ({
+//           courseName: course.courseName,
+//           courseCategory: course.courseCategory,
+//         })
+//       ),
+//       paymentId: payment.paymentId,
+//       transactionId: payment.transactionDetails.transactionId,
+//       transactionProof: payment.transactionDetails.transactionProof,
+//       transactionAmount: payment.transactionDetails.transactionAmount,
+//       transactionDate: payment.transactionDetails.transactionDate,
+//       paymentMode: payment.transactionDetails.paymentMode,
+//       paymentType: payment.transactionDetails.paymentType,
 
-      createdBy: payment.createdBy,
-      updatedBy: payment.updatedBy,
-      creatorRole: payment.creatorRole,
-      updaterRole: payment.updaterRole,
-      createdAt: payment.createdAt,
-      updatedAt: payment.updatedAt
+//       createdBy: payment.createdBy,
+//       updatedBy: payment.updatedBy,
+//       creatorRole: payment.creatorRole,
+//       updaterRole: payment.updaterRole,
+//       createdAt: payment.createdAt,
+//       updatedAt: payment.updatedAt,
+//     }));
 
-    }));
-
-
-    response.status(200).json({ success: true, data: transactionList });
-  } catch (error) {
-    console.error('Error fetching payment details:', error);
-    response.status(500).json({ success: false, message: 'Error fetching payment details', error });
-  }
-};
+//     response.status(200).json({ success: true, data: transactionList });
+//   } catch (error) {
+//     console.error("Error fetching payment details:", error);
+//     response
+//       .status(500)
+//       .json({
+//         success: false,
+//         message: "Error fetching payment details",
+//         error,
+//       });
+//   }
+// };
 
 export const adminAuthenticateJWT = async (
   request: CustomRequest,

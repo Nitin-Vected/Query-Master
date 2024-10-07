@@ -1,56 +1,25 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 interface Transaction extends Document {
-  transactionId: string;
-  userId: string;
-  paymentMode: string;
-  paymentType: string;
-  transactionDate: Date;
-  transactionAmount: number;
-  transactionProof?: string;
-  createdBy: string,
-  updatedBy: string,
-  creatorRole: string,
-  updaterRole: string
+  id: string;
+  amount: number;
+  createdBy: string;
+  updatedBy: string;
+  creatorRole: string;
+  updaterRole: string;
+  isActive: boolean;
 }
-
-// Sub-schema for EMI details
-
 
 const TransactionSchema = new Schema<Transaction>(
   {
-    transactionId: {
+    id: {
       type: String,
       required: true,
       unique: true,
     },
-    userId: {
-      type: String,
-      ref: "User",
-      required: true,
-    },
-    paymentMode: {
-      type: String,
-      enum: ["Online", "Offline"],
-      required: true,
-    },
-    paymentType: {
-      type: String,
-      enum: ["OneTime Payment", "EMI"],
-      required: true,
-    },
-    transactionDate: {
-      type: Date,
-      required: true,
-      default: Date.now,
-    },
-    transactionAmount: {
+    amount: {
       type: Number,
       required: true,
-    },
-    transactionProof: {
-      type: String, 
-      required: true
     },
     createdBy: {
       type: String,
@@ -67,6 +36,10 @@ const TransactionSchema = new Schema<Transaction>(
     updaterRole: {
       type: String,
       required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true
     },
   },
   { versionKey: false, timestamps: true }

@@ -1,24 +1,26 @@
 import { Schema, model, Document } from "mongoose";
 
 interface Status extends Document {
-  statusId: string;
-  statusName: string;
+  id: string;
+  name: string;
   createdBy: string;
   updatedBy: string;
   creatorRole: string;
   updaterRole: string;
+  isActive: boolean;
 }
 
 const statusSchema = new Schema<Status>(
   {
-    statusId: { type: String, required: true, unique: true },
-    statusName: { type: String, required: true },
+    id: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },
     creatorRole: { type: String, required: true },
     updaterRole: { type: String, required: true },
+    isActive: {type:Boolean, required: true}
   },
   { versionKey: false, timestamps: true }
 );
 
-export default model<Status>("Status", statusSchema);
+export default model<Status>("statusMaster", statusSchema, "statusMaster");
