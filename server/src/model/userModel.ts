@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IUser extends Document {
-  userId: string;
+export interface User extends Document {
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -9,11 +9,16 @@ export interface IUser extends Document {
   profileImg: string;
   roleId: string;
   status: string;
+  isActive: boolean;
+  createdBy: string;
+  updatedBy: string;
+  createrRole: string;
+  updaterRole: string;
 }
 
-const UserSchema: mongoose.Schema = new Schema(
+const UserSchema = new Schema<User>(
   {
-    userId: {
+    id: {
       type: String,
       required: true,
       unique: true,
@@ -50,9 +55,30 @@ const UserSchema: mongoose.Schema = new Schema(
     status: {
       type: String,
       required: true,
+      ref: "Status",
+    },
+    isActive: {
+      type: Boolean,
+      required: true,
+    },
+    createdBy: {
+      type: String,
+      required: true,
+    },
+    updatedBy: {
+      type: String,
+      required: true,
+    },
+    createrRole: {
+      type: String,
+      required: true,
+    },
+    updaterRole: {
+      type: String,
+      required: true,
     },
   },
   { versionKey: false, timestamps: true }
 );
 
-export default mongoose.model<IUser>("User", UserSchema, "user");
+export default mongoose.model<User>("User", UserSchema, "users");

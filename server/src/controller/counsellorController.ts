@@ -1,13 +1,13 @@
-import leadModel from "../model/leadModel";
 import {
-  COUNSELLOR_SECRET_KEY,
-  CustomRequest,
-  STUDENT_ROLE_ID,
-  StatusCodes,
-  generateUniqueId,
+    COUNSELLOR_SECRET_KEY,
+    CustomRequest,
+    STUDENT_ROLE_ID,
+    StatusCodes,
+    generateUniqueId,
 } from "../config";
 import { Request, Response, NextFunction } from "express";
 import { tokenVerifier } from "../utilities/jwt";
+import leadModel from "../model/leadModel";
 import studentModel from "../model/studentModel";
 import userModel from "../model/userModel";
 import transactionModel from "../model/transactionModel";
@@ -21,7 +21,9 @@ export const counsellorViewProfileController = async (
 ) => {
   try {
     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
     }
     const { userId, roleName } = request.payload;
     if (!userId) {
@@ -59,8 +61,10 @@ export const counsellorViewProfileController = async (
   }
 };
 
-
-export const counsellorManageLeadStatusController = async (request: Request, response: Response) => {
+export const counsellorManageLeadStatusController = async (
+  request: Request,
+  response: Response
+) => {
   try {
     const { email, statusId } = request.body;
     console.log("Lead email: ", email, "  action: ", statusId);
@@ -72,7 +76,7 @@ export const counsellorManageLeadStatusController = async (request: Request, res
     }
     const result = await leadModel.updateOne(
       { email: email },
-      { $set: { "statusId": statusId } }
+      { $set: { statusId: statusId } }
     );
 
     console.log(result);
@@ -86,7 +90,6 @@ export const counsellorManageLeadStatusController = async (request: Request, res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Lead or course not found." });
     }
-
   } catch (error) {
     console.error("Error updating lead status: ", error);
     return response
@@ -95,19 +98,37 @@ export const counsellorManageLeadStatusController = async (request: Request, res
   }
 };
 
-export const counsellorRegisterLeadAsUserController = async (request: CustomRequest, response: Response, next: NextFunction) => {
-  let uploadedFilePath = '';
+export const counsellorRegisterLeadAsUserController = async (
+  request: CustomRequest,
+  response: Response,
+  next: NextFunction
+) => {
+  let uploadedFilePath = "";
   let session: mongoose.ClientSession | null = null;
   try {
     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
     }
     session = await mongoose.startSession();
     session.startTransaction();
 
     const { email: counsellorEmail, roleName } = request.payload;
-    let { email: leadEmail, name, contactNumber, paymentMode, paymentType, transactionDate,
-      transactionAmount, emiDetails, discount, finalAmount, coursesPurchased, statusId } = request.body;
+    let {
+      email: leadEmail,
+      name,
+      contactNumber,
+      paymentMode,
+      paymentType,
+      transactionDate,
+      transactionAmount,
+      emiDetails,
+      discount,
+      finalAmount,
+      coursesPurchased,
+      statusId,
+    } = request.body;
 
     console.log("leadEmail ==> ", leadEmail);
     const [firstName, lastName] = name.split(" ");
@@ -125,25 +146,33 @@ export const counsellorRegisterLeadAsUserController = async (request: CustomRequ
         statusId,
         createdBy: counsellorEmail,
         updatedBy: counsellorEmail,
-        creatorRole: roleName,
-        updaterRole: roleName
-      }
-      const leadRegistrationResult = await leadModel.create([leadData], { session });
+        createrRole: roleName,
+        updaterRole: roleName,
+      };
+      const leadRegistrationResult = await leadModel.create([leadData], {
+        session,
+      });
       if (!leadRegistrationResult) {
-        throw new Error('Student Registration Failed, Please register the Lead first ..!');
+        throw new Error(
+          "Student Registration Failed, Please register the Lead first ..!"
+        );
       }
     }
 
-    const missingField = Object.entries(request.body).find(([key, value]) => !value);
+    const missingField = Object.entries(request.body).find(
+      ([key, value]) => !value
+    );
 
     if (missingField) {
       return response
         .status(StatusCodes.BAD_REQUEST)
-        .json({ message: "Please Enter all the required fields and try again ..!" });
+        .json({
+          message: "Please Enter all the required fields and try again ..!",
+        });
     }
 
     const transactionProof = request.file?.path;
-    if (transactionProof){
+    if (transactionProof) {
       uploadedFilePath = transactionProof;
     }
 
@@ -156,14 +185,14 @@ export const counsellorRegisterLeadAsUserController = async (request: CustomRequ
       status: true,
       roleId: STUDENT_ROLE_ID,
       contactNumber,
-    }
+    };
 
     const result = await userModel.create([dataToRegister], { session });
     if (!result) {
-      throw new Error('Failed to create user');
+      throw new Error("Failed to create user");
     }
 
-    const transactionId = await generateUniqueId('transaction');
+    const transactionId = await generateUniqueId("transaction");
     const transactionData = {
       transactionId,
       userId,
@@ -174,13 +203,15 @@ export const counsellorRegisterLeadAsUserController = async (request: CustomRequ
       transactionProof,
       createdBy: counsellorEmail,
       updatedBy: counsellorEmail,
-      creatorRole: roleName,
-      updaterRole: roleName
+      createrRole: roleName,
+      updaterRole: roleName,
     };
 
-    const newTransaction = await transactionModel.create([transactionData], { session });
+    const newTransaction = await transactionModel.create([transactionData], {
+      session,
+    });
     if (!newTransaction) {
-      throw new Error('Transaction creation failed');
+      throw new Error("Transaction creation failed");
     }
 
     const orderId = await generateUniqueId("order");
@@ -193,23 +224,23 @@ export const counsellorRegisterLeadAsUserController = async (request: CustomRequ
       discount: discount,
       createdBy: counsellorEmail,
       updatedBy: counsellorEmail,
-      creatorRole: roleName,
-      updaterRole: roleName
+      createrRole: roleName,
+      updaterRole: roleName,
     };
 
     const newOrder = await orderModel.create([orderData], { session });
     if (!newOrder) {
-      throw new Error('Order creation failed');
+      throw new Error("Order creation failed");
     }
 
     const leadStatusResult = await leadModel.updateOne(
       { email: leadEmail },
-      { $set: { "statusId": statusId } },
+      { $set: { statusId: statusId } },
       { session }
     );
 
     if (!leadStatusResult?.acknowledged) {
-      throw new Error('Lead status update failed');
+      throw new Error("Lead status update failed");
     }
 
     const enrollmentNumber = await generateUniqueId("enrollment");
@@ -224,20 +255,21 @@ export const counsellorRegisterLeadAsUserController = async (request: CustomRequ
       enrollmentDate: transactionDate,
       createdBy: counsellorEmail,
       updatedBy: counsellorEmail,
-      creatorRole: roleName,
-      updaterRole: roleName
-    }
+      createrRole: roleName,
+      updaterRole: roleName,
+    };
     const studentResult = await studentModel.create([studentData], { session });
     if (!studentResult) {
-      throw new Error('Student registration failed');
+      throw new Error("Student registration failed");
     }
 
     // Commit transaction
     await session.commitTransaction();
     session.endSession();
 
-    response.status(StatusCodes.CREATED).json({ message: 'Student Enrolled Successfully ..!' });
-
+    response
+      .status(StatusCodes.CREATED)
+      .json({ message: "Student Enrolled Successfully ..!" });
   } catch (error) {
     await userModel.deleteOne({ email: request.body.email });
     deleteFile(uploadedFilePath);
@@ -248,69 +280,72 @@ export const counsellorRegisterLeadAsUserController = async (request: CustomRequ
   }
 };
 
-export const addNewLeadsController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-     if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({message: "User payload is missing or invalid."});
-    }
-    const { email, roleName } = request.payload;
-    const leads = Array.isArray(request.body) ? request.body : [request.body];
+// export const counsellorAddNewLeadsController = async (
+//   request: CustomRequest,
+//   response: Response
+// ) => {
+//   try {
+//     if (!request.payload) {
+//       return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
+//     }
+//     const { email, roleName } = request.payload;
+//     const leads = Array.isArray(request.body) ? request.body : [request.body];
 
-    const result = [];
-    for (const leadData of leads) {
-      const { email: leadEmail, courseCategory } = leadData;
+//     const result = [];
+//     for (const leadData of leads) {
+//       const { email: leadEmail, courses } = leadData;
 
-      let existingLead = await leadModel.findOne({ email: leadEmail });
+//       let existingLead = await leadModel.findOne({ email: leadEmail });
 
-      if (existingLead) {
-        console.log("Lead already exists. Updating courseCategory.");
+//       if (existingLead) {
+//         console.log("Lead already exists. Updating courseCategory.", existingLead);
 
-        // Check if the course already exists in the lead's courses array
-        const existingCourse = existingLead.courses.find(
-          (category) => category.courseId === courseCategory[0].courseId
-        );
+//         // Check if the course already exists in the lead's courses array
+//         const existingCourse = existingLead.courses.find(
+//           (course) => course === courses[0]
+//         );
+//         console.log(existingCourse)
+//         if (!existingCourse) {
+//           existingLead.courses.push(courses[0]);
+//           existingLead.updatedBy = email;
+//           existingLead.updaterRole = roleName;
+//           await existingLead.save();
+//         } else {
+//           console.log("Course already exists in the lead’s courses.");
+//           return response
+//             .status(StatusCodes.ALREADY_EXIST)
+//             .json({ data: result, message: "Course already exists in the lead’s courses." });
+//         }
 
-        if (!existingCourse) {
-          existingLead.courses.push(courseCategory[0]);
-          existingLead.updatedBy = email;
-          existingLead.updaterRole = roleName;
-          await existingLead.save();
-        } else {
-          console.log("Course already exists in the lead’s courseCategory.");
-        }
+//         result.push(existingLead);
+//       } else {
+//         console.log("Lead does not exist. Creating a new lead.");
+//         const newLeadData = {
+//           ...leadData,
+//           createdBy: email,
+//           updatedBy: email,
+//           createrRole: roleName,
+//           updaterRole: roleName,
+//         };
 
-        result.push(existingLead);
-      } else {
-        console.log("Lead does not exist. Creating a new lead.");
-        const newLeadData = {
-          ...leadData,
-          createdBy: email,
-          updatedBy: email,
-          creatorRole: roleName,
-          updaterRole: roleName,
-        };
+//         const newLead = await leadModel.create(newLeadData);
+//         result.push(newLead);
+//       }
+//     }
 
-        const newLead = await leadModel.create(newLeadData);
-        result.push(newLead);
-      }
-    }
+//     console.log("Result: ", result);
+//     return response
+//       .status(StatusCodes.CREATED)
+//       .json({ data: result, message: "Leads processed successfully." });
+//   } catch (error) {
+//     console.error("Error occurred in addNewLeads: ", error);
+//     return response
+//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
+//       .json({ message: "Something went wrong!" });
+//   }
+// };
 
-    console.log("Result: ", result);
-    response
-      .status(StatusCodes.CREATED)
-      .json({ data: result, message: "Leads processed successfully." });
-  } catch (error) {
-    console.error("Error occurred in addNewLeads: ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong!" });
-  }
-};
-
-export const getAllLeadsController = async (
+export const counsellorGetAllLeadsController = async (
   request: Request,
   response: Response
 ) => {
@@ -334,14 +369,12 @@ export const getAllLeadsController = async (
   }
 };
 
-export const getLeadByIdController = async (
+export const counsellorGetLeadByIdController = async (
   request: Request,
   response: Response
 ) => {
-  const { leadId } = request.params;
-  console.log(request.params);
-
   try {
+    const { leadId } = request.params;
     const lead = await leadModel.findById(leadId);
     console.log(lead);
 

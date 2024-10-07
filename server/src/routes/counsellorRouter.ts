@@ -1,14 +1,15 @@
 import express from "express";
 import {
-  addNewLeadsController,
+  // counsellorAddNewLeadsController,
   counsellorAuthenticateJWT,
-  getAllLeadsController,
-  getLeadByIdController,
+  counsellorGetAllLeadsController,
+  counsellorGetLeadByIdController,
   counsellorManageLeadStatusController,
   counsellorRegisterLeadAsUserController,
   counsellorViewProfileController,
 } from "../controller/counsellorController";
 import { uploadTransactionProof } from "../utilities/multer";
+import { counsellorValidateAddNewLeads, counsellorValidateGetLeadById, counsellorValidateManageLeadStatus, counsellorValidateRegisterLeadAsUser } from "../utilities/validation/counsellorValidation";
 
 const counsellorRouter = express.Router();
 
@@ -53,7 +54,7 @@ counsellorRouter.get("/counsellorViewProfile", counsellorViewProfileController);
  *         description: Bad request or missing parameters
  */
 counsellorRouter.post(
-  "/counsellorManageLeadStatus",
+  "/counsellorManageLeadStatus", counsellorValidateManageLeadStatus,
   counsellorManageLeadStatusController
 );
 
@@ -138,80 +139,68 @@ counsellorRouter.post(
   counsellorRegisterLeadAsUserController
 );
 
-/**
- * @swagger
- * /counsellor/addNewLeads:
- *   post:
- *     summary: Add a new lead
- *     tags: [Counsellor]
- *     requestBody:
- *       description: Lead information to add
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               firstName:
- *                 type: string
- *                 description: First name of the lead
- *                 example: "John"
- *               lastName:
- *                 type: string
- *                 description: Last name of the lead
- *                 example: "Doe"
- *               contactNumber:
- *                 type: string
- *                 description: Contact number of the lead
- *                 example: "1234567890"
- *               email:
- *                 type: string
- *                 description: Email address of the lead
- *                 example: "john.doe@example.com"
- *               feesAmount:
- *                 type: number
- *                 description: The fees amount associated with the lead
- *                 example: 5000
- *               discount:
- *                 type: number
- *                 description: Discount on the fees
- *                 example: 10
- *                 minimum: 0
- *                 maximum: 15
- *               channel:
- *                 type: string
- *                 description: The channel through which the lead was acquired
- *                 example: "Referral"
- *               statusId:
- *                 type: string
- *                 description: Status ID of the lead
- *                 example: "STATUSHqMSvRUC303"
- *               courses:
- *                 type: array
- *                 description: List of courses
- *                 items:
- *                   type: object
- *                   properties:
- *                     courseId:
- *                       type: string
- *                       description: The ID of the course
- *                       example: "COURSE8Loyl3ELJ01"
- *                     appliedAt:
- *                       type: string
- *                       format: date-time
- *                       description: The date when the course was applied for
- *                       example: "2024-01-01T00:00:00.000Z"
- *     responses:
- *       201:
- *         description: Lead added successfully
- *       400:
- *         description: Bad request or missing parameters
- */
-counsellorRouter.post("/addNewLeads", addNewLeadsController);
+// /**
+//  * @swagger
+//  * /counsellor/counsellorAddNewLead:
+//  *   post:
+//  *     summary: Add a new lead
+//  *     tags: [Counsellor]
+//  *     requestBody:
+//  *       description: Lead information to add
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               firstName:
+//  *                 type: string
+//  *                 description: First name of the lead
+//  *                 example: "John"
+//  *               lastName:
+//  *                 type: string
+//  *                 description: Last name of the lead
+//  *                 example: "Doe"
+//  *               contactNumber:
+//  *                 type: string
+//  *                 description: Contact number of the lead
+//  *                 example: "1234567890"
+//  *               email:
+//  *                 type: string
+//  *                 description: Email address of the lead
+//  *                 example: "john.doe@example.com"
+//  *               finalAmount:
+//  *                 type: number
+//  *                 description: The fees amount associated with the lead
+//  *                 example: 5000
+//  *               discount:
+//  *                 type: number
+//  *                 description: Discount on the fees
+//  *                 example: 10
+//  *               channel:
+//  *                 type: string
+//  *                 description: The channel through which the lead was acquired
+//  *                 example: "Referral"
+//  *               statusId:
+//  *                 type: string
+//  *                 description: Status ID of the lead
+//  *                 example: "STATUSEe-_oqeWU01"
+//  *               courses:
+//  *                 type: array
+//  *                 items:
+//  *                   type: string
+//  *                 
+//  *     responses:
+//  *       201:
+//  *         description: Lead added successfully
+//  *       400:
+//  *         description: Bad request or missing parameters
+//  */
+// counsellorRouter.post("/counsellorAddNewLead", counsellorValidateAddNewLeads, counsellorAddNewLeadsController);
 
 /**
  * @swagger
- * /counsellor/getAllLeads:
+ * /counsellor/counsellorGetAllLeads:
  *   get:
  *     summary: Retrieve all leads
  *     tags: [Counsellor]
@@ -221,11 +210,11 @@ counsellorRouter.post("/addNewLeads", addNewLeadsController);
  *       401:
  *         description: Unauthorized
  */
-counsellorRouter.get("/getAllLeads", getAllLeadsController);
+counsellorRouter.get("/counsellorGetAllLeads", counsellorGetAllLeadsController);
 
 /**
  * @swagger
- * /counsellor/getLeadById/{leadId}:
+ * /counsellor/counsellorGetLeadById/{leadId}:
  *   get:
  *     summary: Get Lead by ID
  *     tags: [Counsellor]
@@ -240,6 +229,6 @@ counsellorRouter.get("/getAllLeads", getAllLeadsController);
  *       200:
  *         description: Lead details retrieved
  */
-counsellorRouter.get("/getLeadById/:leadId", getLeadByIdController);
+counsellorRouter.get("/counsellorGetLeadById/:leadId", counsellorValidateGetLeadById, counsellorGetLeadByIdController);
 
 export default counsellorRouter;

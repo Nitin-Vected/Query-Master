@@ -15,32 +15,35 @@ interface Payload {
   status: string;
 }
 
-export const tokenGenerator = (data: Payload) => {
-  let token = "";
-  switch (data.roleName) {
-    case "SupportAdmin": {
-      token = jwt.sign(data, ADMIN_SECRET_KEY, { expiresIn: "1d" });
-      console.log("Admin Token ==> ", token);
-      break;
-    }
-    case "Student": {
-      console.log("Data ==> ", data);
-      token = jwt.sign(data, USER_SECRET_KEY, { expiresIn: "1d" });
-      console.log("User Token ==> ", token);
-      break;
-    }
-    case "Counsellor": {
-      token = jwt.sign(data, COUNSELLOR_SECRET_KEY, { expiresIn: "1d" });
-      console.log("User Token ==> ", token);
-      break;
-    }
+const getSecretKey = (roleName: string): string | undefined => {
+  switch (roleName) {
+    case "Admin":
+      return ADMIN_SECRET_KEY;
+    case "Counsellor":
+      return COUNSELLOR_SECRET_KEY;
+    case "User":
+      return USER_SECRET_KEY;
+    default:
+      return undefined;
   }
+};
+
+export const tokenGenerator = (data: Payload) => {
+  const { roleName } = data;
+  const secretKey = getSecretKey(roleName);
+
+  if (!secretKey) {
+    throw new Error(`Secret key for role ${roleName} not found`);
+  }
+
+  const token = jwt.sign(data, secretKey, { expiresIn: "1d" });
+
+  console.log("Generated Token ==> ", token);
   return token;
 };
 
 export const tokenVerifier = (token: any, secretKey: string) => {
   try {
-    console.log("token --> ", token, secretKey);
     const payload = jwt.verify(token, secretKey);
     console.log("Verified Payload ", payload);
     return payload;

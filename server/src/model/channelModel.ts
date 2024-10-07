@@ -5,7 +5,7 @@ interface Channel extends Document {
   name: string;
   createdBy: string;
   updatedBy: string;
-  creatorRole: string;
+  createrRole: string;
   updaterRole: string;
   isActive: boolean;
 }
@@ -16,9 +16,9 @@ const channelSchema = new Schema<Channel>(
     name: { type: String, required: true },
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },
-    creatorRole: { type: String, required: true },
+    createrRole: { type: String, required: true },
     updaterRole: { type: String, required: true },
-    isActive: {type:Boolean, required: true}
+    isActive: { type: Boolean, required: true },
   },
   { versionKey: false, timestamps: true }
 );

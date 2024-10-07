@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import userModel from "../model/userModel";
 import { tokenVerifier } from "../utilities/jwt";
 import { CustomRequest, StatusCodes, USER_SECRET_KEY } from "../config";

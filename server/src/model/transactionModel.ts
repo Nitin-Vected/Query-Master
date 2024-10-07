@@ -5,7 +5,7 @@ interface Transaction extends Document {
   amount: number;
   createdBy: string;
   updatedBy: string;
-  creatorRole: string;
+  createrRole: string;
   updaterRole: string;
   isActive: boolean;
 }
@@ -29,7 +29,7 @@ const TransactionSchema = new Schema<Transaction>(
       type: String,
       required: true,
     },
-    creatorRole: {
+    createrRole: {
       type: String,
       required: true,
     },
@@ -39,7 +39,7 @@ const TransactionSchema = new Schema<Transaction>(
     },
     isActive: {
       type: Boolean,
-      default: true
+      default: true,
     },
   },
   { versionKey: false, timestamps: true }

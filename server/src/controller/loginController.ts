@@ -32,7 +32,6 @@ export const loginController = async (
   response: express.Response
 ) => {
   try {
-
     const { tokenResponse } = request.body;
     const decodedToken = await verifyGoogleToken(tokenResponse);
 
@@ -41,8 +40,8 @@ export const loginController = async (
         decodedToken;
 
       let user = await userModel.findOne({ email: email });
-      console.log(user);
-      if (user && user?.status) {
+
+      if (user) {
         user.email = email;
         user.profileImg = picture;
         user.firstName = given_name;
@@ -52,7 +51,7 @@ export const loginController = async (
       } else {
         const userId = await generateUniqueId("user");
         user = await userModel.create({
-          userId,
+          id: userId,
           email,
           firstName: given_name,
           lastName: family_name,
@@ -63,33 +62,26 @@ export const loginController = async (
         });
       }
 
-      console.log('User.roleId ==> ',user.roleId);
-
       const roleDetails = await roleModel.findOne({ id: user.roleId });
       const result = {
         name: given_name + " " + family_name,
-        email: user.email,
+        email: email,
         contactNumber: user.contactNumber,
-        profileImg: user.profileImg,
-        role: roleDetails && roleDetails.name,
+        profileImg: picture,
+        role: roleDetails?.name,
       };
-
-      console.log("result ==> ", result);
 
       const payload = {
         name: given_name + " " + family_name,
-        userId: user?.userId,
+        userId: user.id,
         email,
-        roleId: user?.roleId,
+        roleId: user.roleId,
         roleName: roleDetails ? roleDetails.name : "Not mentioned",
         googleToken: tokenResponse?.access_token,
-        status: user?.status,
+        status: user.status,
       };
 
-      console.log("payload ==> ", payload);
-
       let token = tokenGenerator(payload);
-      console.log("Token in loginController ===> ", token);
       response.status(StatusCodes.CREATED).json({
         userData: result,
         token: token,
@@ -104,6 +96,6 @@ export const loginController = async (
     console.error(error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Internal Server Error" });
+      .json({ message: "Internal Server Error in loginController" });
   }
 };

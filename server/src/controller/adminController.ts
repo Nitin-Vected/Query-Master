@@ -3,13 +3,11 @@ import { Request, Response } from "express";
 
 import {
   ADMIN_SECRET_KEY,
-  COUNSELLOR_ROLE_ID,
   CustomRequest,
   generateUniqueId,
   StatusCodes,
   STUDENT_ROLE_ID,
   SUPPORT_ADMIN_ROLE_ID,
-  TRAINER_ROLE_ID,
 } from "../config";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
@@ -17,7 +15,7 @@ import courseModel from "../model/productModel";
 import { AccessRights } from "../model/accessRightsModel";
 import statusModel from "../model/statusModel";
 import studentModel from "../model/studentModel";
-import channelModal from "../model/channelModal";
+import channelModal from "../model/channelModel";
 
 export const adminViewProfileController = async (
   request: CustomRequest,
@@ -116,6 +114,7 @@ export const adminViewSupportAdminListController = async (
       .find({ roleId: SUPPORT_ADMIN_ROLE_ID }, { _id: 0 })
       .select("name email contactNumber role profileImg status")
       .sort({ updatedAt: -1, createdAt: -1 });
+
     if (adminList && adminList.length > 0) {
       response.status(StatusCodes.OK).json({
         adminList: adminList,
@@ -182,19 +181,20 @@ export const adminManageStudentStatusController = async (
         .json({ error: "Invalid action. Use true or false." });
     }
 
-    const result = await userModel.updateOne(
+    const result = await userModel.findOneAndUpdate(
       { email: email, roleId: STUDENT_ROLE_ID },
-      { $set: { status: action } }
+      { $set: { status: action } },
+      { new: true }
     );
-    if (result?.acknowledged) {
-      console.log("Student Status updated  successfully ..!");
-      response
-        .status(StatusCodes.OK)
-        .json({ message: "Student Status updated successfully ..!" });
+    if (result) {
+      console.log(`Student Status updated to ${action} successfully`);
+      response.status(StatusCodes.OK).json({
+        message: `Student Status updated to ${action} successfully ..!`,
+      });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
-        .json({ error: "Student not found or _id mismatch" });
+        .json({ error: "Student not found or email mismatch" });
     }
   } catch (error) {
     response
@@ -308,7 +308,7 @@ export const adminAddNewRoleController = async (
       access,
       createdBy: email,
       updatedBy: email,
-      creatorRole: roleName,
+      createrRole: roleName,
       updaterRole: roleName,
     };
     console.log("data ", data);
@@ -349,7 +349,7 @@ export const adminAddNewChannelController = async (
       name: channelName,
       createdBy: email,
       updatedBy: email,
-      creatorRole: roleName,
+      createrRole: roleName,
       updaterRole: roleName,
     };
     console.log("data ", data);
@@ -372,13 +372,13 @@ export const adminAddNewChannelController = async (
   }
 };
 
-export const getRoleByUserIdController = async (
+export const adminGetRoleByUserIdController = async (
   request: Request,
   response: Response
 ) => {
   const { userId } = request.params;
   try {
-    const user = await userModel.findOne({ userId: userId });
+    const user = await userModel.findOne({ userId: userId }, { _id: 0 });
     if (!user) {
       return response
         .status(StatusCodes.NOT_FOUND)
@@ -388,20 +388,20 @@ export const getRoleByUserIdController = async (
       .status(200)
       .json({ data: user.roleId, message: "Role of given userId : " });
   } catch (error) {
-    console.log("Error occured in getRoleByUserId : ", error);
+    console.log("Error occured in adminGetRoleByUserId : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const getRoleByIdController = async (
+export const adminGetRoleByIdController = async (
   request: Request,
   response: Response
 ) => {
   const { roleId } = request.params;
   try {
-    const role = await roleModel.findOne({ id: roleId });
+    const role = await roleModel.findOne({ roleId: roleId });
     if (!role) {
       return response
         .status(StatusCodes.NOT_FOUND)
@@ -464,10 +464,10 @@ export const adminAddNewStatusController = async (
     const statusId = await generateUniqueId("status");
     const data = {
       id: statusId,
-      name:statusName,
+      name: statusName,
       createdBy: email,
       updatedBy: email,
-      creatorRole: roleName,
+      createrRole: roleName,
       updaterRole: roleName,
     };
     console.log("data ", data);
@@ -514,7 +514,7 @@ export const adminAddNewStatusController = async (
 //       endDate: endDate,
 //       createdBy: email,
 //       updatedBy: email,
-//       creatorRole: roleName,
+//       createrRole: roleName,
 //       updaterRole: roleName,
 //     };
 //     console.log(data);
@@ -565,7 +565,7 @@ export const adminAddNewStatusController = async (
 //   }
 // };
 
-// export const getBatchByIdController = async (
+// export const adminGetBatchByIdController = async (
 //   request: Request,
 //   response: Response
 // ) => {
@@ -615,10 +615,20 @@ export const adminAddNewCourseController = async (
       courseDescription: courseDescription,
       createdBy: email,
       updatedBy: email,
-      creatorRole: roleName,
+      createrRole: roleName,
       updaterRole: roleName,
     };
     console.log(data);
+
+    const existingCourse = await courseModel.findOne({
+      courseName,
+      courseCategory,
+    });
+    if (existingCourse) {
+      response.status(StatusCodes.ALREADY_EXIST).json({
+        message: "Course Already exist with same name and category ..!",
+      });
+    }
     const newCourse = await courseModel.create(data);
     if (newCourse) {
       response.status(StatusCodes.CREATED).json({
@@ -666,13 +676,16 @@ export const adminGetAllCourseController = async (
   }
 };
 
-export const getCourseByIdController = async (
+export const adminGetCourseByIdController = async (
   request: Request,
   response: Response
 ) => {
   const { courseId } = request.params;
   try {
-    const course = await courseModel.findOne({ courseId: courseId });
+    const course = await courseModel.findOne(
+      { courseId: courseId },
+      { _id: 0 }
+    );
     if (!course) {
       return response
         .status(StatusCodes.NOT_FOUND)
@@ -701,22 +714,6 @@ export const getCourseByIdController = async (
 //     const { name, email, contactNumber, roleId } = request.body;
 //     const [firstName, lastName] = name.split(" ");
 //     const userId = await generateUniqueId("user");
-
-//     const userData = await userModel.create({
-//       userId,
-//       email,
-//       firstName,
-//       lastName,
-//       status: true,
-//       roleId:
-//         roleId === COUNSELLOR_ROLE_ID
-//           ? COUNSELLOR_ROLE_ID
-//           : roleId === TRAINER_ROLE_ID
-//           ? TRAINER_ROLE_ID
-//           : SUPPORT_ADMIN_ROLE_ID,
-//       contactNumber,
-//     });
-
 //     if (userData) {
 //       const employeeId = await generateUniqueId("employee");
 //       const employeeData = await employeeModel.create({
@@ -724,7 +721,7 @@ export const getCourseByIdController = async (
 //         userId: userData.userId,
 //         createdBy: adminEmail,
 //         updatedBy: adminEmail,
-//         creatorRole: adminRoleName,
+//         createrRole: adminRoleName,
 //         updaterRole: adminRoleName,
 //       });
 //       if (employeeData) {
@@ -772,7 +769,7 @@ export const adminManageUsersAccessRightsController = async (
         permissions,
         createdBy: email,
         updatedBy: email,
-        creatorRole: roleName,
+        createrRole: roleName,
         updaterRole: roleName,
       });
       response.status(StatusCodes.CREATED).json({
@@ -851,7 +848,7 @@ export const adminManageUsersAccessRightsController = async (
 //           "orderDetails.updatedAt": 0,
 //           "orderDetails.createdBy": 0,
 //           "orderDetails.updatedBy": 0,
-//           "orderDetails.creatorRole": 0,
+//           "orderDetails.createrRole": 0,
 //           "orderDetails.updaterRole": 0,
 //           "userDetails._id": 0,
 //           "userDetails.createdAt": 0,
@@ -861,14 +858,14 @@ export const adminManageUsersAccessRightsController = async (
 //           "transactionDetails.updatedAt": 0,
 //           "transactionDetails.createdBy": 0,
 //           "transactionDetails.updatedBy": 0,
-//           "transactionDetails.creatorRole": 0,
+//           "transactionDetails.createrRole": 0,
 //           "transactionDetails.updaterRole": 0,
 //           "studentDetails._id": 0,
 //           "studentDetails.createdAt": 0,
 //           "studentDetails.updatedAt": 0,
 //           "studentDetails.createdBy": 0,
 //           "studentDetails.updatedBy": 0,
-//           "studentDetails.creatorRole": 0,
+//           "studentDetails.createrRole": 0,
 //           "studentDetails.updaterRole": 0,
 //           "studentDetails.userId": 0,
 //         },
@@ -898,7 +895,7 @@ export const adminManageUsersAccessRightsController = async (
 
 //       createdBy: payment.createdBy,
 //       updatedBy: payment.updatedBy,
-//       creatorRole: payment.creatorRole,
+//       createrRole: payment.createrRole,
 //       updaterRole: payment.updaterRole,
 //       createdAt: payment.createdAt,
 //       updatedAt: payment.updatedAt,

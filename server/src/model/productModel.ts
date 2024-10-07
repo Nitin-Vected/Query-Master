@@ -13,7 +13,7 @@ interface Product extends Document {
   };
   createdBy: string;
   updatedBy: string;
-  creatorRole: string;
+  createrRole: string;
   updaterRole: string;
   isActive: boolean;
 }
@@ -32,9 +32,9 @@ const productSchema = new Schema<Product>(
     },
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },
-    creatorRole: { type: String, required: true },
+    createrRole: { type: String, required: true },
     updaterRole: { type: String, required: true },
-    isActive: {type: Boolean, required: true}
+    isActive: { type: Boolean, required: true },
   },
   { versionKey: false, timestamps: true }
 );

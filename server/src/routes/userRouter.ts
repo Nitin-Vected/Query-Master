@@ -7,32 +7,8 @@ import {
   userViewProfileController,
 } from "../controller/userController";
 import { loginController } from "../controller/loginController";
-
 const userRouter = express.Router();
 
-/**
- * @swagger
- * /user/userLogin:
- *   post:
- *     summary: User Login
- *     tags: [User]
- *     requestBody:
- *       description: Login credentials
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login successful
- *     security: []
- */
 userRouter.post("/userLogin", loginController);
 
 /**
