@@ -6,14 +6,12 @@ export interface Student extends Document {
   products: string[];
   transactions: string[];
   amount: number;
-  enrollmentDate: Date;
+  enrollmentDate: string;
   isActive: boolean;
   createdBy: string;
   updatedBy: string;
   createrRole: string;
   updaterRole: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 const StudentSchema = new Schema<Student>(
@@ -44,7 +42,7 @@ const StudentSchema = new Schema<Student>(
       required: true,
     },
     enrollmentDate: {
-      type: Date,
+      type: String,
       required: true,
     },
     isActive: {
