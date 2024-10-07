@@ -1,23 +1,23 @@
 // src/routes/adminRouter.ts
 import express from "express";
 import {
-  adminAddContactNumberController,
-  adminAddNewCourseController,
+  // adminAddContactNumberController,
+  adminAddNewProductController,
   adminAddNewRoleController,
   adminAddNewStatusController,
   adminAuthenticateJWT,
-  adminGetAllCourseController,
+  adminGetAllProductController,
 //   adminRegisterEmployeesController,
 //   adminGetAlltransactionListController,
   adminGetAllRolesController,
-  adminManageStudentStatusController,
+  // adminManageStudentStatusController,
   adminManageUsersAccessRightsController,
-  adminViewProfileController,
+  // adminViewProfileController,
   adminViewStudentListController,
   adminViewSupportAdminListController,
   adminViewUserListController,
 //   adminGetBatchByIdController,
-  adminGetCourseByIdController,
+  adminGetProductByIdController,
   adminGetRoleByIdController,
   adminGetRoleByUserIdController,
 } from "../controller/adminController";
@@ -27,111 +27,119 @@ const adminRouter = express.Router();
 
 adminRouter.use(adminAuthenticateJWT);
 
-/**
- * @swagger
- * /admin/adminViewProfile:
- *   get:
- *     summary: View Admin Profile
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: Successful operation
- */
-adminRouter.get("/adminViewProfile", adminViewProfileController);
+// /**
+//  * @swagger
+//  * /admin/adminViewProfile:
+//  *   get:
+//  *     summary: View Admin Profile
+//  *     tags: [Admin]
+//  *     responses:
+//  *       200:
+//  *         description: Successful operation
+//  */
+// adminRouter.get("/adminViewProfile", adminViewProfileController);
 
 /**
  * @swagger
- * /admin/adminViewStudentList:
+ * /admin/student:
  *   get:
  *     summary: View List of Students
  *     tags: [Admin]
  *     responses:
  *       200:
  *         description: Successful operation
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
-adminRouter.get("/adminViewStudentList", adminViewStudentListController);
+adminRouter.get("/student", adminViewStudentListController);
+
+// /**
+//  * @swagger
+//  * /admin/adminViewSupportAdminList:
+//  *   get:
+//  *     summary: View List of Support Admins
+//  *     tags: [Admin]
+//  *     responses:
+//  *       200:
+//  *         description: Successful operation
+//  */
+// adminRouter.get(
+//   "/adminViewSupportAdminList",
+//   adminViewSupportAdminListController
+// );
 
 /**
  * @swagger
- * /admin/adminViewSupportAdminList:
- *   get:
- *     summary: View List of Support Admins
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: Successful operation
- */
-adminRouter.get(
-  "/adminViewSupportAdminList",
-  adminViewSupportAdminListController
-);
-
-/**
- * @swagger
- * /admin/adminViewUserList:
+ * /admin/user:
  *   get:
  *     summary: View List of Users
  *     tags: [Admin]
  *     responses:
  *       200:
  *         description: Successful operation
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
-adminRouter.get("/adminViewUserList", adminViewUserListController);
+adminRouter.get("/user", adminViewUserListController);
+
+// /**
+//  * @swagger
+//  * /admin/adminManageStudentStatus/{email}/{action}:
+//  *   get:
+//  *     summary: Manage Student Status
+//  *     tags: [Admin]
+//  *     parameters:
+//  *       - in: path
+//  *         name: email
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *         description: Email of the student
+//  *       - in: path
+//  *         name: action
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *         description: Action to be taken on the student (true/false)
+//  *     responses:
+//  *       200:
+//  *         description: Student status updated
+//  */
+// adminRouter.get(
+//   "/adminManageStudentStatus/:email/:action",
+//   adminManageStudentStatusController
+// );
+
+// /**
+//  * @swagger
+//  * /admin/adminAddContactNumber:
+//  *   post:
+//  *     summary: Add Contact Number
+//  *     tags: [Admin]
+//  *     requestBody:
+//  *       description: Contact number details
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               contactNumber:
+//  *                 type: string
+//  *                 example: "9876543210"
+//  *     responses:
+//  *       201:
+//  *         description: Contact number added
+//  */
+// adminRouter.post("/adminAddContactNumber", adminValidateContactNumber, adminAddContactNumberController);
 
 /**
  * @swagger
- * /admin/adminManageStudentStatus/{email}/{action}:
- *   get:
- *     summary: Manage Student Status
- *     tags: [Admin]
- *     parameters:
- *       - in: path
- *         name: email
- *         required: true
- *         schema:
- *           type: string
- *         description: Email of the student
- *       - in: path
- *         name: action
- *         required: true
- *         schema:
- *           type: string
- *         description: Action to be taken on the student (true/false)
- *     responses:
- *       200:
- *         description: Student status updated
- */
-adminRouter.get(
-  "/adminManageStudentStatus/:email/:action",
-  adminManageStudentStatusController
-);
-
-/**
- * @swagger
- * /admin/adminAddContactNumber:
- *   post:
- *     summary: Add Contact Number
- *     tags: [Admin]
- *     requestBody:
- *       description: Contact number details
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               contactNumber:
- *                 type: string
- *                 example: "9876543210"
- *     responses:
- *       201:
- *         description: Contact number added
- */
-adminRouter.post("/adminAddContactNumber", adminValidateContactNumber, adminAddContactNumberController);
-
-/**
- * @swagger
- * /admin/adminAddNewRole:
+ * /admin/role:
  *   post:
  *     summary: Add New Role
  *     tags: [Admin]
@@ -145,54 +153,39 @@ adminRouter.post("/adminAddContactNumber", adminValidateContactNumber, adminAddC
  *             properties:
  *               userRole:
  *                 type: string
- *                 example: "Student"
  *               access:
  *                 type: array
  *                 items:
  *                   type: string
- *                   example: "View Profile"
  *     responses:
  *       201:
  *         description: Role added
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
-
-adminRouter.post("/adminAddNewRole", adminValidateNewRole, adminAddNewRoleController);
+adminRouter.post("/role", adminValidateNewRole, adminAddNewRoleController);
 
 /**
  * @swagger
- * /admin/adminGetRoleByUserId/{userId}:
+ * /admin/role:
  *   get:
- *     summary: Get Role by User ID
+ *     summary: Get All Roles
  *     tags: [Admin]
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: Role by User ID
  *     responses:
  *       200:
- *         description: Role details retrieved
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 userId:
- *                   type: string
- *                   description: Unique ID of the role
- *                   example: "USERxyz123"
+ *         description: List of all Roles
  *       400:
- *         description: Bad request or missing parameters
- *       404:
- *         description: Role of User not found
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
-adminRouter.get("/adminGetRoleByUserId/:userId", adminValidateUserId, adminGetRoleByUserIdController);
+adminRouter.get("/role", adminGetAllRolesController);
 
 /**
  * @swagger
- * /admin/adminGetRoleById/{roleId}:
+ * /admin/role/{roleId}:
  *   get:
  *     summary: Get Role by ID
  *     tags: [Admin]
@@ -206,25 +199,16 @@ adminRouter.get("/adminGetRoleByUserId/:userId", adminValidateUserId, adminGetRo
  *     responses:
  *       200:
  *         description: Role details retrieved
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 roleId:
- *                   type: string
- *                   description: Unique ID of the role
- *                   example: "ROLE123"
  *       400:
- *         description: Bad request or missing parameters
- *       404:
- *         description: Role not found
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
-adminRouter.get("/adminGetRoleById/:roleId", adminValidateRoleId, adminGetRoleByIdController);
+adminRouter.get("/role/:roleId", adminValidateRoleId, adminGetRoleByIdController);
 
 /**
  * @swagger
- * /admin/adminAddNewStatus:
+ * /admin/status:
  *   post:
  *     summary: Add New Status
  *     tags: [Admin]
@@ -242,39 +226,43 @@ adminRouter.get("/adminGetRoleById/:roleId", adminValidateRoleId, adminGetRoleBy
  *     responses:
  *       201:
  *         description: Status added
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
-adminRouter.post("/adminAddNewStatus", adminAddNewStatusController);
+adminRouter.post("/status", adminAddNewStatusController);
 
-/**
- * @swagger
- * /admin/adminAddAccessRights:
- *   post:
- *     summary: Manage User Access Rights
- *     tags: [Admin]
- *     requestBody:
- *       description: Access rights data
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
- *                 example: "USERlzRn-QO8q02"
- *               roleId:
- *                 type: string
- *                 example: "ROLEtEUJrkc0r04"
- *               permissions:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["View Trainer Profile"]
- *     responses:
- *       201:
- *         description: Access rights updated
- */
-adminRouter.post("/adminAddAccessRights", adminAccessRightsValidation, adminManageUsersAccessRightsController);
+// /**
+//  * @swagger
+//  * /admin/adminAddAccessRights:
+//  *   post:
+//  *     summary: Manage User Access Rights
+//  *     tags: [Admin]
+//  *     requestBody:
+//  *       description: Access rights data
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               userId:
+//  *                 type: string
+//  *                 example: "USERlzRn-QO8q02"
+//  *               roleId:
+//  *                 type: string
+//  *                 example: "ROLEtEUJrkc0r04"
+//  *               permissions:
+//  *                 type: array
+//  *                 items:
+//  *                   type: string
+//  *                 example: ["View Trainer Profile"]
+//  *     responses:
+//  *       201:
+//  *         description: Access rights updated
+//  */
+// adminRouter.post("/adminAddAccessRights", adminAccessRightsValidation, adminManageUsersAccessRightsController);
 
 // /**
 //  * @swagger
@@ -398,7 +386,7 @@ adminRouter.post("/adminAddAccessRights", adminAccessRightsValidation, adminMana
 
 /**
  * @swagger
- * /admin/adminAddNewCourse:
+ * /admin/product:
  *   post:
  *     summary: Add a New Course
  *     tags: [Admin]
@@ -410,65 +398,101 @@ adminRouter.post("/adminAddAccessRights", adminAccessRightsValidation, adminMana
  *           schema:
  *             type: object
  *             properties:
- *               courseName:
+ *               name:
  *                 type: string
- *                 example: "MERN Stack"
- *               courseCategory:
+ *               category:
  *                 type: string
- *                 example: "Web Development"
- *               courseFees:
+ *               amount:
  *                 type: number
- *                 example: 24999
- *               courseDescription:
+ *               description:
  *                 type: string
- *                 example: "This course covers modern web development techniques."
  *     responses:
  *       201:
  *         description: Course created
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
-adminRouter.post("/adminAddNewCourse",adminValidateCourseDetails, adminAddNewCourseController);
+adminRouter.post("/product",adminValidateCourseDetails, adminAddNewProductController);
 
 /**
  * @swagger
- * /admin/adminGetAllCourses:
+ * /admin/product:
  *   get:
- *     summary: Get All Courses
+ *     summary: Get All Products
  *     tags: [Admin]
  *     responses:
  *       200:
- *         description: List of all courses
+ *         description: List of all Products
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
-adminRouter.get("/adminGetAllCourses", adminGetAllCourseController);
+adminRouter.get("/product", adminGetAllProductController);
 
 /**
  * @swagger
- * /admin/adminGetAllRoles:
+ * /admin/product/{productId}:
  *   get:
- *     summary: Get All Roles
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: List of all Roles
- */
-adminRouter.get("/adminGetAllRoles", adminGetAllRolesController);
-
-/**
- * @swagger
- * /admin/adminGetCourseById/{courseId}:
- *   get:
- *     summary: Get Course by ID
+ *     summary: Get Product by ID
  *     tags: [Admin]
  *     parameters:
  *       - in: path
- *         name: courseId
+ *         name: productId
  *         required: true
  *         schema:
  *           type: string
- *         description: ID of the course
+ *         description: ID of the Product
  *     responses:
  *       200:
- *         description: Course details retrieved
+ *         description: Product details retrieved
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  */
-adminRouter.get("/adminGetCourseById/:courseId",adminValidateCourseId, adminGetCourseByIdController);
+adminRouter.get("/product/:productId",adminValidateCourseId, adminGetProductByIdController);
+
+/**
+ * @swagger
+ * /admin/product/{productId}:
+ *   put:
+ *     summary: Update Product by ID
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the Product to be updated
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               amount:
+ *                 type: number
+ *               description:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Product updated successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Product not found
+ */
+
 
 export default adminRouter;

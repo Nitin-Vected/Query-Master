@@ -593,7 +593,7 @@ export const adminAddNewStatusController = async (
 //   }
 // };
 
-export const adminAddNewCourseController = async (
+export const adminAddNewProductController = async (
   request: CustomRequest,
   response: Response
 ) => {
@@ -647,7 +647,7 @@ export const adminAddNewCourseController = async (
   }
 };
 
-export const adminGetAllCourseController = async (
+export const adminGetAllProductController = async (
   request: CustomRequest,
   response: Response
 ) => {
@@ -676,7 +676,7 @@ export const adminGetAllCourseController = async (
   }
 };
 
-export const adminGetCourseByIdController = async (
+export const adminGetProductByIdController = async (
   request: Request,
   response: Response
 ) => {
