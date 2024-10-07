@@ -8,7 +8,7 @@ import statusModel from "./model/statusModel";
 import orderModel from "./model/orderModel";
 import transactionModel from "./model/transactionModel";
 import studentModel from "./model/studentModel";
-import channelModal from "./model/channelModal";
+import channelModal from "./model/channelModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env
@@ -162,8 +162,8 @@ export const generateUniqueId = async (mode: string) => {
 
         if (latestUser.length > 0) {
           const userData = latestUser[0];
-          if (userData.userId) {
-            const numericPart = userData.userId.match(/\d+$/);
+          if (userData.id) {
+            const numericPart = userData.id.match(/\d+$/);
             if (numericPart) {
               newCounter = parseInt(numericPart[0]) + 1;
             }
@@ -176,7 +176,7 @@ export const generateUniqueId = async (mode: string) => {
           console.log(`Generated User ID: ${newUniqueId}`);
 
           const existingUserWithSameId = await userModel.findOne({
-            userId: newUniqueId,
+            id: newUniqueId,
           });
           if (!existingUserWithSameId) {
             isUnique = true;
@@ -228,8 +228,8 @@ export const generateUniqueId = async (mode: string) => {
 
         if (latestOrder.length > 0) {
           const orderData = latestOrder[0];
-          if (orderData.orderId) {
-            const numericPart = orderData.orderId.match(/\d+$/);
+          if (orderData.id) {
+            const numericPart = orderData.id.match(/\d+$/);
             if (numericPart) {
               newCounter = parseInt(numericPart[0]) + 1;
             }
@@ -242,7 +242,7 @@ export const generateUniqueId = async (mode: string) => {
           console.log(`Generated Order ID: ${newUniqueId}`);
 
           const existingOrderWithSameId = await orderModel.findOne({
-            orderId: newUniqueId,
+            id: newUniqueId,
           });
           if (!existingOrderWithSameId) {
             isUnique = true;
