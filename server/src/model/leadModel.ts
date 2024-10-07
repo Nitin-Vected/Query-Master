@@ -3,7 +3,7 @@ import { Schema, model, Document } from "mongoose";
 interface Comment extends Document {
   comment: string;
   commentedBy: string;
-  commentedAt: Date;
+  commentedAt: string;
 }
 
 interface Audit extends Document {
@@ -12,7 +12,7 @@ interface Audit extends Document {
   newValue: string;
   editedBy: string;
   editorRole: string;
-  editedAt: Date;
+  editedAt: string;
 }
 
 interface Lead extends Document {
@@ -31,8 +31,6 @@ interface Lead extends Document {
   auditLogs: Audit[];
   comments: Comment[];
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
   createdBy: string;
   updatedBy: string;
   createrRole: string;
@@ -45,13 +43,13 @@ const auditSchema = new Schema<Audit>({
   newValue: { type: String, required: true },
   editedBy: { type: String, required: true },
   editorRole: { type: String, required: true },
-  editedAt: { type: Date, required: true },
+  editedAt: { type: String, required: true },
 });
 
 const commentSchema = new Schema<Comment>({
   comment: { type: String, required: true },
   commentedBy: { type: String, required: true },
-  commentedAt: { type: Date, required: true },
+  commentedAt: { type: String, required: true },
 });
 
 const leadSchema = new Schema<Lead>(

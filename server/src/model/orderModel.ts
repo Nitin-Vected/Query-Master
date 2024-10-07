@@ -13,8 +13,6 @@ interface Order extends Document {
   updatedBy: string;
   createrRole: string;
   updaterRole: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 const OrderSchema = new Schema<Order>(
