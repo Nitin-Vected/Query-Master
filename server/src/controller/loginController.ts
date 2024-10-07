@@ -58,20 +58,20 @@ export const loginController = async (
           lastName: family_name,
           profileImg: picture,
           status: email_verified,
-          roleId: "ROLERQ80Z9Ctm03",
+          roleId: "ROLERQ80Z9Ctm01",
           contactNumber: "9755554545",
         });
       }
 
       console.log('User.roleId ==> ', user.roleId);
 
-      const roleDetails = await roleModel.findOne({ roleId: user.roleId });
+      const roleDetails = await roleModel.findOne({ id: user.roleId });
       const result = {
         name: given_name + " " + family_name,
         email: user.email,
         contactNumber: user.contactNumber,
         profileImg: user.profileImg,
-        role: roleDetails && roleDetails.roleName,
+        role: roleDetails && roleDetails.name,
       };
 
       console.log("result ==> ", result);
@@ -81,7 +81,7 @@ export const loginController = async (
         userId: user?.id,
         email,
         roleId: user?.roleId,
-        roleName: roleDetails ? roleDetails.roleName : "Not mentioned",
+        roleName: roleDetails ? roleDetails.name : "Not mentioned",
         googleToken: tokenResponse?.access_token,
         status: user?.statusId,
       };

@@ -1,9 +1,8 @@
-import mongoose, { Schema, Document } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
-export interface IRoleMaster extends Document {
+interface Channel extends Document {
   id: string;
   name: string;
-  access: string[];
   createdBy: string;
   updatedBy: string;
   creatorRole: string;
@@ -11,11 +10,10 @@ export interface IRoleMaster extends Document {
   isActive: boolean;
 }
 
-const RoleMasterSchema: Schema = new Schema(
+const channelSchema = new Schema<Channel>(
   {
     id: { type: String, required: true, unique: true },
     name: { type: String, required: true },
-    access: { type: [String], required: true },
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },
     creatorRole: { type: String, required: true },
@@ -25,8 +23,4 @@ const RoleMasterSchema: Schema = new Schema(
   { versionKey: false, timestamps: true }
 );
 
-export default mongoose.model<IRoleMaster>(
-  "roleMaster",
-  RoleMasterSchema,
-  "roleMaster"
-);
+export default model<Channel>("channelMaster", channelSchema, "channelMaster");

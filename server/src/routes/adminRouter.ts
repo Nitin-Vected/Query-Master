@@ -2,28 +2,21 @@
 import express from "express";
 import {
   adminAddContactNumberController,
-  adminAddNewBatchController,
   adminAddNewCourseController,
   adminAddNewRoleController,
   adminAddNewStatusController,
   adminAuthenticateJWT,
-  adminGetAllBatchController,
   adminGetAllCourseController,
-  adminGetAlltransactionListController,
+//   adminRegisterEmployeesController,
+//   adminGetAlltransactionListController,
   adminGetAllRolesController,
-  adminGetQueryDataController,
-  adminManageQueryStatusController,
   adminManageStudentStatusController,
   adminManageUsersAccessRightsController,
-  adminRaiseQueryController,
-  adminRegisterEmployeesController,
-  adminResponseController,
   adminViewProfileController,
-  adminViewRaisedQueryListController,
   adminViewStudentListController,
   adminViewSupportAdminListController,
   adminViewUserListController,
-  adminGetBatchByIdController,
+//   adminGetBatchByIdController,
   adminGetCourseByIdController,
   adminGetRoleByIdController,
   adminGetRoleByUserIdController,
@@ -60,50 +53,6 @@ adminRouter.get("/adminViewStudentList", adminViewStudentListController);
 
 /**
  * @swagger
- * /admin/adminViewRaisedQueries:
- *   get:
- *     summary: View List of Raised Queries
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: Successful operation
- */
-adminRouter.get("/adminViewRaisedQueries", adminViewRaisedQueryListController);
-
-/**
- * @swagger
- * /admin/adminGetQueryData/{queryId}:
- *   get:
- *     summary: Get Query Data by ID
- *     tags: [Admin]
- *     parameters:
- *       - in: path
- *         name: queryId
- *         required: true
- *         description: ID of the query
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Query data retrieved
- */
-adminRouter.get("/adminGetQueryData/:queryId", adminValidateParams("queryId"), adminGetQueryDataController);
-
-
-/**
- * @swagger
- * /admin/adminGetAllPaymentDetails:
- *   get:
- *     summary: Get all payment List
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: Payment List Retrieved
- */
-adminRouter.get("/adminGetAllPaymentDetails", adminGetAlltransactionListController);
-
-/**
- * @swagger
  * /admin/adminViewSupportAdminList:
  *   get:
  *     summary: View List of Support Admins
@@ -128,34 +77,6 @@ adminRouter.get(
  *         description: Successful operation
  */
 adminRouter.get("/adminViewUserList", adminViewUserListController);
-
-/**
- * @swagger
- * /admin/adminManageQueryStatus/{queryId}/{status}:
- *   post:
- *     summary: Manage Query Status
- *     tags: [Admin]
- *     parameters:
- *       - in: path
- *         name: queryId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the query
- *       - in: path
- *         name: status
- *         required: true
- *         schema:
- *           type: string
- *         description: Status of the query
- *     responses:
- *       200:
- *         description: Query status updated
- */
-adminRouter.post(
-  "/adminManageQueryStatus/:queryId/:status",
-  adminManageQueryStatusController
-);
 
 /**
  * @swagger
@@ -184,59 +105,6 @@ adminRouter.get(
   "/adminManageStudentStatus/:email/:action",
   adminManageStudentStatusController
 );
-
-/**
- * @swagger
- * /admin/adminRaiseQuery:
- *   post:
- *     summary: Raise a Query
- *     tags: [Admin]
- *     requestBody:
- *       description: Query details
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               subject:
- *                 type: string
- *               message:
- *                 type: string
- *     responses:
- *       201:
- *         description: Query raised
- */
-adminRouter.post("/adminRaiseQuery", adminValidateQueryData, adminRaiseQueryController);
-
-/**
- * @swagger
- * /admin/adminAddResponseToQuery/{queryId}:
- *   post:
- *     summary: Add Response to Query
- *     tags: [Admin]
- *     parameters:
- *       - in: path
- *         name: queryId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the query
- *     requestBody:
- *       description: Response to the query
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               message:
- *                 type: string
- *     responses:
- *       200:
- *         description: Response added
- */
-adminRouter.post("/adminAddResponseToQuery/:queryId", adminValidateQueryResponse, adminResponseController);
 
 /**
  * @swagger
@@ -375,39 +243,7 @@ adminRouter.get("/adminGetRoleById/:roleId", adminValidateRoleId, adminGetRoleBy
  *       201:
  *         description: Status added
  */
-adminRouter.post("/adminAddNewStatus", adminValidateStatusName, adminAddNewStatusController);
-
-/**
- * @swagger
- * /admin/adminRegisterEmployees:
- *   post:
- *     summary: Register Employees
- *     tags: [Admin]
- *     requestBody:
- *       description: Employee registration data
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: "John"
- *               email:
- *                 type: string
- *                 example: "Doe"
- *               contactNumber:
- *                 type: string
- *                 example: "9876543210"
- *               roleId:
- *                 type: string
- *                 example: "ROLEtEUJrkc0r04"
- *     responses:
- *       201:
- *         description: Employees registered
- */
-adminRouter.post("/adminRegisterEmployees", adminValidateEmployeeDetails, adminRegisterEmployeesController);
+adminRouter.post("/adminAddNewStatus", adminAddNewStatusController);
 
 /**
  * @swagger
@@ -440,82 +276,125 @@ adminRouter.post("/adminRegisterEmployees", adminValidateEmployeeDetails, adminR
  */
 adminRouter.post("/adminAddAccessRights", adminAccessRightsValidation, adminManageUsersAccessRightsController);
 
-/**
- * @swagger
- * /admin/adminAddNewBatch:
- *   post:
- *     summary: Add a New Batch
- *     tags: [Admin]
- *     requestBody:
- *       description: Batch data
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               batchName:
- *                 type: string
- *                 example: "Batch 1"
- *               startDate:
- *                 type: string
- *                 format: date
- *                 example: "2024-09-30"
- *               endDate:
- *                 type: string
- *                 format: date
- *                 example: "2024-12-30"
- *               trainerId:
- *                 type: string
- *                 example: "USERr2T89NnpD0711"
- *               courseId:
- *                 type: string
- *                 example: "COURSEuBeLY8e0b02"
- *               students:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["10VSA0001", "10VSA0002", "10VSA0003"]
- *     responses:
- *       201:
- *         description: Batch created
- *       400:
- *         description: Invalid input
- */
-adminRouter.post("/adminAddNewBatch", adminValidateNewBatchDetails, adminAddNewBatchController);
+// /**
+//  * @swagger
+//  * /admin/adminGetAllPaymentDetails:
+//  *   get:
+//  *     summary: Get all payment List
+//  *     tags: [Admin]
+//  *     responses:
+//  *       200:
+//  *         description: Payment List Retrieved
+//  */
+// adminRouter.get("/adminGetAllPaymentDetails",adminGetAlltransactionListController);
 
-// batchName, startDate, endDate, trainerId, courseId, students
 
-/**
- * @swagger
- * /admin/adminGetAllBatches:
- *   get:
- *     summary: Get All Batches
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: List of all batches
- */
-adminRouter.get("/adminGetAllBatches", adminGetAllBatchController);
+// /**
+//  * @swagger
+//  * /admin/adminRegisterEmployees:
+//  *   post:
+//  *     summary: Register Employees
+//  *     tags: [Admin]
+//  *     requestBody:
+//  *       description: Employee registration data
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               name:
+//  *                 type: string
+//  *                 example: "John"
+//  *               email:
+//  *                 type: string
+//  *                 example: "Doe"
+//  *               contactNumber:
+//  *                 type: string
+//  *                 example: "9876543210"
+//  *               roleId:
+//  *                 type: string
+//  *                 example: "ROLEtEUJrkc0r04"
+//  *     responses:
+//  *       201:
+//  *         description: Employees registered
+//  */
+// adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
 
-/**
- * @swagger
- * /admin/adminGetBatchById/{batchId}:
- *   get:
- *     summary: Get Batch by ID
- *     tags: [Admin]
- *     parameters:
- *       - in: path
- *         name: batchId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the batch
- *     responses:
- *       200:
- *         description: Batch details retrieved
- */
-adminRouter.get("/adminGetBatchById/:batchId", adminGetBatchByIdController); // students not coming
+// /**
+//  * @swagger
+//  * /admin/addNewBatch:
+//  *   post:
+//  *     summary: Add a New Batch
+//  *     tags: [Admin]
+//  *     requestBody:
+//  *       description: Batch data
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               batchName:
+//  *                 type: string
+//  *                 example: "Batch 1"
+//  *               startDate:
+//  *                 type: string
+//  *                 format: date
+//  *                 example: "2024-09-30"
+//  *               endDate:
+//  *                 type: string
+//  *                 format: date
+//  *                 example: "2024-12-30"
+//  *               trainerId:
+//  *                 type: string
+//  *                 example: "USERr2T89NnpD0711"
+//  *               courseId:
+//  *                 type: string
+//  *                 example: "COURSEuBeLY8e0b02"
+//  *               students:
+//  *                 type: array
+//  *                 items:
+//  *                   type: string
+//  *                 example: ["10VSA0001", "10VSA0002", "10VSA0003"]
+//  *     responses:
+//  *       201:
+//  *         description: Batch created
+//  *       400:
+//  *         description: Invalid input
+//  */
+// adminRouter.post("/addNewBatch", adminAddNewBatchController);
+
+// /**
+//  * @swagger
+//  * /admin/getAllBatches:
+//  *   get:
+//  *     summary: Get All Batches
+//  *     tags: [Admin]
+//  *     responses:
+//  *       200:
+//  *         description: List of all batches
+//  */
+// adminRouter.get("/getAllBatches", adminGetAllBatchController);
+
+// /**
+//  * @swagger
+//  * /admin/getBatchById/{batchId}:
+//  *   get:
+//  *     summary: Get Batch by ID
+//  *     tags: [Admin]
+//  *     parameters:
+//  *       - in: path
+//  *         name: batchId
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *         description: ID of the batch
+//  *     responses:
+//  *       200:
+//  *         description: Batch details retrieved
+//  */
+// adminRouter.get("/getBatchById/:batchId", getBatchByIdController); // students not coming
 
 /**
  * @swagger

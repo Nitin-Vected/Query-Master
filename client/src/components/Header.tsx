@@ -23,7 +23,7 @@ function Header(): JSX.Element {
         {userData ? (
           <>
             <li>
-              <span>Role: {userData.role}</span> {/* Display user role */}
+              <span>Role: {userData.role}</span>
             </li>
             <li>
               <button className="btn" onClick={onLogOut}>

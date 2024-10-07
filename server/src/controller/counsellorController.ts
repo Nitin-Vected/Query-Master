@@ -13,7 +13,6 @@ import userModel from "../model/userModel";
 import transactionModel from "../model/transactionModel";
 import { deleteFile } from "../utilities/deleteUploadedFile";
 import orderModel from "../model/orderModel";
-import paymentModel from "../model/paymentModel";
 import mongoose from "mongoose";
 
 export const counsellorViewProfileController = async (
@@ -24,13 +23,13 @@ export const counsellorViewProfileController = async (
     if (!request.payload) {
       return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
     }
-    const { userId, roleId, roleName } = request.payload;
-    if (!userId || !roleId) {
+    const { userId, roleName } = request.payload;
+    if (!userId) {
       response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Token not found" });
     } else {
-      const result = await userModel.findOne({ userId, roleId });
+      const result = await userModel.findOne({ userId });
       console.log("result : ", result);
       const counsellorData = {
         name: result?.firstName + " " + result?.lastName,
@@ -203,38 +202,6 @@ export const counsellorRegisterLeadAsUserController = async (request: CustomRequ
       throw new Error('Order creation failed');
     }
 
-    const paymentId = await generateUniqueId("payment");
-    if (paymentType === "EMI" && emiDetails) {
-      emiDetails = {
-        emiCount: emiDetails.emiCount,
-        installments: emiDetails.installments,
-      };
-    } else if (paymentType === "OneTime Payment") {
-      emiDetails = {
-        emiCount: 1,
-        installments: [{
-          dueDate: Date.now(),
-          transactionAmount,
-          status: "Paid",
-        }]
-      };
-    }
-
-    const paymentDetails = {
-      paymentId,
-      orderId,
-      emiDetails,
-      createdBy: counsellorEmail,
-      updatedBy: counsellorEmail,
-      creatorRole: roleName,
-      updaterRole: roleName
-    };
-
-    const paymentResult = await paymentModel.create([paymentDetails], { session });
-    if (!paymentResult) {
-      throw new Error('Payment creation failed');
-    }
-
     const leadStatusResult = await leadModel.updateOne(
       { email: leadEmail },
       { $set: { "statusId": statusId } },
@@ -279,25 +246,6 @@ export const counsellorRegisterLeadAsUserController = async (request: CustomRequ
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: "Something went wrong, please try again." });
   }
-};
-
-
-const getNextEnrollmentId = async (): Promise<string> => {
-  const lastStudent = await studentModel.findOne().sort({ _id: -1 });
-
-  let newEnrollmentNumber: string;
-  if (lastStudent && lastStudent.enrollmentNumber) {
-    const lastEnrollmentNumber = parseInt(
-      lastStudent.enrollmentNumber.replace("VSA", ""),
-      10
-    );
-    const nextEnrollmentNumber = lastEnrollmentNumber + 1;
-    newEnrollmentNumber = `VSA${String(nextEnrollmentNumber).padStart(4, "0")}`;
-  } else {
-    newEnrollmentNumber = "VSA0001";
-  }
-
-  return newEnrollmentNumber;
 };
 
 // export const counsellorAddNewLeadsController = async (
