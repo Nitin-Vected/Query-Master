@@ -44,7 +44,7 @@ export const adminViewProfileController = async (
         role: roleName,
         profileImg: result?.profileImg,
       };
-      if (result?.status) {
+      if (result?.statusId) {
         response.status(StatusCodes.OK).json({
           adminData: adminData,
           message: "This is your dersired data ..!",
@@ -469,7 +469,7 @@ export const adminAuthenticationController = async (
       role: payload?.roleName,
       profileImg: result?.profileImg,
     };
-    if (result?.status) {
+    if (result?.statusId) {
       response.status(StatusCodes.OK).json({
         userData: adminData,
         token: token,
@@ -881,7 +881,7 @@ export const adminRegisterEmployeesController = async (
       const employeeId = await generateUniqueId("employee");
       const employeeData = await employeeModel.create({
         employeeId,
-        userId: userData.userId,
+        userId: userData.id,
         createdBy: adminEmail,
         updatedBy: adminEmail,
         creatorRole: adminRoleName,

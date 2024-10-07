@@ -1,19 +1,26 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IUser extends Document {
-  userId: string;
+export interface User extends Document {
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
   contactNumber: string;
   profileImg: string;
   roleId: string;
-  status: string;
+  statusId: string;
+  isActive: boolean;
+  createdBy: string,
+  updatedBy: string,
+  creatorRole: string,
+  updatorRole: string,
+  createdAt: string;
+  updatedAt: string;
 }
 
-const UserSchema: mongoose.Schema = new Schema(
+const UserSchema = new Schema<User>(
   {
-    userId: {
+    id: {
       type: String,
       required: true,
       unique: true,
@@ -47,7 +54,28 @@ const UserSchema: mongoose.Schema = new Schema(
       required: true,
       ref: "roleMaster",
     },
-    status: {
+    statusId: {
+      type: String,
+      required: true,
+      ref: "Status"
+    },
+    isActive: {
+      type: Boolean,
+      required: true,
+    },
+    createdBy: {
+      type: String,
+      required: true,
+    },
+    updatedBy: {
+      type: String,
+      required: true,
+    },
+    creatorRole: {
+      type: String,
+      required: true,
+    },
+    updatorRole: {
       type: String,
       required: true,
     },
@@ -55,4 +83,4 @@ const UserSchema: mongoose.Schema = new Schema(
   { versionKey: false, timestamps: true }
 );
 
-export default mongoose.model<IUser>("User", UserSchema, "user");
+export default mongoose.model<User>("User", UserSchema, "users");
