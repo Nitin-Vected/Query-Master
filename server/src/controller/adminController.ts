@@ -15,7 +15,7 @@ import courseModel from "../model/productModel";
 import { AccessRights } from "../model/accessRightsModel";
 import statusModel from "../model/statusModel";
 import studentModel from "../model/studentModel";
-import channelModal from "../model/channelModal";
+import channelModal from "../model/channelModel";
 
 export const adminViewProfileController = async (
   request: CustomRequest,

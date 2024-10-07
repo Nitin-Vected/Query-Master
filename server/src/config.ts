@@ -8,7 +8,7 @@ import statusModel from "./model/statusModel";
 import orderModel from "./model/orderModel";
 import transactionModel from "./model/transactionModel";
 import studentModel from "./model/studentModel";
-import channelModal from "./model/channelModal";
+import channelModal from "./model/channelModel";
 dotenv.config();
 
 export const CONNECTION_STRING: string = process.env
@@ -160,15 +160,15 @@ export const generateUniqueId = async (mode: string) => {
           .limit(1);
         let newCounter = 1;
 
-                if (latestUser.length > 0) {
-                    const userData = latestUser[0];
-                    if (userData.id) {
-                        const numericPart = userData.id.match(/\d+$/);
-                        if (numericPart) {
-                            newCounter = parseInt(numericPart[0]) + 1;
-                        }
-                    }
-                }
+        if (latestUser.length > 0) {
+          const userData = latestUser[0];
+          if (userData.id) {
+            const numericPart = userData.id.match(/\d+$/);
+            if (numericPart) {
+              newCounter = parseInt(numericPart[0]) + 1;
+            }
+          }
+        }
 
         while (!isUnique) {
           const uniqueId = shortid.generate();
@@ -226,15 +226,15 @@ export const generateUniqueId = async (mode: string) => {
           .limit(1);
         let newCounter = 1;
 
-                if (latestOrder.length > 0) {
-                    const orderData = latestOrder[0];
-                    if (orderData.id) {
-                        const numericPart = orderData.id.match(/\d+$/);
-                        if (numericPart) {
-                            newCounter = parseInt(numericPart[0]) + 1;
-                        }
-                    }
-                }
+        if (latestOrder.length > 0) {
+          const orderData = latestOrder[0];
+          if (orderData.id) {
+            const numericPart = orderData.id.match(/\d+$/);
+            if (numericPart) {
+              newCounter = parseInt(numericPart[0]) + 1;
+            }
+          }
+        }
 
         while (!isUnique) {
           const uniqueId = shortid.generate();
