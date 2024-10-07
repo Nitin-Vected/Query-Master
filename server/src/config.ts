@@ -142,8 +142,8 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
 
                 if (latestUser.length > 0) {
                     const userData = latestUser[0];
-                    if (userData.userId) {
-                        const numericPart = userData.userId.match(/\d+$/);
+                    if (userData.id) {
+                        const numericPart = userData.id.match(/\d+$/);
                         if (numericPart) {
                             newCounter = parseInt(numericPart[0]) + 1;
                         }
@@ -254,8 +254,8 @@ export const generateUniqueId = async (mode: string, email?: string, role?: stri
 
                 if (latestOrder.length > 0) {
                     const orderData = latestOrder[0];
-                    if (orderData.orderId) {
-                        const numericPart = orderData.orderId.match(/\d+$/);
+                    if (orderData.id) {
+                        const numericPart = orderData.id.match(/\d+$/);
                         if (numericPart) {
                             newCounter = parseInt(numericPart[0]) + 1;
                         }

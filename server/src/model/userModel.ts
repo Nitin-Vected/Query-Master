@@ -14,8 +14,8 @@ export interface User extends Document {
   updatedBy: string,
   creatorRole: string,
   updatorRole: string,
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const UserSchema = new Schema<User>(

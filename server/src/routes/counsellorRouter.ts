@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  counsellorAddNewLeadsController,
+  // counsellorAddNewLeadsController,
   counsellorAuthenticateJWT,
   counsellorGetAllLeadsController,
   counsellorGetLeadByIdController,
@@ -132,64 +132,64 @@ counsellorRouter.post(
  */
 counsellorRouter.post("/counsellorEnrollStudent", counsellorValidateRegisterLeadAsUser, uploadTransactionProof.single('transactionProof'), counsellorRegisterLeadAsUserController);
 
-/**
- * @swagger
- * /counsellor/counsellorAddNewLead:
- *   post:
- *     summary: Add a new lead
- *     tags: [Counsellor]
- *     requestBody:
- *       description: Lead information to add
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               firstName:
- *                 type: string
- *                 description: First name of the lead
- *                 example: "John"
- *               lastName:
- *                 type: string
- *                 description: Last name of the lead
- *                 example: "Doe"
- *               contactNumber:
- *                 type: string
- *                 description: Contact number of the lead
- *                 example: "1234567890"
- *               email:
- *                 type: string
- *                 description: Email address of the lead
- *                 example: "john.doe@example.com"
- *               finalAmount:
- *                 type: number
- *                 description: The fees amount associated with the lead
- *                 example: 5000
- *               discount:
- *                 type: number
- *                 description: Discount on the fees
- *                 example: 10
- *               channel:
- *                 type: string
- *                 description: The channel through which the lead was acquired
- *                 example: "Referral"
- *               statusId:
- *                 type: string
- *                 description: Status ID of the lead
- *                 example: "STATUSEe-_oqeWU01"
- *               courses:
- *                 type: array
- *                 items:
- *                   type: string
- *                 
- *     responses:
- *       201:
- *         description: Lead added successfully
- *       400:
- *         description: Bad request or missing parameters
- */
-counsellorRouter.post("/counsellorAddNewLead", counsellorValidateAddNewLeads, counsellorAddNewLeadsController);
+// /**
+//  * @swagger
+//  * /counsellor/counsellorAddNewLead:
+//  *   post:
+//  *     summary: Add a new lead
+//  *     tags: [Counsellor]
+//  *     requestBody:
+//  *       description: Lead information to add
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               firstName:
+//  *                 type: string
+//  *                 description: First name of the lead
+//  *                 example: "John"
+//  *               lastName:
+//  *                 type: string
+//  *                 description: Last name of the lead
+//  *                 example: "Doe"
+//  *               contactNumber:
+//  *                 type: string
+//  *                 description: Contact number of the lead
+//  *                 example: "1234567890"
+//  *               email:
+//  *                 type: string
+//  *                 description: Email address of the lead
+//  *                 example: "john.doe@example.com"
+//  *               finalAmount:
+//  *                 type: number
+//  *                 description: The fees amount associated with the lead
+//  *                 example: 5000
+//  *               discount:
+//  *                 type: number
+//  *                 description: Discount on the fees
+//  *                 example: 10
+//  *               channel:
+//  *                 type: string
+//  *                 description: The channel through which the lead was acquired
+//  *                 example: "Referral"
+//  *               statusId:
+//  *                 type: string
+//  *                 description: Status ID of the lead
+//  *                 example: "STATUSEe-_oqeWU01"
+//  *               courses:
+//  *                 type: array
+//  *                 items:
+//  *                   type: string
+//  *                 
+//  *     responses:
+//  *       201:
+//  *         description: Lead added successfully
+//  *       400:
+//  *         description: Bad request or missing parameters
+//  */
+// counsellorRouter.post("/counsellorAddNewLead", counsellorValidateAddNewLeads, counsellorAddNewLeadsController);
 
 /**
  * @swagger

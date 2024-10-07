@@ -42,12 +42,12 @@ export const loginController = async (
 
       let user = await userModel.findOne({ email: email });
       console.log(user);
-      if (user && user?.status) {
+      if (user && user?.statusId) {
         user.email = email;
         user.profileImg = picture;
         user.firstName = given_name;
         user.lastName = family_name;
-        user.status = email_verified;
+        user.statusId = email_verified;
         await user.save();
       } else {
         const userId = await generateUniqueId("user");
@@ -63,7 +63,7 @@ export const loginController = async (
         });
       }
 
-      console.log('User.roleId ==> ',user.roleId);
+      console.log('User.roleId ==> ', user.roleId);
 
       const roleDetails = await roleModel.findOne({ roleId: user.roleId });
       const result = {
@@ -78,12 +78,12 @@ export const loginController = async (
 
       const payload = {
         name: given_name + " " + family_name,
-        userId: user?.userId,
+        userId: user?.id,
         email,
         roleId: user?.roleId,
         roleName: roleDetails ? roleDetails.roleName : "Not mentioned",
         googleToken: tokenResponse?.access_token,
-        status: user?.status,
+        status: user?.statusId,
       };
 
       console.log("payload ==> ", payload);

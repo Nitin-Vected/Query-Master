@@ -13,8 +13,8 @@ interface Order extends Document {
     updatedBy: string,
     creatorRole: string,
     updatorRole: string,
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 
@@ -33,6 +33,7 @@ const OrderSchema = new Schema<Order>(
         },
         products: {
             type: [String],
+            ref: "Product",
             required: true
         },
         amount: {
