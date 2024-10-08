@@ -81,7 +81,6 @@ export const userAuthenticationController = async (
   response: Response
 ) => {
   try {
-    console.log("Inside userAuthenticationController");
     const authHeader = request.headers["authorization"];
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return response
@@ -89,7 +88,6 @@ export const userAuthenticationController = async (
         .json({ message: "Authorization token is missing or invalid" });
     }
     const token = authHeader.split(" ")[1];
-    console.log("token inside userAuthenticationController -> ", token);
     const payload = await tokenVerifier(token, USER_SECRET_KEY);
     const result = await userModel.findOne({ email: payload.email });
     const userData = {
@@ -102,7 +100,7 @@ export const userAuthenticationController = async (
     response.status(StatusCodes.OK).json({
       userData: userData,
       token: token,
-      message: "Authenntication Successfull ..!",
+      message: "Authentication Successfull ..!",
     });
   } catch (err) {
     console.log("Error while user authentication Controller", err);

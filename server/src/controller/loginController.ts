@@ -57,8 +57,8 @@ export const loginController = async (
           lastName: family_name,
           profileImg: picture,
           status: email_verified,
-          roleId: "ROLE0001",
-          contactNumber: "8319024349",
+          roleId: "ROLE0002",
+          contactNumber: "6260658118",
           isActive: true
         });
       }
