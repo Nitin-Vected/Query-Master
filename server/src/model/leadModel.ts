@@ -62,7 +62,7 @@ const leadSchema = new Schema<Lead>(
     channelId: { type: String, ref: "channelMaster" },
     statusId: { type: String, ref: "Status" },
     productId: { type: String, ref: "Product" },
-    assignedTo: { type: String, ref:"user", default: null },
+    assignedTo: { type: String, default: null },
     productAmount: { type: Number, min: 0 },
     discount: { type: Number, min: 0, max: 15 },
     description: { type: String, default: "" },

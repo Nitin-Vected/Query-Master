@@ -68,6 +68,7 @@ export const adminViewStudentListController = async (
   response: Response
 ) => {
   try {
+    console.log('studentList');
     const studentList = await studentModel.aggregate([
       {
         $lookup: {
@@ -97,6 +98,10 @@ export const adminViewStudentListController = async (
         message: "These are the registered students!",
       });
     }
+    response.status(StatusCodes.OK).json({
+      studentList,
+      message: "There are no registered students!",
+    });
   } catch (error) {
     console.log("Error occurred in adminViewStudentListController: ", error);
     response
