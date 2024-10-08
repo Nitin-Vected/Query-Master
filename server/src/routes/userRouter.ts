@@ -7,32 +7,33 @@ import {
   userViewProfileController,
 } from "../controller/userController";
 import { loginController } from "../controller/loginController";
+import { viewProfileController } from "../controller/commonController";
 const userRouter = express.Router();
 
-/**
- * @swagger
- * /user/login:
- *   post:
- *     summary: User Login
- *     tags: [User]
- *     requestBody:
- *       description: Login credentials
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login successful
- *     security: []
- */
-userRouter.post("/login", loginController);
+// /**
+//  * @swagger
+//  * /user/login:
+//  *   post:
+//  *     summary: User Login
+//  *     tags: [User]
+//  *     requestBody:
+//  *       description: Login credentials
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               email:
+//  *                 type: string
+//  *               password:
+//  *                 type: string
+//  *     responses:
+//  *       200:
+//  *         description: Login successful
+//  *     security: []
+//  */
+// userRouter.post("/login", loginController);
 
 /**
  * @swagger
@@ -66,7 +67,7 @@ userRouter.use(userAuthenticateJWT);
  *       404:
  *         description: User profile not found
  */
-userRouter.get("/profile", userViewProfileController);
+userRouter.get("/profile", viewProfileController);
 
 /**
  * @swagger
