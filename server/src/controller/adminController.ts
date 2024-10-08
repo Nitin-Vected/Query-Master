@@ -60,52 +60,6 @@ export const adminAuthenticationController = async (
   }
 };
 
-export const adminViewProfileController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    if (!request.payload) {
-      return response
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
-    }
-    const { userId, roleName } = request.payload;
-    if (!userId) {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Token not found" });
-    } else {
-      const result = await userModel.findOne({ id: userId });
-      console.log("result : ", result);
-      const adminData = {
-        name: result?.firstName + " " + result?.lastName,
-        email: result?.email,
-        contactNumber: result?.contactNumber,
-        role: roleName,
-        profileImg: result?.profileImg,
-      };
-      if (result?.status) {
-        response.status(StatusCodes.OK).json({
-          adminData: adminData,
-          message: "This is your dersired data ..!",
-        });
-      } else {
-        response.status(StatusCodes.NOT_FOUND).json({
-          adminData: null,
-          message:
-            "The Account You are Trying to Acces has been Deactivated ..!",
-        });
-      }
-    }
-  } catch (error) {
-    console.log(error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
-
 export const adminViewStudentListController = async (
   request: Request,
   response: Response
@@ -300,6 +254,50 @@ export const adminGetRoleByIdController = async (
   }
 };
 
+export const adminUpdateRoleController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    const { roleId } = request.params;
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+
+    const { email, roleName } = request.payload;
+    const { userRole, access } = request.body;
+
+    const updatedRole = await roleModel.findOneAndUpdate(
+      { id: roleId },
+      {
+        ...(userRole && { name: userRole }),
+        ...(access && { access }),
+        updatedBy: email,
+        updaterRole: roleName,
+      },
+      { new: true }
+    );
+
+    if (!updatedRole) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Role not found." });
+    }
+
+    response.status(StatusCodes.OK).json({
+      message: "Role updated successfully!",
+      role: updatedRole,
+    });
+  } catch (error) {
+    console.error("Error in adminUpdateRoleController:", error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong!",
+    });
+  }
+};
+
 export const adminAddNewStatusController = async (
   request: CustomRequest,
   response: Response
@@ -393,6 +391,50 @@ export const adminGetStatusByIdController = async (
   }
 };
 
+export const adminUpdateStatusController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    const { statusId } = request.params;
+
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+
+    const { email, roleName } = request.payload;
+    const { statusName } = request.body;
+
+    const updatedStatus = await statusModel.findOneAndUpdate(
+      { id: statusId },
+      {
+        name: statusName,
+        updatedBy: email,
+        updaterRole: roleName,
+      },
+      { new: true }
+    );
+
+    if (!updatedStatus) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Status not found." });
+    }
+
+    response.status(StatusCodes.OK).json({
+      message: "Status updated successfully!",
+      status: updatedStatus,
+    });
+  } catch (error) {
+    console.error("Error in adminUpdateStatusController:", error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong!",
+    });
+  }
+};
+
 export const adminAddNewChannelController = async (
   request: CustomRequest,
   response: Response
@@ -482,6 +524,50 @@ export const adminGetChannelByIdController = async (
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminUpdateChannelController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    const { channelId } = request.params;
+
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+
+    const { email, roleName } = request.payload;
+    const { channelName } = request.body;
+
+    const updatedChannel = await channelModel.findOneAndUpdate(
+      { id: channelId },
+      {
+        name: channelName,
+        updatedBy: email,
+        updaterRole: roleName,
+      },
+      { new: true }
+    );
+
+    if (!updatedChannel) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Channel not found." });
+    }
+
+    response.status(StatusCodes.OK).json({
+      message: "Channel updated successfully!",
+      channel: updatedChannel,
+    });
+  } catch (error) {
+    console.error("Error in adminUpdateChannelController:", error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong!",
+    });
   }
 };
 
@@ -672,44 +758,6 @@ export const adminUpdateProductByIdController = async (
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong!" });
-  }
-};
-
-export const adminManageUsersAccessRightsController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    if (!request.payload) {
-      return response
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
-    }
-    const { email, roleName } = request.payload;
-    const { userId, roleId, permissions } = request.body;
-    if (!userId || !roleId || !(permissions.length > 0)) {
-      response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: "Please fill up all the required fields ..! " });
-    } else {
-      const accessRight = await accessRights.create({
-        userId,
-        roleId,
-        permissions,
-        createdBy: email,
-        updatedBy: email,
-        createrRole: roleName,
-        updaterRole: roleName,
-      });
-      response.status(StatusCodes.CREATED).json({
-        message: "Access rights assigned successfully",
-        data: accessRight,
-      });
-    }
-  } catch (error) {
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something Went Wrong" });
   }
 };
 
@@ -1015,6 +1063,52 @@ export const adminAuthenticateJWT = async (
 //   }
 // };
 
+export const adminViewProfileController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+    const { userId, roleName } = request.payload;
+    if (!userId) {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Token not found" });
+    } else {
+      const result = await userModel.findOne({ id: userId });
+      console.log("result : ", result);
+      const adminData = {
+        name: result?.firstName + " " + result?.lastName,
+        email: result?.email,
+        contactNumber: result?.contactNumber,
+        role: roleName,
+        profileImg: result?.profileImg,
+      };
+      if (result?.status) {
+        response.status(StatusCodes.OK).json({
+          adminData: adminData,
+          message: "This is your dersired data ..!",
+        });
+      } else {
+        response.status(StatusCodes.NOT_FOUND).json({
+          adminData: null,
+          message:
+            "The Account You are Trying to Acces has been Deactivated ..!",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
 export const adminManageStudentStatusController = async (
   request: CustomRequest,
   response: Response
@@ -1095,5 +1189,43 @@ export const adminAddContactNumberController = async (
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminManageUsersAccessRightsController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+    const { email, roleName } = request.payload;
+    const { userId, roleId, permissions } = request.body;
+    if (!userId || !roleId || !(permissions.length > 0)) {
+      response
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Please fill up all the required fields ..! " });
+    } else {
+      const accessRight = await accessRights.create({
+        userId,
+        roleId,
+        permissions,
+        createdBy: email,
+        updatedBy: email,
+        createrRole: roleName,
+        updaterRole: roleName,
+      });
+      response.status(StatusCodes.CREATED).json({
+        message: "Access rights assigned successfully",
+        data: accessRight,
+      });
+    }
+  } catch (error) {
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something Went Wrong" });
   }
 };

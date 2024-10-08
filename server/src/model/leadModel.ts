@@ -35,18 +35,24 @@ interface Lead extends Document {
   updaterRole: string;
 }
 
-const auditSchema = new Schema<Audit>({
-  field: { type: String, required: true },
-  oldValue: { type: String, required: true },
-  newValue: { type: String, required: true },
-  editedBy: { type: String, required: true },
-  editorRole: { type: String, required: true },
-}, { versionKey: false, timestamps: true });
+const auditSchema = new Schema<Audit>(
+  {
+    field: { type: String, required: true },
+    oldValue: { type: String, required: true },
+    newValue: { type: String, required: true },
+    editedBy: { type: String, required: true },
+    editorRole: { type: String, required: true },
+  },
+  { versionKey: false, timestamps: { createdAt: true }, _id:false}
+);
 
-const commentSchema = new Schema<Comment>({
-  comment: { type: String, required: true },
-  commentedBy: { type: String, required: true },
-}, { versionKey: false, timestamps: true });
+const commentSchema = new Schema<Comment>(
+  {
+    comment: { type: String, required: true },
+    commentedBy: { type: String, required: true },
+  },
+  { versionKey: false, timestamps: { createdAt: true }, _id:false}
+);
 
 const leadSchema = new Schema<Lead>(
   {

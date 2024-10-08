@@ -124,6 +124,62 @@ export const adminValidateChannelId = [
   checkValidation,
 ];
 
+export const adminValidateUpdateRole = [
+  param("roleId")
+    .notEmpty()
+    .withMessage("Role ID is required")
+    .isString()
+    .withMessage("Role ID must be a string"),
+
+  body("userRole")
+    .optional()
+    .isString()
+    .withMessage("User role must be a string"),
+
+  body("access")
+    .optional()
+    .isArray()
+    .withMessage("Access must be an array of strings")
+    .custom((value) => {
+      if (value.some((item: string) => typeof item !== "string")) {
+        throw new Error("Each access item must be a string");
+      }
+      return true;
+    }),
+
+  checkValidation,
+];
+
+export const adminValidateUpdateStatus = [
+  param("statusId")
+    .notEmpty()
+    .withMessage("Status ID is required")
+    .isString()
+    .withMessage("Status ID must be a string"),
+
+  body("statusName")
+    .optional()
+    .isString()
+    .withMessage("Status name must be a string"),
+
+  checkValidation,
+];
+
+export const adminValidateUpdateChannel = [
+  param("channelId")
+    .notEmpty()
+    .withMessage("Channel ID is required")
+    .isString()
+    .withMessage("Channel ID must be a string"),
+
+  body("channelName")
+    .optional()
+    .isString()
+    .withMessage("Channel name must be a string"),
+
+  checkValidation,
+];
+
 export const adminValidateUserId = [
   param("userId")
     .notEmpty()

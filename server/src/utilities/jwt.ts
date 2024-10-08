@@ -16,7 +16,6 @@ interface Payload {
 }
 
 const getSecretKey = (roleName: string): string | undefined => {
-  console.log("roleName", roleName);
 
   switch (roleName) {
     case "Admin":
@@ -48,7 +47,6 @@ export const tokenGenerator = (data: Payload) => {
 export const tokenVerifier = (token: any, secretKey: string) => {
   try {
     const payload = jwt.verify(token, secretKey);
-    console.log("Verified Payload ", payload);
     return payload;
   } catch (error: any) {
     console.log("Token verification failed:", error.message);

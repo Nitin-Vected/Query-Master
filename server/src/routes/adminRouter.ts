@@ -16,12 +16,15 @@ import {
   adminGetAllChannelsController,
   adminGetAllStatusController,
   adminUpdateProductByIdController,
+  adminGetStatusByIdController,
+  adminGetChannelByIdController,
+  adminUpdateChannelController,
+  adminUpdateStatusController,
+  adminUpdateRoleController,
   adminManageUsersAccessRightsController,
   adminAddContactNumberController,
   adminManageStudentStatusController,
   adminViewProfileController,
-  adminGetStatusByIdController,
-  adminGetChannelByIdController,
   // adminGetAlltransactionListController,
   // adminRegisterEmployeesController,
   // adminGetBatchByIdController,
@@ -34,6 +37,9 @@ import {
   adminValidateUpdateProductDetails,
   adminValidateStatusId,
   adminValidateChannelId,
+  adminValidateUpdateRole,
+  adminValidateUpdateStatus,
+  adminValidateUpdateChannel,
   //   adminAccessRightsValidation,
   //   adminValidateContactNumber,
   //   adminValidateEmployeeDetails,
@@ -172,6 +178,55 @@ adminRouter.get(
 
 /**
  * @swagger
+ * /admin/role/{roleId}:
+ *   put:
+ *     summary: Update Role
+ *     tags: [Admin]
+ *     parameters:
+ *       - name: roleId
+ *         in: path
+ *         required: true
+ *         description: ID of the role to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Updated role details
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userRole:
+ *                 type: string
+ *                 example: Trainer
+ *               access:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   example:
+ *                    - view profile
+ *                    - edit profile
+ *     responses:
+ *       200:
+ *         description: Role updated successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Role not found
+ *       500:
+ *         description: Internal server error
+ */
+adminRouter.put(
+  "/role/:roleId",
+  adminValidateUpdateRole,
+  adminUpdateRoleController
+);
+
+/**
+ * @swagger
  * /admin/status:
  *   post:
  *     summary: Add New Status
@@ -242,6 +297,48 @@ adminRouter.get(
 
 /**
  * @swagger
+ * /admin/status/{statusId}:
+ *   put:
+ *     summary: Update Status
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: statusId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the status
+ *     requestBody:
+ *       description: Updated status details
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               statusName:
+ *                 type: string
+ *                 example: "Interested"
+ *     responses:
+ *       200:
+ *         description: Status updated successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Status not found
+ *       500:
+ *         description: Internal server error
+ */
+adminRouter.put(
+  "/status/:statusId",
+  adminValidateUpdateStatus,
+  adminUpdateStatusController
+);
+
+/**
+ * @swagger
  * /admin/channel:
  *   post:
  *     summary: Add New Channel
@@ -308,6 +405,48 @@ adminRouter.get(
   "/channel/:channelId",
   adminValidateChannelId,
   adminGetChannelByIdController
+);
+
+/**
+ * @swagger
+ * /admin/channel/{channelId}:
+ *   put:
+ *     summary: Update Channel
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: channelId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the channel
+ *     requestBody:
+ *       description: Updated channel details
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               channelName:
+ *                 type: string
+ *                 example: "Instagram"
+ *     responses:
+ *       200:
+ *         description: Channel updated successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Channel not found
+ *       500:
+ *         description: Internal server error
+ */
+adminRouter.put(
+  "/channel/:channelId",
+  adminValidateUpdateChannel,
+  adminUpdateChannelController
 );
 
 /**
