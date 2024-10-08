@@ -26,9 +26,9 @@ app.use(express.json());
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-app.use("/user", userRouter);
-app.use("/admin", adminRouter);
-app.use("/counsellor", counsellorRouter);
+app.use("/api/user", userRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/counsellor", counsellorRouter);
 
 io.on("connection", (socket) => {
   console.log("A User Connected:", socket.id);
