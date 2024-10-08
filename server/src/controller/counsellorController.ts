@@ -147,18 +147,18 @@ export const counsellorGetAllLeadsController = async (
   try {
     const leads = await leadModel.find();
     if (leads) {
-      response.status(StatusCodes.OK).json({
+      return response.status(StatusCodes.OK).json({
         leads: leads,
-        message: "These are the leads created by you!",
+        message: "Leads Fetched Successfully!",
       });
     } else {
-      response
+      return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ myQueries: null, message: "No Leads are added by You!" });
+        .json({ leads: null, message: "Leads Not Found!" });
     }
   } catch (error) {
     console.log("Error occured in getAllLeads : ", error);
-    response
+    return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
@@ -329,7 +329,7 @@ export const counsellorRegisterLeadAsUserController = async (
       throw new Error("Lead status update failed");
     }
 
-    const enrollmentNumber = await generateUniqueId(studentModel,"VSA");
+    const enrollmentNumber = await generateUniqueId(studentModel, "VSA");
 
     const studentData = {
       enrollmentNumber,
@@ -363,6 +363,7 @@ export const counsellorRegisterLeadAsUserController = async (
       .json({ error: "Something went wrong, please try again." });
   }
 };
+
 export const counsellorAddNewLeadController = async (
   request: CustomRequest,
   response: Response
@@ -374,22 +375,17 @@ export const counsellorAddNewLeadController = async (
     const { email, roleName } = request.payload;
     const leads = Array.isArray(request.body) ? request.body : [request.body];
 
-    const result = [];
+    const result: object[] = [];
     for (const leadData of leads) {
-      const { email: leadEmail, productId } = leadData;
+      const { firstName, lastName, contactNumber, productAmount, comment, discount, statusId, description, assignedTo, leadEmail, productId } = leadData;
+      console.log(leadData)
 
       let existingLead = await leadModel.findOne({ email: leadEmail });
 
       if (existingLead) {
-        console.log("Lead already exists. Updating courseCategory.", existingLead);
-
-        // Check if the course already exists in the lead's courses array
-        // const existingCourse = existingLead.productId.find(
-        //   (productId) => course === courses[0]
-        // );
-        // console.log(existingCourse)
+        console.log("Lead already exists", existingLead);
         if (existingLead.productId === productId) {
-          console.log("Course already exists in the lead’s courses.");
+          console.log("This Product already exists in this Lead");
           return response
             .status(StatusCodes.ALREADY_EXIST)
             .json({ data: result, message: "Course already exists in the lead’s courses." });
@@ -397,19 +393,31 @@ export const counsellorAddNewLeadController = async (
 
       } else {
         console.log("Lead does not exist. Creating a new lead.");
+        const leadId = await generateUniqueId(leadModel, "LEAD")
         const newLeadData = {
-          ...leadData,
+          id: leadId,
+          firstName,
+          lastName,
+          email: leadEmail,
+          contactNumber,
+          productAmount,
+          discount,
+          statusId,
+          assignedTo,
+          description,
+          comments: [{
+            comment,
+            commentedBy: email
+          }],
           createdBy: email,
           updatedBy: email,
           createrRole: roleName,
           updaterRole: roleName,
         };
-
         const newLead = await leadModel.create(newLeadData);
         result.push(newLead);
       }
     }
-
     console.log("Result: ", result);
     return response
       .status(StatusCodes.CREATED)

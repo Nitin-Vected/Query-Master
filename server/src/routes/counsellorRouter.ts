@@ -6,26 +6,26 @@ import {
   counsellorGetLeadByIdController,
   counsellorManageLeadStatusController,
   counsellorRegisterLeadAsUserController,
-  // counsellorViewProfileController,
 } from "../controller/counsellorController";
 import { uploadTransactionProof } from "../utilities/multer";
 import { counsellorValidateAddNewLeads, counsellorValidateGetLeadById, counsellorValidateManageLeadStatus, counsellorValidateRegisterLeadAsUser } from "../utilities/validation/counsellorValidation";
+import { viewProfileController } from "../controller/commonController";
 
 const counsellorRouter = express.Router();
 
 counsellorRouter.use(counsellorAuthenticateJWT);
 
-// /**
-//  * @swagger
-//  * /counsellor/counsellorViewProfile:
-//  *   get:
-//  *     summary: View Counsellor Profile
-//  *     tags: [Counsellor]
-//  *     responses:
-//  *       200:
-//  *         description: Successful operation
-//  */
-// counsellorRouter.get("/counsellorViewProfile", counsellorViewProfileController);
+/**
+ * @swagger
+ * /counsellor/profile:
+ *   get:
+ *     summary: View Counsellor Profile
+ *     tags: [Counsellor]
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ */
+counsellorRouter.get("/profile", viewProfileController);
 
 /**
  * @swagger
@@ -165,7 +165,7 @@ counsellorRouter.post(
  *               contactNumber:
  *                 type: string
  *                 description: Contact number of the lead
- *               email:
+ *               leadEmail:
  *                 type: string
  *                 description: Email address of the lead
  *               productAmount:
@@ -188,6 +188,9 @@ counsellorRouter.post(
  *               assignedTo:
  *                 type: string
  *                 description: Counsellor of the lead 
+ *               comment:
+ *                 type: string
+ *                 description: Counsellor of the lead 
  *                 
  *     responses:
  *       201:
@@ -197,7 +200,7 @@ counsellorRouter.post(
  *       401:
  *         description: Unauthorized
  */
-counsellorRouter.post("/lead", counsellorValidateAddNewLeads, counsellorAddNewLeadController);
+counsellorRouter.post("/lead", counsellorAddNewLeadController);
 
 /**
  * @swagger

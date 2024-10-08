@@ -14,11 +14,10 @@ export const viewProfileController = async (
                 .status(StatusCodes.UNAUTHORIZED)
                 .json({ message: "Token not found" });
         }
-        const result = await userModel.findOne({ userId });
+        const result = await userModel.findOne({ id: userId });
         if (!result) {
             return response.status(StatusCodes.NOT_FOUND).json({ message: "The Account You are Trying to Access not find..!" });
         } else if (result?.status) {
-            console.log("result", result?.roleId);
             const userData = {
                 name: result?.firstName + " " + result?.lastName,
                 email: result?.email,
