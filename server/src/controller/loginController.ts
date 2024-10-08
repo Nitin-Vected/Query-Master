@@ -49,7 +49,7 @@ export const loginController = async (
         user.status = email_verified;
         await user.save();
       } else {
-        const userId = await generateUniqueId("user");
+        const userId = await generateUniqueId(userModel, "USER");
         user = await userModel.create({
           id: userId,
           email,

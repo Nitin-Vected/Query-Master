@@ -11,12 +11,11 @@ import {
 } from "../config";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
-import productModel from "../model/productModel";
-import { AccessRights } from "../model/accessRightsModel";
 import statusModel from "../model/statusModel";
 import studentModel from "../model/studentModel";
-import channelModal from "../model/channelModel";
 import channelModel from "../model/channelModel";
+import productModel from "../model/productModel";
+import accessRights from "../model/accessRightsModel";
 
 export const adminViewProfileController = async (
   request: CustomRequest,
@@ -302,7 +301,7 @@ export const adminAddNewRoleController = async (
     console.log("request.payload ", request.payload);
 
     const { userRole, access } = request.body;
-    const roleId = await generateUniqueId("role");
+    const roleId = await generateUniqueId(roleModel, "ROLE");
     const data = {
       id: roleId,
       name: userRole,
@@ -345,7 +344,7 @@ export const adminAddNewChannelController = async (
     const { email, roleName } = request.payload;
     const { channelName } = request.body;
 
-    const channelId = await generateUniqueId("channel");
+    const channelId = await generateUniqueId(channelModel, "CHANNEL");
     const data = {
       id: channelId,
       name: channelName,
@@ -355,7 +354,7 @@ export const adminAddNewChannelController = async (
       updaterRole: roleName,
     };
 
-    const newChannel = await channelModal.create(data);
+    const newChannel = await channelModel.create(data);
     if (newChannel) {
       response.status(StatusCodes.CREATED).json({
         message: "Channel Added successfully ..!",
@@ -489,7 +488,7 @@ export const adminAddNewStatusController = async (
     console.log("request.payload ", request.payload);
 
     const { statusName } = request.body;
-    const statusId = await generateUniqueId("status");
+    const statusId = await generateUniqueId(statusModel,"STATUS");
     const data = {
       id: statusId,
       name: statusName,
@@ -530,7 +529,7 @@ export const adminAddNewProductController = async (
     const { email, roleName } = request.payload;
     const { productName, productCategory, productFees, productDescription, image, document } =
       request.body;
-    const productId = await generateUniqueId("product");
+    const productId = await generateUniqueId(productModel, "PRODUCT");
     const data = {
       id: productId,
       name: productName,
@@ -644,7 +643,7 @@ export const adminManageUsersAccessRightsController = async (
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: "Please fill up all the required fields ..! " });
     } else {
-      const accessRight = await AccessRights.create({
+      const accessRight = await accessRights.create({
         userId,
         roleId,
         permissions,

@@ -25,4 +25,4 @@ const accessRightsSchema = new mongoose.Schema(
   { versionKey: false, timestamps: true }
 );
 
-export const AccessRights = mongoose.model("accessRights", accessRightsSchema);
+export default mongoose.model("accessRights", accessRightsSchema);

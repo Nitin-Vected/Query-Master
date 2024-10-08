@@ -109,7 +109,7 @@ export const counsellorAddNewLeadsController = async (
     }
     const { email, roleName } = request.payload;
     const leads = Array.isArray(request.body) ? request.body : [request.body];
-    const leadId = await generateUniqueId("lead");
+    const leadId = await generateUniqueId(leadModel, "LEAD");
 
     const result = [];
     for (const leadData of leads) {
@@ -261,7 +261,7 @@ export const counsellorRegisterLeadAsUserController = async (
       uploadedFilePath = transactionProof;
     }
 
-    const userId = await generateUniqueId("user");
+    const userId = await generateUniqueId(userModel, "USER");
     const dataToRegister = {
       id: userId,
       email: leadEmail,
@@ -277,7 +277,7 @@ export const counsellorRegisterLeadAsUserController = async (
       throw new Error("Failed to create user");
     }
 
-    const transactionId = await generateUniqueId("transaction");
+    const transactionId = await generateUniqueId(transactionModel, "TRANSACTION");
     const transactionData = {
       id: transactionId,
       userId,
@@ -299,7 +299,7 @@ export const counsellorRegisterLeadAsUserController = async (
       throw new Error("Transaction creation failed");
     }
 
-    const orderId = await generateUniqueId("order");
+    const orderId = await generateUniqueId(orderModel, "ORDER");
     const orderData = {
       id: orderId,
       userId,
@@ -328,7 +328,7 @@ export const counsellorRegisterLeadAsUserController = async (
       throw new Error("Lead status update failed");
     }
 
-    const enrollmentNumber = await generateUniqueId("enrollment");
+    const enrollmentNumber = await generateUniqueId(studentModel,"VSA");
 
     const studentData = {
       enrollmentNumber,
@@ -347,8 +347,6 @@ export const counsellorRegisterLeadAsUserController = async (
     if (!studentResult) {
       throw new Error("Student registration failed");
     }
-
-    // Commit transaction
     await session.commitTransaction();
     session.endSession();
 
