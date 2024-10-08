@@ -7,7 +7,7 @@ import {
   generateUniqueId,
   StatusCodes,
   STUDENT_ROLE_ID,
-  SUPPORT_ADMIN_ROLE_ID,
+  COUNSELLOR_ROLE_ID,
 } from "../config";
 import userModel from "../model/userModel";
 import roleModel from "../model/roleModel";
@@ -16,6 +16,49 @@ import studentModel from "../model/studentModel";
 import channelModel from "../model/channelModel";
 import productModel from "../model/productModel";
 import accessRights from "../model/accessRightsModel";
+
+export const adminAuthenticationController = async (
+  request: Request,
+  response: Response
+) => {
+  try {
+    const authHeader = request.headers["authorization"];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return response
+        .status(401)
+        .json({ message: "Authorization token is missing or invalid" });
+    }
+    const token = authHeader.split(" ")[1];
+    const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
+    const result = await userModel.findOne({
+      email: payload.email,
+      role: payload.roleName,
+    });
+    const adminData = {
+      name: result?.firstName + " " + result?.lastName,
+      email: result?.email,
+      contactNumber: result?.contactNumber,
+      role: payload?.roleName,
+      profileImg: result?.profileImg,
+    };
+    if (result?.status) {
+      response.status(StatusCodes.OK).json({
+        userData: adminData,
+        token: token,
+        message: "Authenntication Successfull ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Something went wrong ..!" });
+    }
+  } catch (err) {
+    console.log("Error while admin authentication Controller", err);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Token Not verify please login then try to access ..!",
+    });
+  }
+};
 
 export const adminViewProfileController = async (
   request: CustomRequest,
@@ -68,7 +111,6 @@ export const adminViewStudentListController = async (
   response: Response
 ) => {
   try {
-    console.log('studentList');
     const studentList = await studentModel.aggregate([
       {
         $lookup: {
@@ -89,9 +131,6 @@ export const adminViewStudentListController = async (
         },
       },
     ]);
-
-    console.log(studentList);
-
     if (studentList && studentList.length > 0) {
       response.status(StatusCodes.OK).json({
         studentList,
@@ -110,28 +149,28 @@ export const adminViewStudentListController = async (
   }
 };
 
-export const adminViewSupportAdminListController = async (
+export const adminViewConsellorListController = async (
   request: Request,
   response: Response
 ) => {
   try {
-    const adminList = await userModel
-      .find({ roleId: SUPPORT_ADMIN_ROLE_ID }, { _id: 0 })
+    const consellorList = await userModel
+      .find({ roleId: COUNSELLOR_ROLE_ID }, { _id: 0 })
       .select("name email contactNumber role profileImg status")
       .sort({ updatedAt: -1, createdAt: -1 });
 
-    if (adminList && adminList.length > 0) {
+    if (consellorList && consellorList.length > 0) {
       response.status(StatusCodes.OK).json({
-        adminList: adminList,
-        message: "These are the registered support admins ..!",
+        consellorList: consellorList,
+        message: "These are the registered consellors..!",
       });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Student list not found!" });
+        .json({ message: "consellor list not found!" });
     }
   } catch (error) {
-    console.log("Error occure in userRaiseQueryController : ", error);
+    console.log("Error occure in adminViewConsellorListController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
@@ -163,132 +202,6 @@ export const adminViewUserListController = async (
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
-  }
-};
-
-export const adminManageStudentStatusController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    const { email, action } = request.params;
-    console.log("student id : ", email, "  action : ", action);
-    if (!email || !action) {
-      response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: "Student ID and action are required" });
-    }
-
-    const status = action === "true" ? true : action === "false" ? false : null;
-    if (status === null) {
-      response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: "Invalid action. Use true or false." });
-    }
-
-    const result = await userModel.findOneAndUpdate(
-      { email: email, roleId: STUDENT_ROLE_ID },
-      { $set: { status: action } },
-      { new: true }
-    );
-    if (result) {
-      console.log(`Student Status updated to ${action} successfully`);
-      response.status(StatusCodes.OK).json({
-        message: `Student Status updated to ${action} successfully ..!`,
-      });
-    } else {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ error: "Student not found or email mismatch" });
-    }
-  } catch (error) {
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Something went wrong" });
-  }
-};
-
-export const adminAddContactNumberController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    if (!request.payload) {
-      return response
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
-    }
-    const { email } = request.payload;
-    const { contactNumber } = request.body;
-    console.log("Hello from adminAddContactNumberController ..!");
-    if (!email) {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Token not found" });
-    } else {
-      const result = await userModel.updateOne(
-        { email },
-        { $set: { contactNumber: contactNumber } }
-      );
-      if (result?.acknowledged) {
-        console.log("Contact Number added successfully ..!");
-        response
-          .status(StatusCodes.OK)
-          .json({ message: "Contact number updated successfully!" });
-      } else {
-        response
-          .status(StatusCodes.NOT_FOUND)
-          .json({ message: "Something went wrong ..!" });
-      }
-    }
-  } catch (error) {
-    console.log(error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
-
-export const adminAuthenticationController = async (
-  request: Request,
-  response: Response
-) => {
-  try {
-    const authHeader = request.headers["authorization"];
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return response
-        .status(401)
-        .json({ message: "Authorization token is missing or invalid" });
-    }
-    const token = authHeader.split(" ")[1];
-    const payload = await tokenVerifier(token, ADMIN_SECRET_KEY);
-    const result = await userModel.findOne({
-      email: payload.email,
-      role: payload.roleName,
-    });
-    const adminData = {
-      name: result?.firstName + " " + result?.lastName,
-      email: result?.email,
-      contactNumber: result?.contactNumber,
-      role: payload?.roleName,
-      profileImg: result?.profileImg,
-    };
-    if (result?.status) {
-      response.status(StatusCodes.OK).json({
-        userData: adminData,
-        token: token,
-        message: "Authenntication Successfull ..!",
-      });
-    } else {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Something went wrong ..!" });
-    }
-  } catch (err) {
-    console.log("Error while admin authentication Controller", err);
-    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Token Not verify please login then try to access ..!",
-    });
   }
 };
 
@@ -336,6 +249,150 @@ export const adminAddNewRoleController = async (
   }
 };
 
+export const adminGetAllRolesController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    const roleList = await roleModel
+      .find({}, { _id: 0 })
+      .select("id name access")
+      .sort({ updatedAt: -1, createdAt: -1 });
+
+    if (roleList && roleList.length > 0) {
+      response.status(StatusCodes.OK).json({
+        roleList: roleList,
+        message: "Roles fetched successfully  ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Role list not found ..!" });
+    }
+  } catch (error) {
+    console.log("Error occure in adminGetAllRolesController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminGetRoleByIdController = async (
+  request: Request,
+  response: Response
+) => {
+  const { roleId } = request.params;
+  try {
+    const role = await roleModel.findOne({ id: roleId });
+    if (!role) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Role not found" });
+    }
+    response
+      .status(StatusCodes.OK)
+      .json({ data: role, message: "Role of given roleId : " });
+  } catch (error) {
+    console.log("Error occured in getRoleById : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminAddNewStatusController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+    const { email, roleName } = request.payload;
+    console.log("request.payload ", request.payload);
+
+    const { statusName } = request.body;
+    const statusId = await generateUniqueId(statusModel, "STATUS");
+    const data = {
+      id: statusId,
+      name: statusName,
+      createdBy: email,
+      updatedBy: email,
+      createrRole: roleName,
+      updaterRole: roleName,
+    };
+
+    const newStatus = await statusModel.create(data);
+    if (newStatus) {
+      response.status(StatusCodes.CREATED).json({
+        message: "Status Added successfully ..!",
+      });
+    } else {
+      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Something Went Wrong ..!",
+      });
+    }
+  } catch (error) {
+    console.error("Error in adminAddNewStatusController:", error);
+    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong!",
+    });
+  }
+};
+
+export const adminGetAllStatusController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    const statusList = await statusModel
+      .find({}, { _id: 0 })
+      .select("id name")
+      .sort({ updatedAt: -1, createdAt: -1 });
+
+    if (statusList && statusList.length > 0) {
+      response.status(StatusCodes.OK).json({
+        statusList: statusList,
+        message: "Status fetched successfully  ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Status list not found ..!" });
+    }
+  } catch (error) {
+    console.log("Error occure in adminGetAllStatusController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminGetStatusByIdController = async (
+  request: Request,
+  response: Response
+) => {
+  const { statusId } = request.params;
+  try {
+    const status = await statusModel.findOne({ id: statusId });
+    if (!status) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Status not found" });
+    }
+    response
+      .status(StatusCodes.OK)
+      .json({ data: status, message: "Status of given statusId : " });
+  } catch (error) {
+    console.log("Error occured in getStatusById : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};
+
 export const adminAddNewChannelController = async (
   request: CustomRequest,
   response: Response
@@ -377,80 +434,6 @@ export const adminAddNewChannelController = async (
   }
 };
 
-export const adminGetRoleByUserIdController = async (
-  request: Request,
-  response: Response
-) => {
-  const { userId } = request.params;
-  try {
-    const user = await userModel.findOne({ id: userId }, { _id: 0 });
-    if (!user) {
-      return response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "User not found" });
-    }
-    response
-      .status(200)
-      .json({ data: user.roleId, message: "Role of given userId : " });
-  } catch (error) {
-    console.log("Error occured in adminGetRoleByUserId : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
-
-export const adminGetRoleByIdController = async (
-  request: Request,
-  response: Response
-) => {
-  const { roleId } = request.params;
-  try {
-    const role = await roleModel.findOne({ id: roleId });
-    if (!role) {
-      return response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role not found" });
-    }
-    response
-      .status(200)
-      .json({ data: role, message: "Role of given roleId : " });
-  } catch (error) {
-    console.log("Error occured in getRoleById : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
-
-export const adminGetAllRolesController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    const roleList = await roleModel
-      .find({}, { _id: 0 })
-      .select("id name access")
-      .sort({ updatedAt: -1, createdAt: -1 });
-
-    if (roleList && roleList.length > 0) {
-      response.status(StatusCodes.OK).json({
-        roleList: roleList,
-        message: "Roles fetched successfully  ..!",
-      });
-    } else {
-      response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role list not found ..!" });
-    }
-  } catch (error) {
-    console.log("Error occure in adminGetAllRolesController : ", error);
-    response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
-  }
-};
-
 export const adminGetAllChannelsController = async (
   request: CustomRequest,
   response: Response
@@ -479,45 +462,26 @@ export const adminGetAllChannelsController = async (
   }
 };
 
-export const adminAddNewStatusController = async (
-  request: CustomRequest,
+export const adminGetChannelByIdController = async (
+  request: Request,
   response: Response
 ) => {
+  const { channelId } = request.params;
   try {
-    if (!request.payload) {
+    const channel = await channelModel.findOne({ id: channelId });
+    if (!channel) {
       return response
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Channel not found" });
     }
-    const { email, roleName } = request.payload;
-    console.log("request.payload ", request.payload);
-
-    const { statusName } = request.body;
-    const statusId = await generateUniqueId(statusModel,"STATUS");
-    const data = {
-      id: statusId,
-      name: statusName,
-      createdBy: email,
-      updatedBy: email,
-      createrRole: roleName,
-      updaterRole: roleName,
-    };
-
-    const newStatus = await statusModel.create(data);
-    if (newStatus) {
-      response.status(StatusCodes.CREATED).json({
-        message: "Status Added successfully ..!",
-      });
-    } else {
-      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Something Went Wrong ..!",
-      });
-    }
+    response
+      .status(StatusCodes.OK)
+      .json({ data: channel, message: "Channel of given channelId : " });
   } catch (error) {
-    console.error("Error in adminAddNewStatusController:", error);
-    response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Something went wrong!",
-    });
+    console.log("Error occured in getChannelById : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
   }
 };
 
@@ -532,8 +496,14 @@ export const adminAddNewProductController = async (
         .json({ message: "User payload is missing or invalid." });
     }
     const { email, roleName } = request.payload;
-    const { productName, productCategory, productFees, productDescription, image, document } =
-      request.body;
+    const {
+      productName,
+      productCategory,
+      productFees,
+      productDescription,
+      image,
+      document,
+    } = request.body;
     const productId = await generateUniqueId(productModel, "PRODUCT");
     const data = {
       id: productId,
@@ -542,9 +512,9 @@ export const adminAddNewProductController = async (
       price: productFees,
       discountPrice: productFees,
       description: productDescription,
-      assets : {
+      assets: {
         image,
-        document
+        document,
       },
       createdBy: email,
       updatedBy: email,
@@ -613,21 +583,95 @@ export const adminGetProductByIdController = async (
 ) => {
   const { productId } = request.params;
   try {
-    const product = await productModel.findOne(
-      { id: productId },
-      { _id: 0 }
-    );
+    const product = await productModel.findOne({ id: productId }, { _id: 0 });
     if (!product) {
       return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Product not found" });
     }
-    response.status(200).json({ data: product, message: "Product of given id" });
+    response
+      .status(200)
+      .json({ data: product, message: "Product of given id" });
   } catch (error) {
     console.log("Error occured in getProductById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
+  }
+};
+
+export const adminUpdateProductByIdController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+
+    const { email, roleName } = request.payload;
+    const { productId } = request.params; // Your custom product ID, e.g., 'PRODUCT0001'
+    const {
+      productName,
+      productCategory,
+      productFees,
+      productDescription,
+      image,
+      document,
+    } = request.body;
+
+    // Use findOne to query based on custom productId
+    const existingProduct = await productModel.findOne({ id: productId });
+
+    if (!existingProduct) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Product not found." });
+    }
+
+    const updatedFields: any = {};
+
+    if (productName) updatedFields.name = productName;
+    if (productCategory) updatedFields.category = productCategory;
+    if (productFees) {
+      updatedFields.price = productFees;
+      updatedFields.discountPrice = productFees;
+    }
+    if (productDescription) updatedFields.description = productDescription;
+    if (image || document) {
+      updatedFields.assets = {
+        image: image || existingProduct.assets.image,
+        document: document || existingProduct.assets.document,
+      };
+    }
+
+    updatedFields.updatedBy = email;
+    updatedFields.updaterRole = roleName;
+
+    // Update using the custom productId
+    const updatedProduct = await productModel.findOneAndUpdate(
+      { id: productId },
+      updatedFields,
+      { new: true }
+    );
+
+    if (updatedProduct) {
+      return response.status(StatusCodes.OK).json({
+        message: "Product updated successfully!",
+        updatedProduct,
+      });
+    } else {
+      return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Failed to update the product.",
+      });
+    }
+  } catch (error) {
+    console.log("Error occurred in adminUpdateProductByIdController: ", error);
+    return response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong!" });
   }
 };
 
@@ -677,8 +721,8 @@ export const adminAuthenticateJWT = async (
   try {
     const authHeader = request.headers["authorization"];
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      response
-        .status(401)
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
         .json({ message: "Authorization token is missing or invalid" });
     }
     const token = authHeader?.split(" ")[1];
@@ -688,7 +732,7 @@ export const adminAuthenticateJWT = async (
   } catch (error) {
     response
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Invalid or expired Candidate token" });
+      .json({ message: "Invalid or expired admin token" });
   }
 };
 
@@ -970,3 +1014,86 @@ export const adminAuthenticateJWT = async (
 //       .json({ message: "Something went wrong ..!" });
 //   }
 // };
+
+export const adminManageStudentStatusController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    const { email, action } = request.params;
+    console.log("student id : ", email, "  action : ", action);
+    if (!email || !action) {
+      response
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Student ID and action are required" });
+    }
+
+    const status = action === "true" ? true : action === "false" ? false : null;
+    if (status === null) {
+      response
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Invalid action. Use true or false." });
+    }
+
+    const result = await userModel.findOneAndUpdate(
+      { email: email, roleId: STUDENT_ROLE_ID },
+      { $set: { status: action } },
+      { new: true }
+    );
+    if (result) {
+      console.log(`Student Status updated to ${action} successfully`);
+      response.status(StatusCodes.OK).json({
+        message: `Student Status updated to ${action} successfully ..!`,
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: "Student not found or email mismatch" });
+    }
+  } catch (error) {
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Something went wrong" });
+  }
+};
+
+export const adminAddContactNumberController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+    const { email } = request.payload;
+    const { contactNumber } = request.body;
+    console.log("Hello from adminAddContactNumberController ..!");
+    if (!email) {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Token not found" });
+    } else {
+      const result = await userModel.updateOne(
+        { email },
+        { $set: { contactNumber: contactNumber } }
+      );
+      if (result?.acknowledged) {
+        console.log("Contact Number added successfully ..!");
+        response
+          .status(StatusCodes.OK)
+          .json({ message: "Contact number updated successfully!" });
+      } else {
+        response
+          .status(StatusCodes.NOT_FOUND)
+          .json({ message: "Something went wrong ..!" });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
+};

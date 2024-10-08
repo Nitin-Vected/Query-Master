@@ -107,8 +107,6 @@ userRouter.get("/profile", viewProfileController);
  */
 userRouter.put("/profile", userAddContactNumberController);
 
-
-
 // /**
 //  * @swagger
 //  * /user/userAuthentication:

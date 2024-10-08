@@ -1,5 +1,5 @@
-import { body, param } from 'express-validator';
-import { checkValidation } from './checkValidation';
+import { body, param } from "express-validator";
+import { checkValidation } from "./checkValidation";
 
 // Combined validation and error handling middleware
 export const adminValidateStatusName = [
@@ -9,22 +9,16 @@ export const adminValidateStatusName = [
     .isString()
     .withMessage("Status Name must be a string")
     .matches(/[a-zA-Z]{2,}/)
-    .withMessage("Status Name must contain at least two letters and not be only numbers"),
+    .withMessage(
+      "Status Name must contain at least two letters and not be only numbers"
+    ),
   checkValidation,
 ];
 
-// export const adminValidateParams = [
-//   param("queryId")
-//     .notEmpty()
-//     .withMessage("Query ID is required")
-//     .isString()
-//     .withMessage("Query ID must be a valid String"),
-//   checkValidation,
-// ];
-
 export const adminValidateParams = (paramName: string) => [
-  param(paramName).exists({ checkFalsy: true })
-    .exists({ checkFalsy: true }) // Ensure parameter exists and is not falsy
+  param(paramName)
+    .exists({ checkFalsy: true })
+    .exists({ checkFalsy: true })
     .withMessage(`${paramName} is required`)
     .isString()
     .withMessage(`${paramName} must be a valid string`),
@@ -70,7 +64,9 @@ export const adminValidateContactNumber = [
     .isString()
     .withMessage("Contact Number must be a string")
     .matches(/^[6-9][0-9]{9}$/)
-    .withMessage("Contact Number must start with a digit between 6 and 9 and be exactly 10 digits long"),
+    .withMessage(
+      "Contact Number must start with a digit between 6 and 9 and be exactly 10 digits long"
+    ),
 
   checkValidation,
 ];
@@ -86,7 +82,9 @@ export const adminValidateNewRole = [
     .withMessage("Access is required")
     .isArray()
     .withMessage("Access must be an array")
-    .custom((accessArray) => accessArray.every((item: any) => typeof item === 'string'))
+    .custom((accessArray) =>
+      accessArray.every((item: any) => typeof item === "string")
+    )
     .withMessage("All elements in the access array must be strings"),
   checkValidation,
 ];
@@ -108,6 +106,24 @@ export const adminValidateRoleId = [
   checkValidation,
 ];
 
+export const adminValidateStatusId = [
+  param("statusId")
+    .notEmpty()
+    .withMessage("Status ID is required")
+    .isString()
+    .withMessage("Status ID must be a string"),
+  checkValidation,
+];
+
+export const adminValidateChannelId = [
+  param("channelId")
+    .notEmpty()
+    .withMessage("Channel ID is required")
+    .isString()
+    .withMessage("Channel ID must be a string"),
+  checkValidation,
+];
+
 export const adminValidateUserId = [
   param("userId")
     .notEmpty()
@@ -116,8 +132,8 @@ export const adminValidateUserId = [
     .withMessage("User ID must be a string"),
   checkValidation,
 ];
-export const adminValidateCourseId = [
-  param("courseId")
+export const adminValidateProductId = [
+  param("productId")
     .notEmpty()
     .withMessage("Course ID is required")
     .isString()
@@ -148,7 +164,9 @@ export const adminValidateEmployeeDetails = [
     .isString()
     .withMessage("Contact Number must be a string")
     .matches(/^[6-9][0-9]{9}$/)
-    .withMessage("Contact Number must start with a digit between 6 and 9 and be exactly 10 digits long"),
+    .withMessage(
+      "Contact Number must start with a digit between 6 and 9 and be exactly 10 digits long"
+    ),
 
   body("roleId")
     .notEmpty()
@@ -158,7 +176,6 @@ export const adminValidateEmployeeDetails = [
 
   checkValidation,
 ];
-
 
 export const adminAccessRightsValidation = [
   body("userId")
@@ -178,7 +195,9 @@ export const adminAccessRightsValidation = [
     .withMessage("Access is required")
     .isArray()
     .withMessage("Access must be an array")
-    .custom((permissionsArray) => permissionsArray.every((item: any) => typeof item === 'string'))
+    .custom((permissionsArray) =>
+      permissionsArray.every((item: any) => typeof item === "string")
+    )
     .withMessage("All elements in the access array must be strings"),
 
   checkValidation,
@@ -214,35 +233,34 @@ export const adminValidateNewBatchDetails = [
     .withMessage("Students is required")
     .isArray()
     .withMessage("Students must be an array")
-    .custom((studentsArray) => studentsArray.every((item: any) => typeof item === 'string'))
+    .custom((studentsArray) =>
+      studentsArray.every((item: any) => typeof item === "string")
+    )
     .withMessage("All elements in the students array must be strings"),
 
   checkValidation,
 ];
 
-
-export const adminValidateCourseDetails = [
-  body("courseName")
+export const adminValidateProductDetails = [
+  body("productName")
     .notEmpty()
     .withMessage("Course Name is required")
     .isString()
     .withMessage("Course Name must be a string"),
 
-  body("courseCategory")
+  body("productCategory")
     .notEmpty()
     .withMessage("Course Category is required")
     .isString()
     .withMessage("Course Category must be a string"),
 
-  body("courseFees")
+  body("productFees")
     .notEmpty()
     .withMessage("Course Fees is required")
     .isNumeric()
-    .withMessage("Course Fees must be a number")
-    .isFloat({ gt: 1000 })
-    .withMessage("Course Fees must be greater than 1000"),
+    .withMessage("Course Fees must be a number"),
 
-  body("courseDescription")
+  body("productDescription")
     .notEmpty()
     .withMessage("Course Description is required")
     .isString()
@@ -251,6 +269,26 @@ export const adminValidateCourseDetails = [
   checkValidation,
 ];
 
+export const adminValidateUpdateProductDetails = [
+  body("productName")
+    .optional()
+    .isString()
+    .withMessage("Product Name must be a string"),
 
+  body("productCategory")
+    .optional()
+    .isString()
+    .withMessage("Product Category must be a string"),
 
-// export const adminValidate 
+  body("productFees")
+    .optional()
+    .isNumeric()
+    .withMessage("Product Fees must be a number"),
+
+  body("productDescription")
+    .optional()
+    .isString()
+    .withMessage("Product Description must be a string"),
+
+  checkValidation,
+];
