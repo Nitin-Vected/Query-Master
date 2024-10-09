@@ -1,5 +1,4 @@
-// src/routes/userRouter.ts
-import express, { Request } from "express";
+import express from "express";
 import { loginController } from "../controller/loginController";
 import {
   authenticateJWT,
@@ -55,9 +54,20 @@ import {
   viewUserListController,
 } from "../controller/userListController";
 import { viewProfileController } from "../controller/profileController";
-import { addNewLeadController, enrollLeadController, getAllLeadsController, getLeadByIdController, updateLeadController } from "../controller/leadController";
+import {
+  addNewLeadController,
+  enrollLeadController,
+  getAllLeadsController,
+  getLeadByIdController,
+  updateLeadController,
+} from "../controller/leadController";
 import { uploadTransactionProof } from "../utilities/multer";
-import { validateAddNewLead, validateEnrollLead, validateGetLeadById, validateUpdateLead } from "../utilities/validation/leadValidation";
+import {
+  validateAddNewLead,
+  validateEnrollLead,
+  validateGetLeadById,
+  validateUpdateLead,
+} from "../utilities/validation/leadValidation";
 
 const apiRouter = express.Router();
 
@@ -709,11 +719,7 @@ apiRouter.get("/lead", getAllLeadsController);
  *       401:
  *         description: Unauthorized
  */
-apiRouter.get(
-  "/lead/:leadId",
-  validateGetLeadById,
-  getLeadByIdController
-);
+apiRouter.get("/lead/:leadId", validateGetLeadById, getLeadByIdController);
 
 /**
  * @swagger
@@ -782,11 +788,7 @@ apiRouter.get(
  *       404:
  *         description: Lead not found
  */
-apiRouter.put(
-  "/lead/:leadId",
-  validateUpdateLead,
-  updateLeadController
-);
+apiRouter.put("/lead/:leadId", validateUpdateLead, updateLeadController);
 
 /**
  * @swagger

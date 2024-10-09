@@ -39,7 +39,7 @@ export const viewProfileController = async (
   }
 };
 
-export const UpdateProfile = async (
+export const UpdateProfileController = async (
   request: CustomRequest,
   response: Response
 ) => {
