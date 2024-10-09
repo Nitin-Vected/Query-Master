@@ -1,13 +1,13 @@
 // src/routes/userRouter.ts
 import express, { Request } from "express";
 import {
-//   userAddContactNumberController,
+  //   userAddContactNumberController,
   userAuthenticateJWT,
   userAuthenticationController,
-  userUpdateProfile
+  UpdateProfile,
 } from "../controller/userController";
 import { loginController } from "../controller/loginController";
-import { viewProfileController } from "../controller/commonController";
+import { viewProfileController } from "../controller/profileController";
 const userRouter = express.Router();
 
 userRouter.post("/userLogin", loginController);
@@ -81,6 +81,6 @@ userRouter.get("/profile", viewProfileController);
  *       404:
  *         description: User not found
  */
-userRouter.put("/profile", userUpdateProfile);
+userRouter.put("/profile", UpdateProfile);
 
 export default userRouter;
