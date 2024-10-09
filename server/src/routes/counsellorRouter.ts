@@ -14,7 +14,7 @@ import {
   counsellorValidateUpdateLead,
   counsellorValidateEnrollLead,
 } from "../utilities/validation/counsellorValidation";
-import { viewProfileController } from "../controller/commonController";
+import { viewProfileController } from "../controller/profileController";
 
 const counsellorRouter = express.Router();
 
@@ -84,7 +84,11 @@ counsellorRouter.get("/profile", viewProfileController);
  *       401:
  *         description: Unauthorized
  */
-counsellorRouter.post("/lead", counsellorValidateAddNewLeads, counsellorAddNewLeadController);
+counsellorRouter.post(
+  "/lead",
+  counsellorValidateAddNewLeads,
+  counsellorAddNewLeadController
+);
 
 /**
  * @swagger

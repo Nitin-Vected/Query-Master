@@ -4,8 +4,7 @@ import { loginController } from "../controller/loginController";
 import {
   authenticateJWT,
   authenticationController,
-  viewProfileController,
-} from "../controller/commonController";
+} from "../controller/authController";
 import {
   addNewRoleController,
   getAllRolesController,
@@ -50,7 +49,12 @@ import {
   validateProductId,
   validateUpdateProduct,
 } from "../utilities/validation/productValidation";
-import { viewConsellorListController, viewStudentListController, viewUserListController } from "../controller/userListController";
+import {
+  viewConsellorListController,
+  viewStudentListController,
+  viewUserListController,
+} from "../controller/userListController";
+import { viewProfileController } from "../controller/profileController";
 import { addNewLeadController, enrollLeadController, getAllLeadsController, getLeadByIdController, updateLeadController } from "../controller/leadController";
 import { uploadTransactionProof } from "../utilities/multer";
 import { validateAddNewLead, validateEnrollLead, validateGetLeadById, validateUpdateLead } from "../utilities/validation/leadValidation";

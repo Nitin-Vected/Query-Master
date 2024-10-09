@@ -1,41 +1,59 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import userModel from "../model/userModel";
 import { tokenVerifier } from "../utilities/jwt";
 import { CustomRequest, StatusCodes, USER_SECRET_KEY } from "../config";
 
-export const userUpdateProfile = async (
+export const UpdateProfile = async (
   request: CustomRequest,
   response: Response
 ) => {
   try {
-    const userEmail = request.payload?.email;
-    const { contactNumber } = request.body;
-    if (!userEmail) {
-      response
+    const { email, roleName } = request.payload || {};
+    if (!email || !roleName) {
+      return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Token not found" });
-    } else {
-      const result = await userModel.updateOne(
-        { email: userEmail },
-        { $set: { contactNumber: contactNumber } }
-      );
-      console.log("ContactNumber updated ", result);
-
-      if (result?.acknowledged) {
-        response
-          .status(StatusCodes.OK)
-          .json({ message: "Contact number updated successfully ..!" });
-      } else {
-        response.status(StatusCodes.UNAUTHORIZED).json({
-          message: "The account you are trying to access has been deactivated!",
-        });
-      }
+        .json({ message: "User payload is missing or invalid." });
     }
+    const { userId } = request.params;
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not found" });
+    }
+    const { firstName, lastName, userEmail, contactNumber, roleId, isActive } =
+      request.body;
+    if (firstName && firstName !== user.firstName) {
+      user.firstName = firstName;
+    }
+    if (lastName && lastName !== user.lastName) {
+      user.lastName = lastName;
+    }
+    if (userEmail && userEmail !== user.email) {
+      user.email = userEmail;
+    }
+    if (contactNumber && contactNumber !== user.contactNumber) {
+      user.contactNumber = contactNumber;
+    }
+    if (roleId && roleId !== user.roleId) {
+      user.roleId = roleId;
+    }
+    if (typeof isActive !== "undefined" && isActive !== user.isActive) {
+      user.isActive = isActive;
+    }
+    user.updatedBy = email!;
+    user.updaterRole = roleName!;
+    const updatedUser = await user.save();
+
+    response.status(StatusCodes.OK).json({
+      message: "Profile updated successfully",
+      updatedUser,
+    });
   } catch (error) {
-    console.log(error);
+    console.error("Error in UpdateProfile:", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: "Something went wrong while updating profile" });
   }
 };
 
