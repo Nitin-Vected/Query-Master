@@ -51,6 +51,9 @@ import {
   validateUpdateProduct,
 } from "../utilities/validation/productValidation";
 import { viewConsellorListController, viewStudentListController, viewUserListController } from "../controller/userListController";
+import { addNewLeadController, enrollLeadController, getAllLeadsController, getLeadByIdController, updateLeadController } from "../controller/leadController";
+import { uploadTransactionProof } from "../utilities/multer";
+import { validateAddNewLead, validateEnrollLead, validateGetLeadById, validateUpdateLead } from "../utilities/validation/leadValidation";
 
 const apiRouter = express.Router();
 
@@ -609,6 +612,232 @@ apiRouter.put(
   "/product/:productId",
   validateUpdateProduct,
   updateProductByIdController
+);
+
+/**
+ * @swagger
+ * /api/lead:
+ *   post:
+ *     summary: Add a new lead
+ *     tags: [Api]
+ *     requestBody:
+ *       description: Lead information to add
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               leadEmail:
+ *                 type: string
+ *                 example: john.doe@gmail.com
+ *               contactNumber:
+ *                 type: string
+ *                 example: 9874569874
+ *               productAmount:
+ *                 type: number
+ *                 example: 25000
+ *               discount:
+ *                 type: number
+ *                 example: 1000
+ *               channelId:
+ *                 type: string
+ *                 example: CHANNEL0001
+ *               statusId:
+ *                 type: string
+ *                 example: STATUS0001
+ *               productId:
+ *                 type: string
+ *                 example: PRODUCT0001
+ *               description:
+ *                 type: string
+ *                 example: interested in full stack course
+ *     responses:
+ *       201:
+ *         description: Lead added successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+apiRouter.post("/lead", validateAddNewLead, addNewLeadController);
+
+/**
+ * @swagger
+ * /api/lead:
+ *   get:
+ *     summary: Retrieve all leads
+ *     tags: [Api]
+ *     responses:
+ *       200:
+ *         description: List of all leads
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+apiRouter.get("/lead", getAllLeadsController);
+
+/**
+ * @swagger
+ * /api/lead/{leadId}:
+ *   get:
+ *     summary: Get Lead by ID
+ *     tags: [Api]
+ *     parameters:
+ *       - in: path
+ *         name: leadId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the lead
+ *     responses:
+ *       200:
+ *         description: Lead details retrieved
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+apiRouter.get(
+  "/lead/:leadId",
+  validateGetLeadById,
+  getLeadByIdController
+);
+
+/**
+ * @swagger
+ * /api/lead/{leadId}:
+ *   put:
+ *     summary: Update a lead
+ *     tags: [Api]
+ *     parameters:
+ *       - in: path
+ *         name: leadId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The lead ID
+ *     requestBody:
+ *       description: Lead information to update
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               email:
+ *                 type: string
+ *                 example: john.doe@gmail.com
+ *               contactNumber:
+ *                 type: string
+ *                 example: 9874569874
+ *               productAmount:
+ *                 type: number
+ *                 example: 25000
+ *               discount:
+ *                 type: number
+ *                 example: 1000
+ *               channelId:
+ *                 type: string
+ *                 example: CHANNEL0001
+ *               statusId:
+ *                 type: string
+ *                 example: STATUS0001
+ *               productId:
+ *                 type: string
+ *                 example: PRODUCT0001
+ *               description:
+ *                 type: string
+ *                 example: Interested in full stack course
+ *               assignedTo:
+ *                 type: string
+ *                 example: COUNSELLOR001
+ *               comment:
+ *                 type: string
+ *                 example: Lead is very interested in the course
+ *     responses:
+ *       200:
+ *         description: Lead updated successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Lead not found
+ */
+apiRouter.put(
+  "/lead/:leadId",
+  validateUpdateLead,
+  updateLeadController
+);
+
+/**
+ * @swagger
+ * /api/enrollLead:
+ *   post:
+ *     summary: Enroll a lead as a student and add transaction details
+ *     tags: [Api]
+ *     requestBody:
+ *       description: Transaction details along with proof file
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               leadEmail:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               contactNumber:
+ *                 type: string
+ *               products:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               paymentMode:
+ *                 type: string
+ *               finalAmount:
+ *                 type: string
+ *               discount:
+ *                 type: number
+ *               transactionProof:
+ *                 type: string
+ *                 format: binary
+ *               transactionAmount:
+ *                 type: number
+ *               transactionDate:
+ *                 type: string
+ *               dueAmount:
+ *                 type: string
+ *               dueDate:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Student enrolled and transaction details added successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+apiRouter.post(
+  "/enrollLead",
+  validateEnrollLead,
+  uploadTransactionProof.single("transactionProof"),
+  enrollLeadController
 );
 
 export default apiRouter;
