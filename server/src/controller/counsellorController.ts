@@ -14,45 +14,9 @@ import transactionModel from "../model/transactionModel";
 import { deleteFile } from "../utilities/deleteUploadedFile";
 import orderModel from "../model/orderModel";
 import mongoose from "mongoose";
+import { Audit, Comment } from "../model/leadModel";
 
-export const counsellorManageLeadStatusController = async (
-  request: Request,
-  response: Response
-) => {
-  try {
-    const { email, statusId } = request.body;
-    console.log("Lead email: ", email, "  action: ", statusId);
-
-    if (!email || !statusId) {
-      return response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: "Email, Course ID, and action are required" });
-    }
-    const result = await leadModel.updateOne(
-      { email: email },
-      { $set: { statusId: statusId } }
-    );
-
-    console.log(result);
-
-    if (result?.acknowledged) {
-      return response
-        .status(StatusCodes.OK)
-        .json({ message: "Lead status has been updated successfully!" });
-    } else {
-      return response
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Lead or course not found." });
-    }
-  } catch (error) {
-    console.error("Error updating lead status: ", error);
-    return response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Something went wrong, please try again." });
-  }
-};
-
-export const counsellorAddNewLeadsController = async (
+export const counsellorAddNewLeadController = async (
   request: CustomRequest,
   response: Response
 ) => {
@@ -64,30 +28,59 @@ export const counsellorAddNewLeadsController = async (
     }
     const { email, roleName } = request.payload;
     const leads = Array.isArray(request.body) ? request.body : [request.body];
-    const leadId = await generateUniqueId(leadModel, "LEAD");
 
     const result = [];
     for (const leadData of leads) {
-      console.log("Lead does not exist. Creating a new lead.");
-      const newLeadData = {
-        id: leadId,
-        ...leadData,
-        createdBy: email,
-        updatedBy: email,
-        createrRole: roleName,
-        updaterRole: roleName,
-      };
+      const {
+        firstName,
+        lastName,
+        leadEmail,
+        contactNumber,
+        productAmount,
+        discount,
+        channelId,
+        statusId,
+        productId,
+        description,
+      } = leadData;
 
-      const newLead = await leadModel.create(newLeadData);
-      result.push(newLead);
+      let existingLead = await leadModel.findOne({ email: leadEmail });
+
+      if (existingLead) {
+        if (existingLead.productId === productId) {
+          return response.status(StatusCodes.ALREADY_EXIST).json({
+            message: "Product already exists in the lead products.",
+          });
+        }
+      } else {
+        const leadId = await generateUniqueId(leadModel, "LEAD");
+        const newLeadData = {
+          id: leadId,
+          firstName,
+          lastName,
+          email: leadEmail,
+          contactNumber,
+          productAmount,
+          discount,
+          channelId,
+          statusId,
+          productId,
+          description,
+          createdBy: email,
+          updatedBy: email,
+          createrRole: roleName,
+          updaterRole: roleName,
+        };
+        const newLead = await leadModel.create(newLeadData);
+        result.push(newLead);
+      }
     }
 
-    console.log("Result: ", result);
     return response
       .status(StatusCodes.CREATED)
-      .json({ data: result, message: "Leads processed successfully." });
+      .json({ data: result, message: "Lead added successfully." });
   } catch (error) {
-    console.error("Error occurred in addNewLeads: ", error);
+    console.error("Error occurred in addNewLeadController: ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong!" });
@@ -140,6 +133,157 @@ export const counsellorGetLeadByIdController = async (
   }
 };
 
+export const counsellorUpdateLeadController = async (
+  request: CustomRequest,
+  response: Response
+) => {
+  try {
+    const { email, roleName } = request.payload || {};
+    const { leadId } = request.params;
+
+    if (!email || !roleName) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+
+    const {
+      firstName,
+      lastName,
+      contactNumber,
+      productAmount,
+      discount,
+      channelId,
+      statusId,
+      productId,
+      description,
+      assignedTo,
+      comment,
+      isActive,
+    } = request.body;
+
+    const existingLead = await leadModel.findOne({ id: leadId });
+
+    if (!existingLead) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Lead not found." });
+    }
+
+    const auditLogs: Audit[] = [];
+
+    const addAuditLog = (field: string, oldValue: string, newValue: string) => {
+      auditLogs.push({
+        field,
+        oldValue,
+        newValue,
+        editedBy: email!,
+        editorRole: roleName!,
+      } as Audit);
+    };
+
+    if (firstName && firstName !== existingLead.firstName) {
+      addAuditLog("firstName", existingLead.firstName, firstName);
+      existingLead.firstName = firstName;
+    }
+
+    if (lastName && lastName !== existingLead.lastName) {
+      addAuditLog("lastName", existingLead.lastName, lastName);
+      existingLead.lastName = lastName;
+    }
+
+    if (contactNumber && contactNumber !== existingLead.contactNumber) {
+      addAuditLog(
+        "contactNumber",
+        existingLead.contactNumber.toString(),
+        contactNumber.toString()
+      );
+      existingLead.contactNumber = contactNumber;
+    }
+
+    if (productAmount && productAmount !== existingLead.productAmount) {
+      addAuditLog(
+        "productAmount",
+        existingLead.productAmount?.toString() || "",
+        productAmount.toString()
+      );
+      existingLead.productAmount = productAmount;
+    }
+
+    if (discount && discount !== existingLead.discount) {
+      addAuditLog(
+        "discount",
+        existingLead.discount?.toString() || "",
+        discount.toString()
+      );
+      existingLead.discount = discount;
+    }
+
+    if (channelId && channelId !== existingLead.channelId) {
+      addAuditLog("channelId", existingLead.channelId || "", channelId);
+      existingLead.channelId = channelId;
+    }
+
+    if (statusId && statusId !== existingLead.statusId) {
+      addAuditLog("statusId", existingLead.statusId || "", statusId);
+      existingLead.statusId = statusId;
+    }
+
+    if (productId && productId !== existingLead.productId) {
+      addAuditLog("productId", existingLead.productId || "", productId);
+      existingLead.productId = productId;
+    }
+
+    if (description && description !== existingLead.description) {
+      addAuditLog("description", existingLead.description || "", description);
+      existingLead.description = description;
+    }
+
+    if (isActive && isActive !== existingLead.isActive) {
+      addAuditLog(
+        "isActive",
+        existingLead.isActive ? "true" : "false",
+        isActive ? "true" : "false"
+      );
+      existingLead.isActive = isActive;
+    }
+
+    if (assignedTo && assignedTo !== existingLead.assignedTo) {
+      addAuditLog(
+        "assignedTo",
+        existingLead.assignedTo || "Unassigned",
+        assignedTo
+      );
+      existingLead.assignedTo = assignedTo;
+    }
+
+    if (auditLogs.length > 0) {
+      existingLead.auditLogs.push(...auditLogs);
+    }
+
+    if (comment) {
+      existingLead.comments.push({
+        comment,
+        commentedBy: email!,
+      } as Comment);
+    }
+
+    existingLead.updatedBy = email!;
+    existingLead.updaterRole = roleName!;
+
+    await existingLead.save();
+
+    return response
+      .status(StatusCodes.OK)
+      .json({ message: "Lead updated successfully.", lead: existingLead });
+  } catch (error) {
+    console.error("Error occurred in updateLeadController: ", error);
+    return response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong!" });
+  }
+};
+
 export const counsellorRegisterLeadAsUserController = async (
   request: CustomRequest,
   response: Response,
@@ -167,11 +311,10 @@ export const counsellorRegisterLeadAsUserController = async (
       transactionAmount,
       discount,
       finalAmount,
-      coursesPurchased,
+      productsPurchased,
       statusId,
     } = request.body;
 
-    console.log("leadEmail ==> ", leadEmail);
     const [firstName, lastName] = name.split(" ");
 
     const existingLead = await leadModel.findOne({ email: leadEmail });
@@ -183,7 +326,7 @@ export const counsellorRegisterLeadAsUserController = async (
         contactNumber,
         finalAmount,
         discount,
-        courses: coursesPurchased,
+        products: productsPurchased,
         statusId,
         createdBy: counsellorEmail,
         updatedBy: counsellorEmail,
@@ -231,7 +374,10 @@ export const counsellorRegisterLeadAsUserController = async (
       throw new Error("Failed to create user");
     }
 
-    const transactionId = await generateUniqueId(transactionModel, "TRANSACTION");
+    const transactionId = await generateUniqueId(
+      transactionModel,
+      "TRANSACTION"
+    );
     const transactionData = {
       id: transactionId,
       userId,
@@ -258,7 +404,7 @@ export const counsellorRegisterLeadAsUserController = async (
       id: orderId,
       userId,
       transactionId,
-      coursesPurchased: coursesPurchased,
+      productsPurchased: productsPurchased,
       finalAmount: finalAmount,
       discount: discount,
       createdBy: counsellorEmail,
@@ -286,7 +432,7 @@ export const counsellorRegisterLeadAsUserController = async (
 
     const studentData = {
       enrollmentNumber,
-      coursesEnrolled: coursesPurchased,
+      productsEnrolled: productsPurchased,
       userId,
       transactions: [transactionId],
       fees: finalAmount,
@@ -314,72 +460,6 @@ export const counsellorRegisterLeadAsUserController = async (
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: "Something went wrong, please try again." });
-  }
-};
-
-export const counsellorAddNewLeadController = async (
-  request: CustomRequest,
-  response: Response
-) => {
-  try {
-    if (!request.payload) {
-      return response.status(StatusCodes.UNAUTHORIZED).json({ message: "User payload is missing or invalid." });
-    }
-    const { email, roleName } = request.payload;
-    const leads = Array.isArray(request.body) ? request.body : [request.body];
-
-    const result: object[] = [];
-    for (const leadData of leads) {
-      const { firstName, lastName, contactNumber, productAmount, comment, discount, statusId, description, assignedTo, leadEmail, productId } = leadData;
-      console.log(leadData)
-
-      let existingLead = await leadModel.findOne({ email: leadEmail });
-
-      if (existingLead) {
-        console.log("Lead already exists", existingLead);
-        if (existingLead.productId === productId) {
-          console.log("This Product already exists in this Lead");
-          return response
-            .status(StatusCodes.ALREADY_EXIST)
-            .json({ data: result, message: "Course already exists in the lead’s courses." });
-        }
-
-      } else {
-        console.log("Lead does not exist. Creating a new lead.");
-        const leadId = await generateUniqueId(leadModel, "LEAD")
-        const newLeadData = {
-          id: leadId,
-          firstName,
-          lastName,
-          email: leadEmail,
-          contactNumber,
-          productAmount,
-          discount,
-          statusId,
-          assignedTo,
-          description,
-          comments: [{
-            comment,
-            commentedBy: email
-          }],
-          createdBy: email,
-          updatedBy: email,
-          createrRole: roleName,
-          updaterRole: roleName,
-        };
-        const newLead = await leadModel.create(newLeadData);
-        result.push(newLead);
-      }
-    }
-    console.log("Result: ", result);
-    return response
-      .status(StatusCodes.CREATED)
-      .json({ data: result, message: "Leads processed successfully." });
-  } catch (error) {
-    console.error("Error occurred in addNewLeads: ", error);
-    return response
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong!" });
   }
 };
 

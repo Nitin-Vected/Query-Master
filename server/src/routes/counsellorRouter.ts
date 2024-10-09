@@ -4,14 +4,14 @@ import {
   counsellorAuthenticateJWT,
   counsellorGetAllLeadsController,
   counsellorGetLeadByIdController,
-  counsellorManageLeadStatusController,
+  counsellorUpdateLeadController,
   counsellorRegisterLeadAsUserController,
 } from "../controller/counsellorController";
 import { uploadTransactionProof } from "../utilities/multer";
 import {
   counsellorValidateAddNewLeads,
   counsellorValidateGetLeadById,
-  counsellorValidateManageLeadStatus,
+  counsellorValidateUpdateLead,
   counsellorValidateRegisterLeadAsUser,
 } from "../utilities/validation/counsellorValidation";
 import { viewProfileController } from "../controller/commonController";
@@ -48,40 +48,34 @@ counsellorRouter.get("/profile", viewProfileController);
  *             properties:
  *               firstName:
  *                 type: string
- *                 description: First name of the lead
+ *                 example: John
  *               lastName:
  *                 type: string
- *                 description: Last name of the lead
- *               contactNumber:
- *                 type: string
- *                 description: Contact number of the lead
+ *                 example: Doe
  *               leadEmail:
  *                 type: string
- *                 description: Email address of the lead
+ *                 example: john.doe@gmail.com
+ *               contactNumber:
+ *                 type: string
+ *                 example: 9874569874
  *               productAmount:
  *                 type: number
- *                 description: The fees amount associated with the lead
+ *                 example: 25000
  *               discount:
  *                 type: number
- *                 description: Discount on the fees
+ *                 example: 1000
  *               channelId:
  *                 type: string
- *                 description: The channel through which the lead was acquired
+ *                 example: CHANNEL0001
  *               statusId:
  *                 type: string
- *                 description: Status ID of the lead
+ *                 example: STATUS0001
  *               productId:
  *                 type: string
- *                 description: Product ID of the lead
+ *                 example: PRODUCT0001
  *               description:
  *                 type: string
- *               assignedTo:
- *                 type: string
- *                 description: Counsellor of the lead
- *               comment:
- *                 type: string
- *                 description: Counsellor of the lead
- *
+ *                 example: interested in full stack course
  *     responses:
  *       201:
  *         description: Lead added successfully
@@ -139,7 +133,7 @@ counsellorRouter.get(
  * @swagger
  * /counsellor/lead/{leadId}:
  *   put:
- *     summary: update a lead
+ *     summary: Update a lead
  *     tags: [Counsellor]
  *     parameters:
  *       - in: path
@@ -147,9 +141,9 @@ counsellorRouter.get(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID of the lead
+ *         description: The lead ID
  *     requestBody:
- *       description: Lead status update data
+ *       description: Lead information to update
  *       required: true
  *       content:
  *         application/json:
@@ -158,44 +152,54 @@ counsellorRouter.get(
  *             properties:
  *               firstName:
  *                 type: string
- *                 description: First name of the lead
+ *                 example: John
  *               lastName:
  *                 type: string
- *                 description: Last name of the lead
- *               contactNumber:
- *                 type: string
- *                 description: Contact number of the lead
+ *                 example: Doe
  *               email:
  *                 type: string
- *                 description: Email address of the lead
+ *                 example: john.doe@gmail.com
+ *               contactNumber:
+ *                 type: string
+ *                 example: 9874569874
  *               productAmount:
  *                 type: number
- *                 description: The fees amount associated with the lead
+ *                 example: 25000
  *               discount:
  *                 type: number
- *                 description: Discount on the fees
+ *                 example: 1000
+ *               channelId:
+ *                 type: string
+ *                 example: CHANNEL0001
  *               statusId:
  *                 type: string
+ *                 example: STATUS0001
  *               productId:
  *                 type: string
- *                 description: Product ID of the lead
+ *                 example: PRODUCT0001
  *               description:
  *                 type: string
+ *                 example: Interested in full stack course
  *               assignedTo:
  *                 type: string
- *                 description: Counsellor of the lead
+ *                 example: COUNSELLOR001
+ *               comment:
+ *                 type: string
+ *                 example: Lead is very interested in the course
  *     responses:
  *       200:
- *         description: Lead status updated successfully
+ *         description: Lead updated successfully
  *       400:
  *         description: Bad request
  *       401:
  *         description: Unauthorized
+ *       404:
+ *         description: Lead not found
  */
 counsellorRouter.put(
   "/lead/:leadId",
-  counsellorValidateManageLeadStatus,
-  counsellorManageLeadStatusController
+  counsellorValidateUpdateLead,
+  counsellorUpdateLeadController
 );
 
 /**

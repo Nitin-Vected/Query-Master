@@ -1,7 +1,7 @@
 import { body, check, param } from 'express-validator';
 import { checkValidation } from './checkValidation';
 
-export const counsellorValidateManageLeadStatus = [
+export const counsellorValidateUpdateLead = [
     body("email")
         .notEmpty()
         .withMessage("Email is required")
@@ -41,7 +41,7 @@ export const counsellorValidateRegisterLeadAsUser = [
         .matches(/^\d+$/)
         .withMessage('Contact number must contain only digits (0-9)'),
 
-    body('coursesPurchased')
+    body('productPurchased')
         .isArray({ min: 1 })
         .withMessage('At least one course must be purchased'),
 
@@ -157,9 +157,9 @@ export const counsellorValidateAddNewLeads = [
         .isString()
         .withMessage('Status ID must be a string'),
 
-    body('courses')
+    body('products')
         .isArray()
-        .withMessage('Courses must be an array')
+        .withMessage('Products must be an array')
         .custom((value) => {
             // Check if each item in the array is a string
             value.forEach((item: string) => {
