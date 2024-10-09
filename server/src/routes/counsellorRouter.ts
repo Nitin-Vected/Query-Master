@@ -12,7 +12,7 @@ import {
   counsellorValidateAddNewLeads,
   counsellorValidateGetLeadById,
   counsellorValidateUpdateLead,
-  counsellorValidateRegisterLeadAsUser,
+  counsellorValidateEnrollLead,
 } from "../utilities/validation/counsellorValidation";
 import { viewProfileController } from "../controller/commonController";
 
@@ -84,7 +84,7 @@ counsellorRouter.get("/profile", viewProfileController);
  *       401:
  *         description: Unauthorized
  */
-counsellorRouter.post("/lead", counsellorAddNewLeadController);
+counsellorRouter.post("/lead", counsellorValidateAddNewLeads, counsellorAddNewLeadController);
 
 /**
  * @swagger
@@ -254,6 +254,7 @@ counsellorRouter.put(
 counsellorRouter.post(
   "/enrollLead",
   uploadTransactionProof.single("transactionProof"),
+  counsellorValidateEnrollLead,
   counsellorEnrollLeadController
 );
 
