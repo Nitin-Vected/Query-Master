@@ -182,9 +182,6 @@ counsellorRouter.get(
  *                 example: Interested in full stack course
  *               assignedTo:
  *                 type: string
- *                 description: Counsellor of the lead 
- *               comment:
- *                 type: string
  *                 example: COUNSELLOR001
  *               comment:
  *                 type: string
