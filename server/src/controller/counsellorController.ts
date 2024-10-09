@@ -311,7 +311,7 @@ export const counsellorEnrollLeadController = async (
       paymentMode,
       transactionDate,
       transactionAmount,
-      productId,
+      products,
       discount,
       finalAmount,
       dueDate,
@@ -321,34 +321,34 @@ export const counsellorEnrollLeadController = async (
     const [firstName, lastName] = name.split(" ");
     console.log(firstName, lastName);
 
-    const existingLead = await leadModel.findOne({ email: leadEmail });
-    if (!existingLead) {
-      console.log("Lead does not exist. Creating a new lead.");
-      const leadId = await generateUniqueId(leadModel, "LEAD");
-      const leadData = {
-        id: leadId,
-        firstName,
-        lastName,
-        email: leadEmail,
-        contactNumber,
-        productAmount: finalAmount,
-        discount,
-        productId,
-        statusId: STATUS_INTERESTED,
-        createdBy: email,
-        updatedBy: email,
-        createrRole: roleName,
-        updaterRole: roleName,
-      };
-      const leadRegistrationResult = await leadModel.create([leadData], {
-        session,
-      });
-      if (!leadRegistrationResult) {
-        throw new Error(
-          "Student Registration Failed, Please register the Lead first ..!"
-        );
-      }
-    }
+    // const existingLead = await leadModel.findOne({ email: leadEmail });
+    // if (!existingLead) {
+    //   console.log("Lead does not exist. Creating a new lead.");
+    //   const leadId = await generateUniqueId(leadModel, "LEAD");
+    //   const leadData = {
+    //     id: leadId,
+    //     firstName,
+    //     lastName,
+    //     email: leadEmail,
+    //     contactNumber,
+    //     productAmount: finalAmount,
+    //     discount,
+    //     products,
+    //     statusId: STATUS_INTERESTED,
+    //     createdBy: email,
+    //     updatedBy: email,
+    //     createrRole: roleName,
+    //     updaterRole: roleName,
+    //   };
+    //   const leadRegistrationResult = await leadModel.create([leadData], {
+    //     session,
+    //   });
+    //   if (!leadRegistrationResult) {
+    //     throw new Error(
+    //       "Student Registration Failed, Please register the Lead first ..!"
+    //     );
+    //   }
+    // }
 
     const transactionProof = request.file?.path;
     if (transactionProof) {
@@ -404,7 +404,7 @@ export const counsellorEnrollLeadController = async (
       id: orderId,
       userId,
       transactions: [transactionId],
-      products: [productId],
+      products,
       amount: finalAmount,
       dueAmount,
       dueDate,
@@ -434,7 +434,7 @@ export const counsellorEnrollLeadController = async (
 
     const studentData = {
       enrollmentNumber,
-      products: [productId],
+      products,
       userId,
       transactions: [transactionId],
       amount: finalAmount,
