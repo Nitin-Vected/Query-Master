@@ -5,9 +5,9 @@ import {
   generateUniqueId,
   StatusCodes,
 } from "../config";
-import roleModel from "../model/roleModel";
+import channelModel from "../model/channelModel";
 
-export const addNewRoleController = async (
+export const addNewChannelController = async (
   request: CustomRequest,
   response: Response
 ) => {
@@ -18,25 +18,22 @@ export const addNewRoleController = async (
         .json({ message: "User payload is missing or invalid." });
     }
     const { email, roleName } = request.payload;
-    console.log("request.payload ", request.payload);
+    const { channelName } = request.body;
 
-    const { userRole, access } = request.body;
-    const roleId = await generateUniqueId(roleModel, "ROLE");
+    const channelId = await generateUniqueId(channelModel, "CHANNEL");
     const data = {
-      id: roleId,
-      name: userRole,
-      access,
+      id: channelId,
+      name: channelName,
       createdBy: email,
       updatedBy: email,
       createrRole: roleName,
       updaterRole: roleName,
     };
-    console.log("data ", data);
 
-    const newRole = await roleModel.create(data);
-    if (newRole) {
+    const newChannel = await channelModel.create(data);
+    if (newChannel) {
       response.status(StatusCodes.CREATED).json({
-        message: "Role Added successfully ..!",
+        message: "Channel Added successfully ..!",
       });
     } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -44,70 +41,71 @@ export const addNewRoleController = async (
       });
     }
   } catch (error) {
-    console.error("Error in addNewRoleController:", error);
+    console.error("Error in addNewChannelController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Something went wrong!",
     });
   }
 };
 
-export const getAllRolesController = async (
+export const getAllChannelsController = async (
   request: CustomRequest,
   response: Response
 ) => {
   try {
-    const roleList = await roleModel
+    const chanelList = await channelModel
       .find({}, { _id: 0 })
-      .select("id name access")
+      .select("id name")
       .sort({ updatedAt: -1, createdAt: -1 });
 
-    if (roleList && roleList.length > 0) {
+    if (chanelList && chanelList.length > 0) {
       response.status(StatusCodes.OK).json({
-        roleList: roleList,
-        message: "Roles fetched successfully  ..!",
+        chanelList: chanelList,
+        message: "Channels fetched successfully  ..!",
       });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role list not found ..!" });
+        .json({ message: "Channel list not found ..!" });
     }
   } catch (error) {
-    console.log("Error occure in getAllRolesController : ", error);
+    console.log("Error occure in getAllChannelsController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const getRoleByIdController = async (
+export const getChannelByIdController = async (
   request: Request,
   response: Response
 ) => {
-  const { roleId } = request.params;
+  const { channelId } = request.params;
   try {
-    const role = await roleModel.findOne({ id: roleId });
-    if (!role) {
+    const channel = await channelModel.findOne({ id: channelId });
+    if (!channel) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role not found" });
+        .json({ message: "Channel not found" });
     }
     response
       .status(StatusCodes.OK)
-      .json({ data: role, message: "Role of given roleId : " });
+      .json({ data: channel, message: "Channel of given channelId : " });
   } catch (error) {
-    console.log("Error occured in getRoleById : ", error);
+    console.log("Error occured in getChannelById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const updateRoleController = async (
+export const updateChannelController = async (
   request: CustomRequest,
   response: Response
 ) => {
   try {
-    const { roleId } = request.params;
+    const { channelId } = request.params;
+
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
@@ -115,31 +113,30 @@ export const updateRoleController = async (
     }
 
     const { email, roleName } = request.payload;
-    const { userRole, access } = request.body;
+    const { channelName } = request.body;
 
-    const updatedRole = await roleModel.findOneAndUpdate(
-      { id: roleId },
+    const updatedChannel = await channelModel.findOneAndUpdate(
+      { id: channelId },
       {
-        ...(userRole && { name: userRole }),
-        ...(access && { access }),
+        name: channelName,
         updatedBy: email,
         updaterRole: roleName,
       },
       { new: true }
     );
 
-    if (!updatedRole) {
+    if (!updatedChannel) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role not found." });
+        .json({ message: "Channel not found." });
     }
 
     response.status(StatusCodes.OK).json({
-      message: "Role updated successfully!",
-      role: updatedRole,
+      message: "Channel updated successfully!",
+      channel: updatedChannel,
     });
   } catch (error) {
-    console.error("Error in updateRoleController:", error);
+    console.error("Error in updateChannelController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Something went wrong!",
     });

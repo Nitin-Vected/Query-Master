@@ -5,9 +5,9 @@ import {
   generateUniqueId,
   StatusCodes,
 } from "../config";
-import roleModel from "../model/roleModel";
+import statusModel from "../model/statusModel";
 
-export const addNewRoleController = async (
+export const addNewStatusController = async (
   request: CustomRequest,
   response: Response
 ) => {
@@ -20,23 +20,21 @@ export const addNewRoleController = async (
     const { email, roleName } = request.payload;
     console.log("request.payload ", request.payload);
 
-    const { userRole, access } = request.body;
-    const roleId = await generateUniqueId(roleModel, "ROLE");
+    const { statusName } = request.body;
+    const statusId = await generateUniqueId(statusModel, "STATUS");
     const data = {
-      id: roleId,
-      name: userRole,
-      access,
+      id: statusId,
+      name: statusName,
       createdBy: email,
       updatedBy: email,
       createrRole: roleName,
       updaterRole: roleName,
     };
-    console.log("data ", data);
 
-    const newRole = await roleModel.create(data);
-    if (newRole) {
+    const newStatus = await statusModel.create(data);
+    if (newStatus) {
       response.status(StatusCodes.CREATED).json({
-        message: "Role Added successfully ..!",
+        message: "Status Added successfully ..!",
       });
     } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -44,70 +42,71 @@ export const addNewRoleController = async (
       });
     }
   } catch (error) {
-    console.error("Error in addNewRoleController:", error);
+    console.error("Error in addNewStatusController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Something went wrong!",
     });
   }
 };
 
-export const getAllRolesController = async (
+export const getAllStatusController = async (
   request: CustomRequest,
   response: Response
 ) => {
   try {
-    const roleList = await roleModel
+    const statusList = await statusModel
       .find({}, { _id: 0 })
-      .select("id name access")
+      .select("id name")
       .sort({ updatedAt: -1, createdAt: -1 });
 
-    if (roleList && roleList.length > 0) {
+    if (statusList && statusList.length > 0) {
       response.status(StatusCodes.OK).json({
-        roleList: roleList,
-        message: "Roles fetched successfully  ..!",
+        statusList: statusList,
+        message: "Status fetched successfully  ..!",
       });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role list not found ..!" });
+        .json({ message: "Status list not found ..!" });
     }
   } catch (error) {
-    console.log("Error occure in getAllRolesController : ", error);
+    console.log("Error occure in getAllStatusController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const getRoleByIdController = async (
+export const getStatusByIdController = async (
   request: Request,
   response: Response
 ) => {
-  const { roleId } = request.params;
+  const { statusId } = request.params;
   try {
-    const role = await roleModel.findOne({ id: roleId });
-    if (!role) {
+    const status = await statusModel.findOne({ id: statusId });
+    if (!status) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role not found" });
+        .json({ message: "Status not found" });
     }
     response
       .status(StatusCodes.OK)
-      .json({ data: role, message: "Role of given roleId : " });
+      .json({ data: status, message: "Status of given statusId : " });
   } catch (error) {
-    console.log("Error occured in getRoleById : ", error);
+    console.log("Error occured in getStatusById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }
 };
 
-export const updateRoleController = async (
+export const updateStatusController = async (
   request: CustomRequest,
   response: Response
 ) => {
   try {
-    const { roleId } = request.params;
+    const { statusId } = request.params;
+
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
@@ -115,31 +114,30 @@ export const updateRoleController = async (
     }
 
     const { email, roleName } = request.payload;
-    const { userRole, access } = request.body;
+    const { statusName } = request.body;
 
-    const updatedRole = await roleModel.findOneAndUpdate(
-      { id: roleId },
+    const updatedStatus = await statusModel.findOneAndUpdate(
+      { id: statusId },
       {
-        ...(userRole && { name: userRole }),
-        ...(access && { access }),
+        name: statusName,
         updatedBy: email,
         updaterRole: roleName,
       },
       { new: true }
     );
 
-    if (!updatedRole) {
+    if (!updatedStatus) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role not found." });
+        .json({ message: "Status not found." });
     }
 
     response.status(StatusCodes.OK).json({
-      message: "Role updated successfully!",
-      role: updatedRole,
+      message: "Status updated successfully!",
+      status: updatedStatus,
     });
   } catch (error) {
-    console.error("Error in updateRoleController:", error);
+    console.error("Error in updateStatusController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Something went wrong!",
     });

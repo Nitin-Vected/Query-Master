@@ -2,7 +2,6 @@ import {
   COUNSELLOR_SECRET_KEY,
   CustomRequest,
   STATUS_ENROLLED,
-  STATUS_INTERESTED,
   STUDENT_ROLE_ID,
   StatusCodes,
   generateUniqueId,

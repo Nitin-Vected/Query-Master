@@ -26,13 +26,13 @@ export const authenticateJWT = async (
     const token = authHeader.split(" ")[1];
     const payload = jwt.decode(token) as jwt.JwtPayload;
 
-    if (!payload || !payload.role) {
+    if (!payload || !payload.roleId) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
         .json({ message: "Token is invalid or does not contain a role" });
     }
 
-    const secretKey = secretKeys[payload.role];
+    const secretKey = secretKeys[payload.roleName];
     if (!secretKey) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
