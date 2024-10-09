@@ -3,15 +3,15 @@ import { PORT } from "./config";
 
 const swaggerOptions = {
   definition: {
-    openapi: "3.0.0", // OpenAPI version
+    openapi: "3.0.0",
     info: {
       title: "Support System VSA",
-      version: "1.0.0", // Version of the API
+      version: "1.0.0",
       description: "API Documentation with Swagger in Node.js and TypeScript",
     },
     servers: [
       {
-        url: `http://localhost:${PORT}`, // API base URL
+        url: `http://localhost:${PORT}`,
         description: "Support System Development server",
       },
     ],
@@ -20,17 +20,17 @@ const swaggerOptions = {
         bearerAuth: {
           type: "http",
           scheme: "bearer",
-          bearerFormat: "JWT", // Optional, just to indicate that the token is a JWT
+          bearerFormat: "JWT",
         },
       },
     },
     security: [
       {
-        bearerAuth: [], // Apply this globally for all endpoints
+        bearerAuth: [],
       },
     ],
   },
-  apis: ["./src/routes/*.ts"], // Path to your API docs
+  apis: ["./src/routes/apiRouter.ts"],
 };
 
 const swaggerSpecs = swaggerJSDoc(swaggerOptions);
