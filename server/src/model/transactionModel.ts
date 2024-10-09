@@ -2,7 +2,11 @@ import mongoose, { Schema, Document } from "mongoose";
 
 interface Transaction extends Document {
   id: string;
+  orderId: string;
   amount: number;
+  date: string;
+  mode: string;
+  proof: string;
   createdBy: string;
   updatedBy: string;
   createrRole: string;
@@ -17,8 +21,25 @@ const TransactionSchema = new Schema<Transaction>(
       required: true,
       unique: true,
     },
+    orderId: {
+      type: String,
+      required: true,
+      ref:"Order"
+    },
     amount: {
       type: Number,
+      required: true,
+    },
+    date: {
+      type: String,
+      required: true,
+    },
+    mode: {
+      type: String,
+      required: true,
+    },
+    proof: {
+      type: String,
       required: true,
     },
     isActive: {

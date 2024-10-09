@@ -1,6 +1,8 @@
 import {
   COUNSELLOR_SECRET_KEY,
   CustomRequest,
+  STATUS_ENROLLED,
+  STATUS_INTERESTED,
   STUDENT_ROLE_ID,
   StatusCodes,
   generateUniqueId,
@@ -15,53 +17,7 @@ import { deleteFile } from "../utilities/deleteUploadedFile";
 import orderModel from "../model/orderModel";
 import mongoose from "mongoose";
 
-// export const counsellorViewProfileController = async (
-//   request: CustomRequest,
-//   response: Response
-// ) => {
-//   try {
-//     if (!request.payload) {
-//       return response
-//         .status(StatusCodes.UNAUTHORIZED)
-//         .json({ message: "User payload is missing or invalid." });
-//     }
-//     const { userId, roleName } = request.payload;
-//     if (!userId) {
-//       response
-//         .status(StatusCodes.NOT_FOUND)
-//         .json({ message: "Token not found" });
-//     } else {
-//       const result = await userModel.findOne({ userId });
-//       console.log("result : ", result);
-//       const counsellorData = {
-//         name: result?.firstName + " " + result?.lastName,
-//         email: result?.email,
-//         contactNumber: result?.contactNumber,
-//         role: roleName,
-//         profileImg: result?.profileImg,
-//       };
-//       if (result?.statusId) {
-//         response.status(StatusCodes.OK).json({
-//           counsellorData: counsellorData,
-//           message: "This is your desired data ..!",
-//         });
-//       } else {
-//         response.status(StatusCodes.NOT_FOUND).json({
-//           counsellorData: null,
-//           message:
-//             "The Account You are Trying to Access has been Deactivated ..!",
-//         });
-//       }
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     response
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .json({ message: "Something went wrong ..!" });
-//   }
-// };
-
-export const counsellorManageLeadStatusController = async (
+export const counsellorUpdateLeadController = async (
   request: Request,
   response: Response
 ) => {
@@ -171,14 +127,13 @@ export const counsellorGetLeadByIdController = async (
   try {
     const { leadId } = request.params;
     const lead = await leadModel.findOne({ id: leadId });
-    console.log(lead);
 
     if (!lead) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Lead not found" });
+        .json({ message: "Lead Not Found" });
     }
-    response.status(200).json({ data: lead, message: "Lead of given id" });
+    response.status(200).json({ data: lead, message: "Lead Fetched Successfully" });
   } catch (error) {
     console.log("Error occured in getLeadById : ", error);
     response
@@ -187,7 +142,7 @@ export const counsellorGetLeadByIdController = async (
   }
 };
 
-export const counsellorRegisterLeadAsUserController = async (
+export const counsellorEnrollLeadController = async (
   request: CustomRequest,
   response: Response,
   next: NextFunction
@@ -203,37 +158,40 @@ export const counsellorRegisterLeadAsUserController = async (
     session = await mongoose.startSession();
     session.startTransaction();
 
-    const { email: counsellorEmail, roleName } = request.payload;
-    let {
-      email: leadEmail,
+    const { email, roleName } = request.payload;
+    const {
+      leadEmail,
       name,
       contactNumber,
       paymentMode,
-      paymentType,
       transactionDate,
       transactionAmount,
+      productId,
       discount,
       finalAmount,
-      coursesPurchased,
-      statusId,
+      dueDate,
+      dueAmount
     } = request.body;
 
-    console.log("leadEmail ==> ", leadEmail);
     const [firstName, lastName] = name.split(" ");
+    console.log(firstName, lastName)
 
     const existingLead = await leadModel.findOne({ email: leadEmail });
     if (!existingLead) {
+      console.log("Lead does not exist. Creating a new lead.");
+      const leadId = await generateUniqueId(leadModel, "LEAD")
       const leadData = {
+        id: leadId,
         firstName,
         lastName,
         email: leadEmail,
         contactNumber,
-        finalAmount,
+        productAmount: finalAmount,
         discount,
-        courses: coursesPurchased,
-        statusId,
-        createdBy: counsellorEmail,
-        updatedBy: counsellorEmail,
+        productId,
+        statusId: STATUS_INTERESTED,
+        createdBy: email,
+        updatedBy: email,
         createrRole: roleName,
         updaterRole: roleName,
       };
@@ -247,16 +205,6 @@ export const counsellorRegisterLeadAsUserController = async (
       }
     }
 
-    const missingField = Object.entries(request.body).find(
-      ([key, value]) => !value
-    );
-
-    if (missingField) {
-      return response.status(StatusCodes.BAD_REQUEST).json({
-        message: "Please Enter all the required fields and try again ..!",
-      });
-    }
-
     const transactionProof = request.file?.path;
     if (transactionProof) {
       uploadedFilePath = transactionProof;
@@ -268,9 +216,14 @@ export const counsellorRegisterLeadAsUserController = async (
       email: leadEmail,
       firstName,
       lastName,
+      isActive: true,
       status: true,
       roleId: STUDENT_ROLE_ID,
       contactNumber,
+      createdBy: email,
+      updatedBy: email,
+      createrRole: roleName,
+      updaterRole: roleName,
     };
 
     const result = await userModel.create([dataToRegister], { session });
@@ -278,17 +231,19 @@ export const counsellorRegisterLeadAsUserController = async (
       throw new Error("Failed to create user");
     }
 
+    const orderId = await generateUniqueId(orderModel, "ORDER");
+
     const transactionId = await generateUniqueId(transactionModel, "TRANSACTION");
     const transactionData = {
       id: transactionId,
-      userId,
-      paymentMode,
-      paymentType,
-      transactionDate,
-      transactionAmount,
-      transactionProof,
-      createdBy: counsellorEmail,
-      updatedBy: counsellorEmail,
+      orderId,
+      mode: paymentMode,
+      date: transactionDate,
+      amount: transactionAmount,
+      proof: transactionProof,
+      isActive: true,
+      createdBy: email,
+      updatedBy: email,
       createrRole: roleName,
       updaterRole: roleName,
     };
@@ -300,16 +255,17 @@ export const counsellorRegisterLeadAsUserController = async (
       throw new Error("Transaction creation failed");
     }
 
-    const orderId = await generateUniqueId(orderModel, "ORDER");
     const orderData = {
       id: orderId,
       userId,
-      transactionId,
-      coursesPurchased: coursesPurchased,
-      finalAmount: finalAmount,
-      discount: discount,
-      createdBy: counsellorEmail,
-      updatedBy: counsellorEmail,
+      transactions: [transactionId],
+      products: [productId],
+      amount: finalAmount,
+      dueAmount,
+      dueDate,
+      isActive: true,
+      createdBy: email,
+      updatedBy: email,
       createrRole: roleName,
       updaterRole: roleName,
     };
@@ -321,7 +277,7 @@ export const counsellorRegisterLeadAsUserController = async (
 
     const leadStatusResult = await leadModel.updateOne(
       { email: leadEmail },
-      { $set: { statusId: statusId } },
+      { $set: { statusId: STATUS_ENROLLED } },
       { session }
     );
 
@@ -333,14 +289,14 @@ export const counsellorRegisterLeadAsUserController = async (
 
     const studentData = {
       enrollmentNumber,
-      coursesEnrolled: coursesPurchased,
+      products: [productId],
       userId,
       transactions: [transactionId],
-      fees: finalAmount,
-      discount,
+      amount: finalAmount,
       enrollmentDate: transactionDate,
-      createdBy: counsellorEmail,
-      updatedBy: counsellorEmail,
+      isActive: true,
+      createdBy: email,
+      updatedBy: email,
       createrRole: roleName,
       updaterRole: roleName,
     };

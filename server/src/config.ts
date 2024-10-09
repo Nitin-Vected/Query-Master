@@ -15,6 +15,8 @@ export const ADMIN_ROLE_ID = "ROLE0001";
 export const COUNSELLOR_ROLE_ID = "ROLE0002";
 export const STUDENT_ROLE_ID = "ROLE0003";
 export const SUPPORT_ADMIN_ROLE_ID = "ROLE0004";
+export const STATUS_INTERESTED = "STATUS0001";
+export const STATUS_ENROLLED = "STATUS0002";
 
 export const StatusCodes = {
   OK: 200,

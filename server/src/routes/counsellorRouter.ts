@@ -4,8 +4,8 @@ import {
   counsellorAuthenticateJWT,
   counsellorGetAllLeadsController,
   counsellorGetLeadByIdController,
-  counsellorManageLeadStatusController,
-  counsellorRegisterLeadAsUserController,
+  counsellorUpdateLeadController,
+  counsellorEnrollLeadController,
 } from "../controller/counsellorController";
 import { uploadTransactionProof } from "../utilities/multer";
 import { counsellorValidateAddNewLeads, counsellorValidateGetLeadById, counsellorValidateManageLeadStatus, counsellorValidateRegisterLeadAsUser } from "../utilities/validation/counsellorValidation";
@@ -57,7 +57,7 @@ counsellorRouter.get("/profile", viewProfileController);
  *               contactNumber:
  *                 type: string
  *                 description: Contact number of the lead
- *               email:
+ *               leadEmail:
  *                 type: string
  *                 description: Email address of the lead
  *               productAmount:
@@ -68,12 +68,16 @@ counsellorRouter.get("/profile", viewProfileController);
  *                 description: Discount on the fees
  *               statusId:
  *                 type: string
+ *                 description: Status ID of the lead
  *               productId:
  *                 type: string
  *                 description: Product ID of the lead 
  *               description:
  *                 type: string
  *               assignedTo:
+ *                 type: string
+ *                 description: Counsellor of the lead 
+ *               comment:
  *                 type: string
  *                 description: Counsellor of the lead 
  *     responses:
@@ -86,7 +90,7 @@ counsellorRouter.get("/profile", viewProfileController);
  */
 counsellorRouter.put(
   "/lead", counsellorValidateManageLeadStatus,
-  counsellorManageLeadStatusController
+  counsellorUpdateLeadController
 );
 
 /**
@@ -103,7 +107,7 @@ counsellorRouter.put(
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               leadEmail:
  *                 type: string
  *               name:
  *                 type: string
@@ -139,7 +143,7 @@ counsellorRouter.put(
 counsellorRouter.post(
   "/enrollLead",
   uploadTransactionProof.single("transactionProof"),
-  counsellorRegisterLeadAsUserController
+  counsellorEnrollLeadController
 );
 
 /**
@@ -190,8 +194,7 @@ counsellorRouter.post(
  *                 description: Counsellor of the lead 
  *               comment:
  *                 type: string
- *                 description: Counsellor of the lead 
- *                 
+ *                 description: Counsellor of the lead  *                 
  *     responses:
  *       201:
  *         description: Lead added successfully

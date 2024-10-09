@@ -41,12 +41,12 @@ const auditSchema = new Schema<Audit>({
   newValue: { type: String, required: true },
   editedBy: { type: String, required: true },
   editorRole: { type: String, required: true },
-}, { versionKey: false, timestamps: true });
+}, { versionKey: false, timestamps: { createdAt: true, updatedAt: false }, _id: false });
 
 const commentSchema = new Schema<Comment>({
   comment: { type: String, required: true },
   commentedBy: { type: String, required: true },
-}, { versionKey: false, timestamps: true });
+}, { versionKey: false, timestamps: { createdAt: true, updatedAt: false }, _id: false });
 
 const leadSchema = new Schema<Lead>(
   {
