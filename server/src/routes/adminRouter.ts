@@ -21,34 +21,20 @@ import {
   adminUpdateChannelController,
   adminUpdateStatusController,
   adminUpdateRoleController,
-  adminManageUsersAccessRightsController,
-  adminAddContactNumberController,
-  adminManageStudentStatusController,
-  adminViewProfileController,
-  // adminGetAlltransactionListController,
-  // adminRegisterEmployeesController,
-  // adminGetBatchByIdController,
 } from "../controller/adminController";
 import {
-  adminValidateRoleId,
-  adminValidateProductDetails,
-  adminValidateProductId,
   adminValidateNewRole,
-  adminValidateUpdateProductDetails,
-  adminValidateStatusId,
-  adminValidateChannelId,
+  adminValidateRoleId,
   adminValidateUpdateRole,
+  adminValidateNewStatus,
+  adminValidateStatusId,
   adminValidateUpdateStatus,
+  adminValidateNewChannel,
+  adminValidateChannelId,
   adminValidateUpdateChannel,
-  //   adminAccessRightsValidation,
-  //   adminValidateContactNumber,
-  //   adminValidateEmployeeDetails,
-  //   adminValidateNewBatchDetails,
-  //   adminValidateParams,
-  //   adminValidateQueryData,
-  //   adminValidateQueryResponse,
-  //   adminValidateStatusName,
-  //   adminValidateUserId,
+  adminValidateNewProduct,
+  adminValidateProductId,
+  adminValidateUpdateProduct,
 } from "../utilities/validation/adminValidation";
 
 const adminRouter = express.Router();
@@ -250,7 +236,7 @@ adminRouter.put(
  *       401:
  *         description: Unauthorized
  */
-adminRouter.post("/status", adminAddNewStatusController);
+adminRouter.post("/status", adminValidateNewStatus, adminAddNewStatusController);
 
 /**
  * @swagger
@@ -362,7 +348,11 @@ adminRouter.put(
  *       401:
  *         description: Unauthorized
  */
-adminRouter.post("/channel", adminAddNewChannelController);
+adminRouter.post(
+  "/channel",
+  adminValidateNewChannel,
+  adminAddNewChannelController
+);
 
 /**
  * @swagger
@@ -491,7 +481,7 @@ adminRouter.put(
  */
 adminRouter.post(
   "/product",
-  adminValidateProductDetails,
+  adminValidateNewProduct,
   adminAddNewProductController
 );
 
@@ -594,221 +584,8 @@ adminRouter.get(
  */
 adminRouter.put(
   "/product/:productId",
-  adminValidateUpdateProductDetails,
+  adminValidateUpdateProduct,
   adminUpdateProductByIdController
 );
-
-// /**
-//  * @swagger
-//  * /admin/adminAddAccessRights:
-//  *   post:
-//  *     summary: Manage User Access Rights
-//  *     tags: [Admin]
-//  *     requestBody:
-//  *       description: Access rights data
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               userId:
-//  *                 type: string
-//  *                 example: "USERlzRn-QO8q02"
-//  *               roleId:
-//  *                 type: string
-//  *                 example: "ROLEtEUJrkc0r04"
-//  *               permissions:
-//  *                 type: array
-//  *                 items:
-//  *                   type: string
-//  *                 example: ["View Trainer Profile"]
-//  *     responses:
-//  *       201:
-//  *         description: Access rights updated
-//  */
-// adminRouter.post("/adminAddAccessRights", adminAccessRightsValidation, adminManageUsersAccessRightsController);
-
-// /**
-//  * @swagger
-//  * /admin/adminGetAllPaymentDetails:
-//  *   get:
-//  *     summary: Get all payment List
-//  *     tags: [Admin]
-//  *     responses:
-//  *       200:
-//  *         description: Payment List Retrieved
-//  */
-// adminRouter.get("/adminGetAllPaymentDetails",adminGetAlltransactionListController);
-
-// /**
-//  * @swagger
-//  * /admin/adminRegisterEmployees:
-//  *   post:
-//  *     summary: Register Employees
-//  *     tags: [Admin]
-//  *     requestBody:
-//  *       description: Employee registration data
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               name:
-//  *                 type: string
-//  *                 example: "John"
-//  *               email:
-//  *                 type: string
-//  *                 example: "Doe"
-//  *               contactNumber:
-//  *                 type: string
-//  *                 example: "9876543210"
-//  *               roleId:
-//  *                 type: string
-//  *                 example: "ROLEtEUJrkc0r04"
-//  *     responses:
-//  *       201:
-//  *         description: Employees registered
-//  */
-// adminRouter.post("/adminRegisterEmployees", adminRegisterEmployeesController);
-
-// /**
-//  * @swagger
-//  * /admin/addNewBatch:
-//  *   post:
-//  *     summary: Add a New Batch
-//  *     tags: [Admin]
-//  *     requestBody:
-//  *       description: Batch data
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               batchName:
-//  *                 type: string
-//  *                 example: "Batch 1"
-//  *               startDate:
-//  *                 type: string
-//  *                 format: date
-//  *                 example: "2024-09-30"
-//  *               endDate:
-//  *                 type: string
-//  *                 format: date
-//  *                 example: "2024-12-30"
-//  *               trainerId:
-//  *                 type: string
-//  *                 example: "USERr2T89NnpD0711"
-//  *               courseId:
-//  *                 type: string
-//  *                 example: "COURSEuBeLY8e0b02"
-//  *               students:
-//  *                 type: array
-//  *                 items:
-//  *                   type: string
-//  *                 example: ["10VSA0001", "10VSA0002", "10VSA0003"]
-//  *     responses:
-//  *       201:
-//  *         description: Batch created
-//  *       400:
-//  *         description: Invalid input
-//  */
-// adminRouter.post("/addNewBatch", adminAddNewBatchController);
-
-// /**
-//  * @swagger
-//  * /admin/getAllBatches:
-//  *   get:
-//  *     summary: Get All Batches
-//  *     tags: [Admin]
-//  *     responses:
-//  *       200:
-//  *         description: List of all batches
-//  */
-// adminRouter.get("/getAllBatches", adminGetAllBatchController);
-
-// /**
-//  * @swagger
-//  * /admin/getBatchById/{batchId}:
-//  *   get:
-//  *     summary: Get Batch by ID
-//  *     tags: [Admin]
-//  *     parameters:
-//  *       - in: path
-//  *         name: batchId
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: ID of the batch
-//  *     responses:
-//  *       200:
-//  *         description: Batch details retrieved
-//  */
-// adminRouter.get("/getBatchById/:batchId", getBatchByIdController); // students not coming
-
-// /**
-//  * @swagger
-//  * /admin/adminViewProfile:
-//  *   get:
-//  *     summary: View Admin Profile
-//  *     tags: [Admin]
-//  *     responses:
-//  *       200:
-//  *         description: Successful operation
-//  */
-// adminRouter.get("/adminViewProfile", adminViewProfileController);
-
-// /**
-//  * @swagger
-//  * /admin/adminManageStudentStatus/{email}/{action}:
-//  *   get:
-//  *     summary: Manage Student Status
-//  *     tags: [Admin]
-//  *     parameters:
-//  *       - in: path
-//  *         name: email
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: Email of the student
-//  *       - in: path
-//  *         name: action
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: Action to be taken on the student (true/false)
-//  *     responses:
-//  *       200:
-//  *         description: Student status updated
-//  */
-// adminRouter.get(
-//   "/adminManageStudentStatus/:email/:action",
-//   adminManageStudentStatusController
-// );
-
-// /**
-//  * @swagger
-//  * /admin/adminAddContactNumber:
-//  *   post:
-//  *     summary: Add Contact Number
-//  *     tags: [Admin]
-//  *     requestBody:
-//  *       description: Contact number details
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               contactNumber:
-//  *                 type: string
-//  *                 example: "9876543210"
-//  *     responses:
-//  *       201:
-//  *         description: Contact number added
-//  */
-// adminRouter.post("/adminAddContactNumber", adminValidateContactNumber, adminAddContactNumberController);
 
 export default adminRouter;

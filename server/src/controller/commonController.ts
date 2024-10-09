@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import userModel from "../model/userModel";
 import jwt from "jsonwebtoken";
 import UserPayload, { CustomRequest, StatusCodes } from "../config";

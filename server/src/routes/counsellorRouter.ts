@@ -222,8 +222,10 @@ counsellorRouter.put(
  *                 type: string
  *               contactNumber:
  *                 type: string
- *               productId:
- *                 type: string
+ *               products:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *               paymentMode:
  *                 type: string
  *               finalAmount:
@@ -254,104 +256,5 @@ counsellorRouter.post(
   uploadTransactionProof.single("transactionProof"),
   counsellorEnrollLeadController
 );
-
-/**
- * @swagger
- * /counsellor/lead:
- *   post:
- *     summary: Add a new lead
- *     tags: [Counsellor]
- *     requestBody:
- *       description: Lead information to add
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               firstName:
- *                 type: string
- *                 description: First name of the lead
- *               lastName:
- *                 type: string
- *                 description: Last name of the lead
- *               contactNumber:
- *                 type: string
- *                 description: Contact number of the lead
- *               leadEmail:
- *                 type: string
- *                 description: Email address of the lead
- *               productAmount:
- *                 type: number
- *                 description: The fees amount associated with the lead
- *               discount:
- *                 type: number
- *                 description: Discount on the fees
- *               channelId:
- *                 type: string
- *                 description: The channel through which the lead was acquired
- *               statusId:
- *                 type: string
- *                 description: Status ID of the lead
- *               productId:
- *                 type: string
- *                 description: Product ID of the lead 
- *               description:
- *                 type: string
- *               assignedTo:
- *                 type: string
- *                 description: Counsellor of the lead 
- *               comment:
- *                 type: string
- *                 description: Counsellor of the lead 
- *                 
- *     responses:
- *       201:
- *         description: Lead added successfully
- *       400:
- *         description: Bad request
- *       401:
- *         description: Unauthorized
- */
-counsellorRouter.post("/lead", counsellorAddNewLeadController);
-
-/**
- * @swagger
- * /counsellor/lead:
- *   get:
- *     summary: Retrieve all leads
- *     tags: [Counsellor]
- *     responses:
- *       200:
- *         description: List of all leads
- *       400:
- *         description: Bad request
- *       401:
- *         description: Unauthorized
- */
-counsellorRouter.get("/lead", counsellorGetAllLeadsController);
-
-/**
- * @swagger
- * /counsellor/lead/{leadId}:
- *   get:
- *     summary: Get Lead by ID
- *     tags: [Counsellor]
- *     parameters:
- *       - in: path
- *         name: leadId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the lead
- *     responses:
- *       200:
- *         description: Lead details retrieved
- *       400:
- *         description: Bad request
- *       401:
- *         description: Unauthorized
- */
-counsellorRouter.get("/lead/:leadId", counsellorValidateGetLeadById, counsellorGetLeadByIdController);
 
 export default counsellorRouter;

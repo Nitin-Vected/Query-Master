@@ -6,9 +6,9 @@ export interface User extends Document {
   lastName: string;
   email: string;
   contactNumber: string;
-  profileImg: string;
   roleId: string;
   status: string;
+  profileImg: string;
   isActive: boolean;
   createdBy: string;
   updatedBy: string;
@@ -43,10 +43,6 @@ const UserSchema = new Schema<User>(
       type: String,
       default: "",
     },
-    profileImg: {
-      type: String,
-      default: "",
-    },
     roleId: {
       type: String,
       required: true,
@@ -56,6 +52,10 @@ const UserSchema = new Schema<User>(
       type: String,
       required: true,
     },
+    profileImg: {
+      type: String,
+      default: "",
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -63,22 +63,22 @@ const UserSchema = new Schema<User>(
     createdBy: {
       type: String,
       required: true,
-      default:"mohit.basediya@vectedtech.com"
+      default: "mohit.basediya@vectedtech.com",
     },
     updatedBy: {
       type: String,
       required: true,
-      default:"mohit.basediya@vectedtech.com"
+      default: "mohit.basediya@vectedtech.com",
     },
     createrRole: {
       type: String,
       required: true,
-      default:"Admin"
+      default: "Admin",
     },
     updaterRole: {
       type: String,
       required: true,
-      default:"Admin"
+      default: "Admin",
     },
   },
   { versionKey: false, timestamps: true }
