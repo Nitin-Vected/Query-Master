@@ -48,6 +48,7 @@ const OrderSchema = new Schema<Order>(
       type: [String],
       ref: "Transaction",
       required: true,
+      default: [], 
     },
     isActive: {
       type: Boolean,

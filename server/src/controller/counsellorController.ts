@@ -1,6 +1,8 @@
 import {
   COUNSELLOR_SECRET_KEY,
   CustomRequest,
+  STATUS_ENROLLED,
+  STATUS_INTERESTED,
   STUDENT_ROLE_ID,
   StatusCodes,
   generateUniqueId,
@@ -122,9 +124,11 @@ export const counsellorGetLeadByIdController = async (
     if (!lead) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Lead not found" });
+        .json({ message: "Lead Not Found" });
     }
-    response.status(200).json({ data: lead, message: "Lead of given id" });
+    response
+      .status(200)
+      .json({ data: lead, message: "Lead Fetched Successfully" });
   } catch (error) {
     console.log("Error occured in getLeadById : ", error);
     response
@@ -284,10 +288,9 @@ export const counsellorUpdateLeadController = async (
   }
 };
 
-export const counsellorRegisterLeadAsUserController = async (
+export const counsellorEnrollLeadController = async (
   request: CustomRequest,
   response: Response,
-  next: NextFunction
 ) => {
   let uploadedFilePath = "";
   let session: mongoose.ClientSession | null = null;
@@ -300,36 +303,40 @@ export const counsellorRegisterLeadAsUserController = async (
     session = await mongoose.startSession();
     session.startTransaction();
 
-    const { email: counsellorEmail, roleName } = request.payload;
-    let {
-      email: leadEmail,
+    const { email, roleName } = request.payload;
+    const {
+      leadEmail,
       name,
       contactNumber,
       paymentMode,
-      paymentType,
       transactionDate,
       transactionAmount,
+      productId,
       discount,
       finalAmount,
-      productsPurchased,
-      statusId,
+      dueDate,
+      dueAmount
     } = request.body;
 
     const [firstName, lastName] = name.split(" ");
+    console.log(firstName, lastName);
 
     const existingLead = await leadModel.findOne({ email: leadEmail });
     if (!existingLead) {
+      console.log("Lead does not exist. Creating a new lead.");
+      const leadId = await generateUniqueId(leadModel, "LEAD");
       const leadData = {
+        id: leadId,
         firstName,
         lastName,
         email: leadEmail,
         contactNumber,
-        finalAmount,
+        productAmount: finalAmount,
         discount,
-        products: productsPurchased,
-        statusId,
-        createdBy: counsellorEmail,
-        updatedBy: counsellorEmail,
+        productId,
+        statusId: STATUS_INTERESTED,
+        createdBy: email,
+        updatedBy: email,
         createrRole: roleName,
         updaterRole: roleName,
       };
@@ -343,16 +350,6 @@ export const counsellorRegisterLeadAsUserController = async (
       }
     }
 
-    const missingField = Object.entries(request.body).find(
-      ([key, value]) => !value
-    );
-
-    if (missingField) {
-      return response.status(StatusCodes.BAD_REQUEST).json({
-        message: "Please Enter all the required fields and try again ..!",
-      });
-    }
-
     const transactionProof = request.file?.path;
     if (transactionProof) {
       uploadedFilePath = transactionProof;
@@ -364,9 +361,14 @@ export const counsellorRegisterLeadAsUserController = async (
       email: leadEmail,
       firstName,
       lastName,
+      isActive: true,
       status: true,
       roleId: STUDENT_ROLE_ID,
       contactNumber,
+      createdBy: email,
+      updatedBy: email,
+      createrRole: roleName,
+      updaterRole: roleName,
     };
 
     const result = await userModel.create([dataToRegister], { session });
@@ -374,20 +376,19 @@ export const counsellorRegisterLeadAsUserController = async (
       throw new Error("Failed to create user");
     }
 
-    const transactionId = await generateUniqueId(
-      transactionModel,
-      "TRANSACTION"
-    );
+    const orderId = await generateUniqueId(orderModel, "ORDER");
+
+    const transactionId = await generateUniqueId(transactionModel, "TRANSACTION");
     const transactionData = {
       id: transactionId,
-      userId,
-      paymentMode,
-      paymentType,
-      transactionDate,
-      transactionAmount,
-      transactionProof,
-      createdBy: counsellorEmail,
-      updatedBy: counsellorEmail,
+      orderId,
+      mode: paymentMode,
+      date: transactionDate,
+      amount: transactionAmount,
+      proof: transactionProof,
+      isActive: true,
+      createdBy: email,
+      updatedBy: email,
       createrRole: roleName,
       updaterRole: roleName,
     };
@@ -399,16 +400,17 @@ export const counsellorRegisterLeadAsUserController = async (
       throw new Error("Transaction creation failed");
     }
 
-    const orderId = await generateUniqueId(orderModel, "ORDER");
     const orderData = {
       id: orderId,
       userId,
-      transactionId,
-      productsPurchased: productsPurchased,
-      finalAmount: finalAmount,
-      discount: discount,
-      createdBy: counsellorEmail,
-      updatedBy: counsellorEmail,
+      transactions: [transactionId],
+      products: [productId],
+      amount: finalAmount,
+      dueAmount,
+      dueDate,
+      isActive: true,
+      createdBy: email,
+      updatedBy: email,
       createrRole: roleName,
       updaterRole: roleName,
     };
@@ -420,7 +422,7 @@ export const counsellorRegisterLeadAsUserController = async (
 
     const leadStatusResult = await leadModel.updateOne(
       { email: leadEmail },
-      { $set: { statusId: statusId } },
+      { $set: { statusId: STATUS_ENROLLED } },
       { session }
     );
 
@@ -432,14 +434,14 @@ export const counsellorRegisterLeadAsUserController = async (
 
     const studentData = {
       enrollmentNumber,
-      productsEnrolled: productsPurchased,
+      products: [productId],
       userId,
       transactions: [transactionId],
-      fees: finalAmount,
-      discount,
+      amount: finalAmount,
       enrollmentDate: transactionDate,
-      createdBy: counsellorEmail,
-      updatedBy: counsellorEmail,
+      isActive: true,
+      createdBy: email,
+      updatedBy: email,
       createrRole: roleName,
       updaterRole: roleName,
     };
