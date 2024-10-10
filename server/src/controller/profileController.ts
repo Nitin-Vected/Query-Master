@@ -81,13 +81,13 @@ export const UpdateProfileController = async (
     user.updaterRole = roleName!;
     const updatedUser = await user.save();
 
-    response.status(StatusCodes.OK).json({
+    return response.status(StatusCodes.OK).json({
       message: "Profile updated successfully",
       updatedUser,
     });
   } catch (error) {
     console.error("Error in UpdateProfile:", error);
-    response
+    return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong while updating profile" });
   }

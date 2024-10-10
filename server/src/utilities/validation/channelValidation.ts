@@ -7,6 +7,7 @@ export const validateNewChannel = [
     .withMessage("channel name is required")
     .isString()
     .withMessage("channel name must be a string"),
+  checkValidation,
 ];
 
 export const validateChannelId = [

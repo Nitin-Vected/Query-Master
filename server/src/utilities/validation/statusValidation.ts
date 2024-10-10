@@ -7,6 +7,8 @@ export const validateNewStatus = [
     .withMessage("status name is required")
     .isString()
     .withMessage("status name must be a string"),
+
+  checkValidation,
 ];
 
 export const validateStatusId = [

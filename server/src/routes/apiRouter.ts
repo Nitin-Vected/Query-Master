@@ -53,7 +53,10 @@ import {
   viewStudentListController,
   viewUserListController,
 } from "../controller/userListController";
-import { viewProfileController } from "../controller/profileController";
+import {
+  UpdateProfileController,
+  viewProfileController,
+} from "../controller/profileController";
 import {
   addNewLeadController,
   enrollLeadController,
@@ -68,6 +71,7 @@ import {
   validateGetLeadById,
   validateUpdateLead,
 } from "../utilities/validation/leadValidation";
+import { validateUpdateProfile } from "../utilities/validation/profileValidation";
 
 const apiRouter = express.Router();
 
@@ -100,6 +104,57 @@ apiRouter.use(authenticateJWT);
  *         description: Successful operation
  */
 apiRouter.get("/profile", viewProfileController);
+
+/**
+ * @swagger
+ * /api/profile/{userId}:
+ *   put:
+ *     summary: Update Profile
+ *     tags: [Api]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: The ID of the user to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Profile information to update
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               userEmail:
+ *                 type: string
+ *                 example: john.doe@example.com
+ *               contactNumber:
+ *                 type: string
+ *                 example: '1234567890'
+ *               roleId:
+ *                 type: string
+ *                 example: ROLE0001
+ *               isActive:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: User payload is missing or invalid
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Something went wrong while updating profile
+ */
+apiRouter.put("/profile/:userId", validateUpdateProfile, UpdateProfileController);
 
 /**
  * @swagger
