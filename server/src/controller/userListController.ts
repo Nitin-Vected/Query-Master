@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
 
-import {
-  StatusCodes,
-  COUNSELLOR_ROLE_ID,
-} from "../config";
+import { StatusCodes, COUNSELLOR_ROLE_ID } from "../config";
 import userModel from "../model/userModel";
 import studentModel from "../model/studentModel";
 
@@ -15,9 +12,9 @@ export const viewStudentListController = async (
     const studentList = await studentModel.aggregate([
       {
         $lookup: {
-          from: "user",
+          from: "users",
           localField: "userId",
-          foreignField: "userId",
+          foreignField: "id",
           as: "profileDetails",
         },
       },
@@ -33,12 +30,12 @@ export const viewStudentListController = async (
       },
     ]);
     if (studentList && studentList.length > 0) {
-      response.status(StatusCodes.OK).json({
+        return response.status(StatusCodes.OK).json({
         studentList,
         message: "These are the registered students!",
       });
     }
-    response.status(StatusCodes.OK).json({
+    return response.status(StatusCodes.OK).json({
       studentList,
       message: "There are no registered students!",
     });

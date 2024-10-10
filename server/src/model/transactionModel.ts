@@ -40,7 +40,7 @@ const TransactionSchema = new Schema<Transaction>(
     },
     proof: {
       type: String,
-      required: true,
+      default: "",
     },
     isActive: {
       type: Boolean,

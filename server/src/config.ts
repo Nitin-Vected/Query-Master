@@ -46,7 +46,7 @@ export interface CustomRequest extends Request {
 }
 
 export const generateUniqueId = async (
-  model: any, 
+  model: any,
   prefix: string
 ): Promise<string> => {
   try {

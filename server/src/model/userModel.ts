@@ -63,22 +63,18 @@ const UserSchema = new Schema<User>(
     createdBy: {
       type: String,
       required: true,
-      default: "mohit.basediya@vectedtech.com",
     },
     updatedBy: {
       type: String,
       required: true,
-      default: "mohit.basediya@vectedtech.com",
     },
     createrRole: {
       type: String,
       required: true,
-      default: "Admin",
     },
     updaterRole: {
       type: String,
       required: true,
-      default: "Admin",
     },
   },
   { versionKey: false, timestamps: true }

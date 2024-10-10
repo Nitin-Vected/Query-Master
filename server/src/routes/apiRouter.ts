@@ -797,7 +797,7 @@ apiRouter.put("/lead/:leadId", validateUpdateLead, updateLeadController);
  *     summary: Enroll a lead as a student and add transaction details
  *     tags: [Api]
  *     requestBody:
- *       description: Transaction details along with proof file
+ *       description: Transaction details
  *       required: true
  *       content:
  *         multipart/form-data:
@@ -806,31 +806,57 @@ apiRouter.put("/lead/:leadId", validateUpdateLead, updateLeadController);
  *             properties:
  *               leadEmail:
  *                 type: string
- *               name:
+ *                 example: "student@example.com"
+ *                 description: "Lead email in a valid format"
+ *               firstName:
  *                 type: string
+ *                 example: "John"
+ *                 description: "First name of the lead"
+ *               lastName:
+ *                 type: string
+ *                 example: "Doe"
+ *                 description: "Last name of the lead"
  *               contactNumber:
  *                 type: string
+ *                 example: "1234567890"
+ *                 description: "Contact number must be 10 digits"
  *               products:
  *                 type: array
  *                 items:
  *                   type: string
+ *                 example: ["Product0001", "Product0002"]
+ *                 description: "Array of product names"
  *               paymentMode:
  *                 type: string
+ *                 example: "Cash"
+ *                 description: "Payment mode, e.g., Online, Cash, etc."
  *               finalAmount:
- *                 type: string
+ *                 type: number
+ *                 example: 1500
+ *                 description: "Total amount after applying discount"
  *               discount:
  *                 type: number
- *               transactionProof:
- *                 type: string
- *                 format: binary
+ *                 example: 100
+ *                 description: "Optional discount on the final amount"
  *               transactionAmount:
  *                 type: number
+ *                 example: 1400
+ *                 description: "Amount paid in the transaction"
  *               transactionDate:
  *                 type: string
+ *                 example: "2024-10-10"
+ *                 description: "Date of the transaction"
+ *               transactionProof:
+ *                 type: file
+ *                 description: "Proof of the transaction"
  *               dueAmount:
- *                 type: string
+ *                 type: number
+ *                 example: 0
+ *                 description: "Any pending due amount (optional)"
  *               dueDate:
  *                 type: string
+ *                 example: "2024-11-10"
+ *                 description: "Date when the due amount is expected to be paid (optional)"
  *     responses:
  *       200:
  *         description: Student enrolled and transaction details added successfully
@@ -841,8 +867,8 @@ apiRouter.put("/lead/:leadId", validateUpdateLead, updateLeadController);
  */
 apiRouter.post(
   "/enrollLead",
+  uploadTransactionProof,
   validateEnrollLead,
-  uploadTransactionProof.single("transactionProof"),
   enrollLeadController
 );
 

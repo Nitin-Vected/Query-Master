@@ -47,7 +47,6 @@ const OrderSchema = new Schema<Order>(
     transactions: {
       type: [String],
       ref: "Transaction",
-      required: true,
       default: [], 
     },
     isActive: {
