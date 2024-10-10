@@ -51,7 +51,7 @@ export const UpdateProfileController = async (
         .json({ message: "User payload is missing or invalid." });
     }
     const { userId } = request.params;
-    const user = await userModel.findById(userId);
+    const user = await userModel.findOne({ id: userId });
     if (!user) {
       return response
         .status(StatusCodes.NOT_FOUND)

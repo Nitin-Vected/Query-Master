@@ -72,7 +72,7 @@ import {
   validateEnrollLead,
 } from "../utilities/validation/leadValidation";
 import { validateUpdateProfile } from "../utilities/validation/profileValidation";
-import { createUserController, viewUserListController } from "../controller/userController";
+import { createUserController } from "../controller/userController";
 import { validateCreateUser } from "../utilities/validation/userValidation";
 
 const apiRouter = express.Router();
