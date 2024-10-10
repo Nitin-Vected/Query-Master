@@ -32,14 +32,16 @@ export const StatusCodes = {
 };
 
 export const Messages = {
+  ALREADY_EXIST: "Already Exist!",
   AUTHORIZATION_TOKEN_MISSING: "Authorization Token is Missing or Invalid!",
   AUTHENTICATION_SUCCESS: "Authentication Successfull!",
   FETCHED_SUCCESSFULLY: "Fetched Successfully.",
   CREATED_SUCCESSFULLY: "Created SuccessFully.",
   UPDATED_SUCCESSFULLY: "Updated SuccessFully.",
   REGISTERED_SUCCESSFULLY: "Registered SuccessFully.",
-  CREATION_FAILED:"Creation Failed!",
-  UPDATION_FAILED:"Updation Failed!",
+  REGISTRATION_FAILED: "Registration Failed!",
+  CREATION_FAILED: "Creation Failed!",
+  UPDATION_FAILED: "Updation Failed!",
   SOMETHING_WENT_WRONG: "Something Went Wrong!",
   ERROR_OCCURED: "Error Occured in ",
   UNEXPECTED_ERROR: "Unexpected Error Occured!",
@@ -48,7 +50,8 @@ export const Messages = {
   MISSING_OR_INVALID: "is Missing or Invalid!",
   THIS_NOT_FOUND: "Not Found or Inactive!",
   USER_NOT_FOUND: "User Not Found or Inactive!",
-  ROLE_NOT_RECOGNIZED: "Role Not Recognized!"
+  ROLE_NOT_RECOGNIZED: "Role Not Recognized!",
+  MISSING_REQUIRED_FIELD: "Missing Required Fields for Creation of"
 }
 
 interface UserPayload {

@@ -3,6 +3,7 @@ import userModel from "../model/userModel";
 import {
   CustomRequest,
   generateUniqueId,
+  Messages,
   StatusCodes,
   STUDENT_ROLE_ID,
 } from "../config";
@@ -16,7 +17,7 @@ export const createUserController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
     const { email, roleName } = request.payload;
     const { firstName, lastName, leadEmail, contactNumber } = request.body;
@@ -28,7 +29,7 @@ export const createUserController = async (
     if (existingUser) {
       return response
         .status(StatusCodes.ALREADY_EXIST)
-        .json({ error: "User already exists." });
+        .json({ error: "User " + Messages.ALREADY_EXIST });
     }
 
     const userId = await generateUniqueId(userModel, "USER");
@@ -52,12 +53,12 @@ export const createUserController = async (
     if (!userResult) {
       return response
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ error: "User creation failed." });
+        .json({ error: "User " + Messages.CREATION_FAILED });
     }
 
     return response
       .status(StatusCodes.CREATED)
-      .json({ userId, message: "User created successfully." });
+      .json({ userId, message: "User " + Messages.CREATED_SUCCESSFULLY });
   } catch (error: unknown) {
     if (error instanceof Error) {
       return response
@@ -66,7 +67,30 @@ export const createUserController = async (
     }
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "An unexpected error occurred." });
+      .json({ error: Messages.UNEXPECTED_ERROR });
+  }
+};
+
+export const getUserByIdController = async (
+  request: Request,
+  response: Response
+) => {
+  const { userId } = request.params;
+  try {
+    const role = await userModel.findOne({ id: userId });
+    if (!role) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User " + Messages.THIS_NOT_FOUND });
+    }
+    response
+      .status(StatusCodes.OK)
+      .json({ data: role, message: "User " + Messages.FETCHED_SUCCESSFULLY });
+  } catch (error) {
+    console.log("Error occured in getUserById : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -98,7 +122,7 @@ export const createUser = async (
   console.log("user created successfully-------");
 
   if (!userResult) {
-    throw new Error("User creation failed.");
+    throw new Error("User " + Messages.CREATION_FAILED);
   }
 
   return userId;
@@ -117,17 +141,17 @@ export const viewUserListController = async (
     if (userList && userList.length > 0) {
       return response.status(StatusCodes.OK).json({
         userList: userList,
-        message: "Registered user fetched successfully  ..!",
+        message: "Userdata " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "User list not found ..!" });
+        .json({ message: "Userdata " + Messages.THIS_NOT_FOUND });
     }
   } catch (error) {
     console.log("Error occure in viewUserListController : ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };

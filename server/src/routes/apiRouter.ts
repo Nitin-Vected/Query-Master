@@ -49,7 +49,7 @@ import {
   validateUpdateProduct,
 } from "../utilities/validation/productValidation";
 import {
-  viewConsellorListController,
+  viewCounsellorListController,
   viewStudentListController,
 } from "../controller/userListController";
 import {
@@ -76,9 +76,10 @@ import {
 import { validateUpdateProfile } from "../utilities/validation/profileValidation";
 import {
   createUserController,
+  getUserByIdController,
   viewUserListController,
 } from "../controller/userController";
-import { validateCreateUser } from "../utilities/validation/userValidation";
+import { validateCreateUser, validateUserId } from "../utilities/validation/userValidation";
 import { validateTransaction } from "../utilities/validation/transactionValidation";
 import { createTransactionController } from "../controller/transactionController";
 
@@ -187,7 +188,7 @@ apiRouter.get("/student", viewStudentListController);
 
 /**
  * @swagger
- * /api/consellor:
+ * /api/counsellor:
  *   get:
  *     summary: View List of Counsellor
  *     tags: [Api]
@@ -195,7 +196,7 @@ apiRouter.get("/student", viewStudentListController);
  *       200:
  *         description: Successful operation
  */
-apiRouter.get("/consellor", viewConsellorListController);
+apiRouter.get("/counsellor", viewCounsellorListController);
 
 /**
  * @swagger
@@ -240,6 +241,28 @@ apiRouter.get("/consellor", viewConsellorListController);
  *         description: Internal Server Error
  */
 apiRouter.post("/user", validateCreateUser, createUserController);
+/**
+ * @swagger
+ * /api/user/{userId}:
+ *   get:
+ *     summary: Get User by ID
+ *     tags: [Api]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user
+ *     responses:
+ *       200:
+ *         description: User details retrieved
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+apiRouter.get("/user/:userId", validateUserId, getUserByIdController);
 
 /**
  * @swagger

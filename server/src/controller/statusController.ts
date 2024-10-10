@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import {
   CustomRequest,
   generateUniqueId,
+  Messages,
   StatusCodes,
 } from "../config";
 import statusModel from "../model/statusModel";
@@ -15,7 +16,7 @@ export const addNewStatusController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
     const { email, roleName } = request.payload;
     console.log("request.payload ", request.payload);
@@ -34,17 +35,17 @@ export const addNewStatusController = async (
     const newStatus = await statusModel.create(data);
     if (newStatus) {
       response.status(StatusCodes.CREATED).json({
-        message: "Status Added successfully ..!",
+        message: "Status " + Messages.CREATED_SUCCESSFULLY,
       });
     } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Something Went Wrong ..!",
+        message: Messages.SOMETHING_WENT_WRONG,
       });
     }
   } catch (error) {
     console.error("Error in addNewStatusController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Something went wrong!",
+      message: Messages.SOMETHING_WENT_WRONG,
     });
   }
 };
@@ -62,18 +63,18 @@ export const getAllStatusController = async (
     if (statusList && statusList.length > 0) {
       response.status(StatusCodes.OK).json({
         statusList: statusList,
-        message: "Status fetched successfully  ..!",
+        message: "Status " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Status list not found ..!" });
+        .json({ message: "Statuslist " + Messages.THIS_NOT_FOUND });
     }
   } catch (error) {
     console.log("Error occure in getAllStatusController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -87,16 +88,16 @@ export const getStatusByIdController = async (
     if (!status) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Status not found" });
+        .json({ message: "Status " + Messages.THIS_NOT_FOUND });
     }
     response
       .status(StatusCodes.OK)
-      .json({ data: status, message: "Status of given statusId : " });
+      .json({ data: status, message: "Status " + Messages.FETCHED_SUCCESSFULLY });
   } catch (error) {
     console.log("Error occured in getStatusById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -110,7 +111,7 @@ export const updateStatusController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
 
     const { email, roleName } = request.payload;
@@ -129,17 +130,17 @@ export const updateStatusController = async (
     if (!updatedStatus) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Status not found." });
+        .json({ message: "Status " + Messages.THIS_NOT_FOUND });
     }
 
     response.status(StatusCodes.OK).json({
-      message: "Status updated successfully!",
+      message: "Status " + Messages.CREATED_SUCCESSFULLY,
       status: updatedStatus,
     });
   } catch (error) {
     console.error("Error in updateStatusController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Something went wrong!",
+      message: Messages.SOMETHING_WENT_WRONG,
     });
   }
 };

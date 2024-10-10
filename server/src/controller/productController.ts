@@ -1,5 +1,11 @@
 import { Request, Response } from "express";
-import { CustomRequest, generateUniqueId, StatusCodes } from "../config";
+
+import {
+  CustomRequest,
+  generateUniqueId,
+  Messages,
+  StatusCodes,
+} from "../config";
 import productModel from "../model/productModel";
 
 export const addNewProductController = async (
@@ -10,7 +16,7 @@ export const addNewProductController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
 
     const { email, roleName } = request.payload;
@@ -50,25 +56,25 @@ export const addNewProductController = async (
     });
     if (existingProduct) {
       return response.status(StatusCodes.ALREADY_EXIST).json({
-        message: "Product already exists with the same name and category!",
+        message: "Product " + Messages.ALREADY_EXIST,
       });
     }
 
     const newProduct = await productModel.create(data);
     if (newProduct) {
       return response.status(StatusCodes.CREATED).json({
-        message: "Product added successfully!",
+        message: "Product " + Messages.CREATED_SUCCESSFULLY,
       });
     } else {
       return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Something went wrong!",
+        message: Messages.SOMETHING_WENT_WRONG
       });
     }
   } catch (error) {
     console.log("Error occurred in addNewProductController: ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -86,18 +92,18 @@ export const getAllProductController = async (
     if (productList && productList.length > 0) {
       response.status(StatusCodes.OK).json({
         productList: productList,
-        message: "Products fetched successfully  ..!",
+        message: "Products " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product list not found ..!" });
+        .json({ message: "Product list " + Messages.THIS_NOT_FOUND });
     }
   } catch (error) {
     console.log("Error occure in getAllProductController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -111,16 +117,16 @@ export const getProductByIdController = async (
     if (!product) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product not found" });
+        .json({ message: "Product " + Messages.THIS_NOT_FOUND });
     }
     response
       .status(StatusCodes.OK)
-      .json({ data: product, message: "Product of given id" });
+      .json({ data: product, message: "Product " + Messages.FETCHED_SUCCESSFULLY });
   } catch (error) {
     console.log("Error occured in getProductById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -132,7 +138,7 @@ export const updateProductController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
 
     const { email, roleName } = request.payload;
@@ -152,7 +158,7 @@ export const updateProductController = async (
     if (!existingProduct) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product not found." });
+        .json({ message: "Product " + Messages.THIS_NOT_FOUND });
     }
 
     const updatedFields: any = {};
@@ -182,18 +188,18 @@ export const updateProductController = async (
 
     if (updatedProduct) {
       return response.status(StatusCodes.OK).json({
-        message: "Product updated successfully!",
+        message: "Product " + Messages.UPDATED_SUCCESSFULLY,
         updatedProduct,
       });
     } else {
       return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Failed to update the product.",
+        message: "Product " + Messages.UPDATION_FAILED,
       });
     }
   } catch (error) {
     console.log("Error occurred in updateProductController: ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
