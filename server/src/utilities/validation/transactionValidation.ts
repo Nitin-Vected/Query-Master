@@ -4,8 +4,8 @@ import { checkValidation } from "./checkValidation";
 export const validateTransaction = [
   body("paymentMode").notEmpty().withMessage("Payment mode is required."),
   body("transactionDate")
-    .isISO8601()
-    .withMessage("Transaction date must be a valid date."),
+    .isString()
+    .withMessage("Transaction date must be a string."),
   body("transactionAmount")
     .isFloat({ gt: 0 })
     .withMessage("Transaction amount must be a positive number."),

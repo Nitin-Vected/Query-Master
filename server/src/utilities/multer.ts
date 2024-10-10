@@ -23,12 +23,17 @@ const createStorage = (subfolder: string) => {
 
 export const uploadTransactionProof = multer({
   storage: createStorage("transactionProofs"),
+  fileFilter: (req, file, cb) => {
+    if (!file) {
+      return cb(null, true);
+    }
+    cb(null, true);
+  },
 }).single("transactionProof");
 
-export const uploadImages = multer({
-  storage: createStorage("images"),
-}).single("transactionProof");
-
-export const uploadDocuments = multer({
-  storage: createStorage("documents"),
-}).single("transactionProof");
+export const uploadProductAssets = multer({
+  storage: createStorage("productAssets"),
+}).fields([
+  { name: "image", maxCount: 1 },
+  { name: "document", maxCount: 1 },
+]);

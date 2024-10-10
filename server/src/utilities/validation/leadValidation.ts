@@ -12,7 +12,7 @@ export const validateUpdateLead = [
       'Lead ID must follow the format "LEAD" followed by 4 digits, e.g., "LEAD0001"'
     ),
 
-    body("firstName")
+  body("firstName")
     .optional()
     .isString()
     .withMessage("First name must be a string"),
@@ -136,15 +136,6 @@ export const validateEnrollLead = [
     .isNumeric()
     .withMessage("Discount must be a number"),
 
-  body("transactionProof")
-    .optional()
-    .custom(({ req }) => {
-      if (!req.file) {
-        throw new Error("Transaction proof is required");
-      }
-      return true;
-    }),
-
   body("transactionAmount")
     .notEmpty()
     .withMessage("Transaction amount is required")
@@ -231,7 +222,7 @@ export const validateAddNewLead = [
   checkValidation,
 ];
 
-export const validateGetLeadById = [
+export const validateGetLeadId = [
   param("leadId")
     .notEmpty()
     .withMessage("Lead ID is required")
@@ -242,5 +233,5 @@ export const validateGetLeadById = [
       'Lead ID must follow the format "LEAD" followed by 4 digits, e.g., "LEAD0001"'
     ),
 
-    checkValidation,
+  checkValidation,
 ];

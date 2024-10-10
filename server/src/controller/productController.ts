@@ -1,10 +1,5 @@
 import { Request, Response } from "express";
-
-import {
-  CustomRequest,
-  generateUniqueId,
-  StatusCodes,
-} from "../config";
+import { CustomRequest, generateUniqueId, StatusCodes } from "../config";
 import productModel from "../model/productModel";
 
 export const addNewProductController = async (
@@ -17,16 +12,21 @@ export const addNewProductController = async (
         .status(StatusCodes.UNAUTHORIZED)
         .json({ message: "User payload is missing or invalid." });
     }
+
     const { email, roleName } = request.payload;
-    const {
-      productName,
-      productCategory,
-      productFees,
-      productDescription,
-      image,
-      document,
-    } = request.body;
+
+    const { productName, productCategory, productFees, productDescription } =
+      request.body;
+
+    const files = request.files as
+      | { [fieldname: string]: Express.Multer.File[] }
+      | undefined;
+
+    const image = files?.["image"] ? files["image"][0].path : null;
+    const document = files?.["document"] ? files["document"][0].path : null;
+
     const productId = await generateUniqueId(productModel, "PRODUCT");
+
     const data = {
       id: productId,
       name: productName,
@@ -43,30 +43,32 @@ export const addNewProductController = async (
       createrRole: roleName,
       updaterRole: roleName,
     };
+
     const existingProduct = await productModel.findOne({
       productName,
       productCategory,
     });
     if (existingProduct) {
-      response.status(StatusCodes.ALREADY_EXIST).json({
-        message: "Product Already exist with same name and category ..!",
+      return response.status(StatusCodes.ALREADY_EXIST).json({
+        message: "Product already exists with the same name and category!",
       });
     }
+
     const newProduct = await productModel.create(data);
     if (newProduct) {
-      response.status(StatusCodes.CREATED).json({
-        message: "Product Added successfully ..!",
+      return response.status(StatusCodes.CREATED).json({
+        message: "Product added successfully!",
       });
     } else {
-      response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Something Went Wrong ..!",
+      return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Something went wrong!",
       });
     }
   } catch (error) {
-    console.log("Error occure in addNewProductController : ", error);
-    response
+    console.log("Error occurred in addNewProductController: ", error);
+    return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: "Something went wrong!" });
   }
 };
 
@@ -122,7 +124,7 @@ export const getProductByIdController = async (
   }
 };
 
-export const updateProductByIdController = async (
+export const updateProductController = async (
   request: CustomRequest,
   response: Response
 ) => {
@@ -134,17 +136,17 @@ export const updateProductByIdController = async (
     }
 
     const { email, roleName } = request.payload;
-    const { productId } = request.params; // Your custom product ID, e.g., 'PRODUCT0001'
-    const {
-      productName,
-      productCategory,
-      productFees,
-      productDescription,
-      image,
-      document,
-    } = request.body;
+    const { productId } = request.params;
+    const { productName, productCategory, productFees, productDescription } =
+      request.body;
 
-    // Use findOne to query based on custom productId
+    const files = request.files as
+      | { [fieldname: string]: Express.Multer.File[] }
+      | undefined;
+
+    const image = files?.["image"] ? files["image"][0].path : null;
+    const document = files?.["document"] ? files["document"][0].path : null;
+
     const existingProduct = await productModel.findOne({ id: productId });
 
     if (!existingProduct) {
@@ -172,7 +174,6 @@ export const updateProductByIdController = async (
     updatedFields.updatedBy = email;
     updatedFields.updaterRole = roleName;
 
-    // Update using the custom productId
     const updatedProduct = await productModel.findOneAndUpdate(
       { id: productId },
       updatedFields,
@@ -190,7 +191,7 @@ export const updateProductByIdController = async (
       });
     }
   } catch (error) {
-    console.log("Error occurred in updateProductByIdController: ", error);
+    console.log("Error occurred in updateProductController: ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong!" });

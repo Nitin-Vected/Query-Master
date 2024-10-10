@@ -14,7 +14,7 @@ import {
   addNewProductController,
   getAllProductController,
   getProductByIdController,
-  updateProductByIdController,
+  updateProductController,
 } from "../controller/productController";
 import {
   addNewStatusController,
@@ -63,11 +63,14 @@ import {
   getLeadByIdController,
   updateLeadController,
 } from "../controller/leadController";
-import { uploadTransactionProof } from "../utilities/multer";
+import {
+  uploadProductAssets,
+  uploadTransactionProof,
+} from "../utilities/multer";
 import {
   validateAddNewLead,
   validateUpdateLead,
-  validateGetLeadById,
+  validateGetLeadId,
   validateEnrollLead,
 } from "../utilities/validation/leadValidation";
 import { validateUpdateProfile } from "../utilities/validation/profileValidation";
@@ -598,7 +601,7 @@ apiRouter.put(
  *       description: Course data
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -616,10 +619,12 @@ apiRouter.put(
  *                 example: Become a skilled Data Analyst by mastering data visualization, data cleaning, statistical analysis, and data modeling techniques.
  *               image:
  *                 type: string
- *                 example: https://randomsite.com/images/data-analyst-course.jpg
+ *                 format: binary
+ *                 description: The image file for the course.
  *               document:
  *                 type: string
- *                 example: https://randomsite.com/docs/data-analyst-syllabus.pdf
+ *                 format: binary
+ *                 description: The syllabus or document file for the course.
  *     responses:
  *       201:
  *         description: Course created
@@ -628,7 +633,12 @@ apiRouter.put(
  *       401:
  *         description: Unauthorized
  */
-apiRouter.post("/product", validateNewProduct, addNewProductController);
+apiRouter.post(
+  "/product",
+  uploadProductAssets,
+  validateNewProduct,
+  addNewProductController
+);
 
 /**
  * @swagger
@@ -689,7 +699,7 @@ apiRouter.get(
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -711,12 +721,12 @@ apiRouter.get(
  *                 example: "A high-quality product"
  *               image:
  *                 type: string
- *                 description: URL of the updated product image
- *                 example: "https://example.com/image.jpg"
+ *                 format: binary
+ *                 description: The new image file for the product.
  *               document:
  *                 type: string
- *                 description: URL of the updated product document
- *                 example: "https://example.com/document.pdf"
+ *                 format: binary
+ *                 description: The new document file for the product.
  *     responses:
  *       200:
  *         description: Product updated successfully
@@ -729,8 +739,9 @@ apiRouter.get(
  */
 apiRouter.put(
   "/product/:productId",
+  uploadProductAssets,
   validateUpdateProduct,
-  updateProductByIdController
+  updateProductController
 );
 
 /**
@@ -824,7 +835,7 @@ apiRouter.get("/lead", getAllLeadsController);
  *       401:
  *         description: Unauthorized
  */
-apiRouter.get("/lead/:leadId", validateGetLeadById, getLeadByIdController);
+apiRouter.get("/lead/:leadId", validateGetLeadId, getLeadByIdController);
 
 /**
  * @swagger
@@ -937,15 +948,11 @@ apiRouter.put("/lead/:leadId", validateUpdateLead, updateLeadController);
  *                 description: "Payment mode, e.g., Online, Cash, etc."
  *               finalAmount:
  *                 type: number
- *                 example: 1500
+ *                 example: 15000
  *                 description: "Total amount after applying discount"
- *               discount:
- *                 type: number
- *                 example: 100
- *                 description: "Optional discount on the final amount"
  *               transactionAmount:
  *                 type: number
- *                 example: 1400
+ *                 example: 10000
  *                 description: "Amount paid in the transaction"
  *               transactionDate:
  *                 type: string
@@ -956,12 +963,12 @@ apiRouter.put("/lead/:leadId", validateUpdateLead, updateLeadController);
  *                 description: "Proof of the transaction"
  *               dueAmount:
  *                 type: number
- *                 example: 0
- *                 description: "Any pending due amount (optional)"
+ *                 example: 5000
+ *                 description: "Any pending due amount"
  *               dueDate:
  *                 type: string
  *                 example: "2024-11-10"
- *                 description: "Date when the due amount is expected to be paid (optional)"
+ *                 description: "Date when the due amount is expected to be paid"
  *     responses:
  *       200:
  *         description: Student enrolled and transaction details added successfully
@@ -992,17 +999,21 @@ apiRouter.post(
  *             properties:
  *               paymentMode:
  *                 type: string
- *                 description: The payment method (e.g., credit card, PayPal).
+ *                 example: Cash
+ *                 description: The payment method (e.g., Online, Cash).
  *               transactionDate:
  *                 type: string
+ *                 example: 2024-11-10
  *                 description: The date of the transaction.
  *               transactionAmount:
  *                 type: number
+ *                 example: 15000
  *                 description: The amount of the transaction.
  *               orderId:
  *                 type: string
+ *                 example: ORDER0001
  *                 description: The ID of the order associated with the transaction.
- *               proof:
+ *               transactionProof:
  *                 type: string
  *                 format: binary
  *                 description: The proof of transaction file (receipt, invoice, etc.).

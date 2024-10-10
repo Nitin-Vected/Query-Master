@@ -10,7 +10,6 @@ export const enrollStudent = async (
   const {
     userId,
     transactionId,
-    orderId,
     products,
     finalAmount,
     transactionDate,

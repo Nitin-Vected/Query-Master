@@ -25,6 +25,21 @@ export const createTransactionController = async (
         .json({ error: "Missing required fields for transaction creation." });
     }
 
+    const order = await orderModel.findOne({ id: orderId });
+    if (!order) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: "Order not found." });
+    }
+
+    const dueAmount = order.dueAmount;
+
+    if (transactionAmount > dueAmount) {
+      return response.status(StatusCodes.BAD_REQUEST).json({
+        error: "Transaction amount exceeds the due amount.",
+      });
+    }
+
     const transactionId = await generateUniqueId(
       transactionModel,
       "TRANSACTION"
@@ -44,7 +59,6 @@ export const createTransactionController = async (
     };
 
     const newTransaction = await transactionModel.create(transactionData);
-
     if (!newTransaction) {
       return response
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -53,7 +67,10 @@ export const createTransactionController = async (
 
     const updatedOrder = await orderModel.findOneAndUpdate(
       { id: orderId },
-      { $push: { transactions: transactionId } },
+      {
+        $set: { dueAmount: dueAmount - transactionAmount },
+        $push: { transactions: transactionId },
+      },
       { new: true }
     );
 
