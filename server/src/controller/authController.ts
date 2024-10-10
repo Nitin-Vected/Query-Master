@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import userModel from "../model/userModel";
 import jwt from "jsonwebtoken";
-import UserPayload, { CustomRequest, StatusCodes } from "../config";
+import UserPayload, { CustomRequest, Messages, StatusCodes } from "../config";
 
 const secretKeys: { [key: string]: string } = {
   Admin: process.env.ADMIN_SECRET_KEY as string,
@@ -93,12 +93,12 @@ export const authenticationController = async (
     return response.status(StatusCodes.OK).json({
       userData: userData,
       token: token,
-      message: "Authentication successful!",
+      message: Messages.AUTHENTICATION_SUCCESS,
     });
   } catch (err) {
     console.log("Error in authenticationController", err);
     response
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Invalid or expired token" });
+      .json({ message: Messages.INVALID_OR_EXPIRED_TOKEN });
   }
 };

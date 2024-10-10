@@ -51,7 +51,6 @@ import {
 import {
   viewConsellorListController,
   viewStudentListController,
-  viewUserListController,
 } from "../controller/userListController";
 import {
   UpdateProfileController,
@@ -72,6 +71,7 @@ import {
   validateUpdateLead,
 } from "../utilities/validation/leadValidation";
 import { validateUpdateProfile } from "../utilities/validation/profileValidation";
+import { viewUserListController } from "../controller/userController";
 
 const apiRouter = express.Router();
 

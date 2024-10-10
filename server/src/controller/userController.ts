@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import userModel from "../model/userModel";
-import { generateUniqueId, STUDENT_ROLE_ID } from "../config";
+import { generateUniqueId, StatusCodes, STUDENT_ROLE_ID } from "../config";
 import mongoose from "mongoose";
 
 export const createUserController = async (
@@ -86,4 +86,32 @@ export const createUser = async (
   }
 
   return userId;
+};
+
+export const viewUserListController = async (
+  request: Request,
+  response: Response
+) => {
+  try {
+    const userList = await userModel
+      .find({}, { _id: 0 })
+      .select("name email contactNumber role profileImg status")
+      .sort({ updatedAt: -1, createdAt: -1 });
+
+    if (userList && userList.length > 0) {
+      response.status(StatusCodes.OK).json({
+        userList: userList,
+        message: "Registered user fetched successfully  ..!",
+      });
+    } else {
+      response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User list not found ..!" });
+    }
+  } catch (error) {
+    console.log("Error occure in viewUserListController : ", error);
+    response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
 };
