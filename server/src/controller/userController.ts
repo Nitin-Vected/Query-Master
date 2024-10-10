@@ -1,20 +1,34 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import userModel from "../model/userModel";
-import { generateUniqueId, STUDENT_ROLE_ID } from "../config";
+import {
+  CustomRequest,
+  generateUniqueId,
+  StatusCodes,
+  STUDENT_ROLE_ID,
+} from "../config";
 import mongoose from "mongoose";
 
 export const createUserController = async (
-  req: Request,
-  res: Response
+  request: CustomRequest,
+  response: Response
 ): Promise<Response> => {
   try {
-    const { firstName, lastName, leadEmail, contactNumber, email, roleName } =
-      req.body;
+    if (!request.payload) {
+      return response
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "User payload is missing or invalid." });
+    }
+    const { email, roleName } = request.payload;
+    const { firstName, lastName, leadEmail, contactNumber } = request.body;
 
-    if (!firstName || !lastName || !leadEmail || !contactNumber) {
-      return res
-        .status(400)
-        .json({ error: "Missing required fields for user creation." });
+    const existingUser = await userModel.findOne({
+      $or: [{ email: leadEmail }, { contactNumber }],
+    });
+
+    if (existingUser) {
+      return response
+        .status(StatusCodes.ALREADY_EXIST)
+        .json({ error: "User already exists." });
     }
 
     const userId = await generateUniqueId(userModel, "USER");
@@ -25,7 +39,7 @@ export const createUserController = async (
       lastName,
       email: leadEmail,
       contactNumber,
-      roleId: STUDENT_ROLE_ID || "",
+      roleId: STUDENT_ROLE_ID,
       status: true,
       createdBy: email,
       updatedBy: email,
@@ -36,17 +50,23 @@ export const createUserController = async (
     const userResult = await userModel.create(userData);
 
     if (!userResult) {
-      return res.status(500).json({ error: "User creation failed." });
+      return response
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: "User creation failed." });
     }
 
-    return res
-      .status(201)
+    return response
+      .status(StatusCodes.CREATED)
       .json({ userId, message: "User created successfully." });
   } catch (error: unknown) {
     if (error instanceof Error) {
-      return res.status(500).json({ error: error.message });
+      return response
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: error.message });
     }
-    return res.status(500).json({ error: "An unexpected error occurred." });
+    return response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "An unexpected error occurred." });
   }
 };
 
@@ -57,10 +77,6 @@ export const createUser = async (
 ) => {
   const { firstName, lastName, leadEmail, contactNumber, email, roleName } =
     data;
-
-  if (!firstName || !lastName || !leadEmail || !contactNumber) {
-    throw new Error("Missing required fields for user creation.");
-  }
 
   const userId = await generateUniqueId(userModel, "USER");
 
@@ -86,4 +102,32 @@ export const createUser = async (
   }
 
   return userId;
+};
+
+export const viewUserListController = async (
+  request: Request,
+  response: Response
+): Promise<Response> => {
+  try {
+    const userList = await userModel
+      .find({}, { _id: 0 })
+      .select("name email contactNumber role profileImg status")
+      .sort({ updatedAt: -1, createdAt: -1 });
+
+    if (userList && userList.length > 0) {
+      return response.status(StatusCodes.OK).json({
+        userList: userList,
+        message: "Registered user fetched successfully  ..!",
+      });
+    } else {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User list not found ..!" });
+    }
+  } catch (error) {
+    console.log("Error occure in viewUserListController : ", error);
+    return response
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong ..!" });
+  }
 };

@@ -1,17 +1,12 @@
 import {
   CustomRequest,
-  STATUS_ENROLLED,
-  STUDENT_ROLE_ID,
   StatusCodes,
   generateUniqueId,
 } from "../config";
 import { Request, Response } from "express";
 import leadModel from "../model/leadModel";
-import studentModel from "../model/studentModel";
 import userModel from "../model/userModel";
-import transactionModel from "../model/transactionModel";
 import { deleteFile } from "../utilities/deleteUploadedFile";
-import orderModel from "../model/orderModel";
 import mongoose from "mongoose";
 import { Audit, Comment } from "../model/leadModel";
 import { createUser } from "./userController";
@@ -128,7 +123,7 @@ export const getLeadByIdController = async (
         .json({ message: "Lead Not Found" });
     }
     response
-      .status(200)
+      .status(StatusCodes.OK)
       .json({ data: lead, message: "Lead Fetched Successfully" });
   } catch (error) {
     console.log("Error occured in getLeadById : ", error);
@@ -298,11 +293,23 @@ export const enrollLeadController = async (
       .status(StatusCodes.UNAUTHORIZED)
       .json({ message: "User payload is missing or invalid." });
   }
+  const { email, roleName } = request.payload;
+  const { leadEmail, contactNumber } = request.body;
   let session: mongoose.ClientSession | null = null;
   try {
     session = await mongoose.startSession();
     session.startTransaction();
-    const { email, roleName } = request.payload;
+
+    const existingLead = await userModel.findOne({
+      $or: [{ email: leadEmail }, { contactNumber }],
+    });
+
+    if (existingLead) {
+      return response
+        .status(StatusCodes.ALREADY_EXIST)
+        .json({ message: "Lead already registered. Please go to dashboard and add only new product" });
+    }
+
     const userId = await createUser(
       { ...request.body, email, roleName },
       session
@@ -350,177 +357,3 @@ export const enrollLeadController = async (
       .json({ message: "Enrollment failed, please try again." });
   }
 };
-
-// export const enrollLeadController = async (
-//     request: CustomRequest,
-//     response: Response
-// ) => {
-//     let uploadedFilePath = "";
-//     let session: mongoose.ClientSession | null = null;
-//     try {
-//         if (!request.payload) {
-//             return response
-//                 .status(StatusCodes.UNAUTHORIZED)
-//                 .json({ message: "User payload is missing or invalid." });
-//         }
-//         session = await mongoose.startSession();
-//         session.startTransaction();
-
-//         const { email, roleName } = request.payload;
-//         const {
-//             leadEmail,
-//             firstName,
-//             lastName,
-//             contactNumber,
-//             paymentMode,
-//             transactionDate,
-//             transactionAmount,
-//             products,
-//             finalAmount,
-//             dueDate,
-//             dueAmount,
-//         } = request.body;
-
-//         // const existingLead = await leadModel.findOne({ email: leadEmail });
-//         // if (!existingLead) {
-//         //   console.log("Lead does not exist. Creating a new lead.");
-//         //   const leadId = await generateUniqueId(leadModel, "LEAD");
-//         //   const leadData = {
-//         //     id: leadId,
-//         //     firstName,
-//         //     lastName,
-//         //     email: leadEmail,
-//         //     contactNumber,
-//         //     productAmount: finalAmount,
-//         //     discount,
-//         //     productId,
-//         //     statusId: STATUS_INTERESTED,
-//         //     createdBy: email,
-//         //     updatedBy: email,
-//         //     createrRole: roleName,
-//         //     updaterRole: roleName,
-//         //   };
-//         //   const leadRegistrationResult = await leadModel.create([leadData], {
-//         //     session,
-//         //   });
-//         //   if (!leadRegistrationResult) {
-//         //     throw new Error(
-//         //       "Student Registration Failed, Please register the Lead first ..!"
-//         //     );
-//         //   }
-//         // }
-
-//         const transactionProof = request.file?.path;
-//         if (transactionProof) {
-//             uploadedFilePath = transactionProof;
-//         }
-
-//         const userId = await generateUniqueId(userModel, "USER");
-//         const userData = {
-//             id: userId,
-//             firstName,
-//             lastName,
-//             email: leadEmail,
-//             contactNumber,
-//             roleId: STUDENT_ROLE_ID,
-//             status: true,
-//             createdBy: email,
-//             updatedBy: email,
-//             createrRole: roleName,
-//             updaterRole: roleName,
-//         };
-
-//         const result = await userModel.create([userData], { session });
-
-//         if (!result) {
-//             throw new Error("Failed to create user");
-//         }
-
-//         const orderId = await generateUniqueId(orderModel, "ORDER");
-
-//         const transactionId = await generateUniqueId(
-//             transactionModel,
-//             "TRANSACTION"
-//         );
-//         const transactionData = {
-//             id: transactionId,
-//             orderId,
-//             mode: paymentMode,
-//             date: transactionDate,
-//             amount: transactionAmount,
-//             proof: transactionProof,
-//             createdBy: email,
-//             updatedBy: email,
-//             createrRole: roleName,
-//             updaterRole: roleName,
-//         };
-
-//         const newTransaction = await transactionModel.create([transactionData], {
-//             session,
-//         });
-//         if (!newTransaction) {
-//             throw new Error("Transaction creation failed");
-//         }
-
-//         const orderData = {
-//             id: orderId,
-//             userId,
-//             transactions: [transactionId],
-//             products,
-//             amount: finalAmount,
-//             dueAmount,
-//             dueDate,
-//             createdBy: email,
-//             updatedBy: email,
-//             createrRole: roleName,
-//             updaterRole: roleName,
-//         };
-
-//         const newOrder = await orderModel.create([orderData], { session });
-//         if (!newOrder) {
-//             throw new Error("Order creation failed");
-//         }
-
-//         const leadStatusResult = await leadModel.updateOne(
-//             { email: leadEmail },
-//             { $set: { statusId: STATUS_ENROLLED } },
-//             { session }
-//         );
-
-//         if (!leadStatusResult?.acknowledged) {
-//             throw new Error("Lead status update failed");
-//         }
-
-//         const enrollmentNumber = await generateUniqueId(studentModel, "VSA");
-
-//         const studentData = {
-//             enrollmentNumber,
-//             products,
-//             userId,
-//             transactions: [transactionId],
-//             amount: finalAmount,
-//             enrollmentDate: transactionDate,
-//             createdBy: email,
-//             updatedBy: email,
-//             createrRole: roleName,
-//             updaterRole: roleName,
-//         };
-//         const studentResult = await studentModel.create([studentData], { session });
-//         if (!studentResult) {
-//             throw new Error("Student registration failed");
-//         }
-//         await session.commitTransaction();
-//         session.endSession();
-
-//         response
-//             .status(StatusCodes.CREATED)
-//             .json({ message: "Student Enrolled Successfully ..!" });
-//     } catch (error) {
-//         await userModel.deleteOne({ email: request.body.email });
-//         deleteFile(uploadedFilePath);
-//         console.error("Error registering lead as user: ", error);
-//         return response
-//             .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//             .json({ error: "Something went wrong, please try again." });
-//     }
-// };

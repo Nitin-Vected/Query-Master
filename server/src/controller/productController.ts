@@ -112,7 +112,7 @@ export const getProductByIdController = async (
         .json({ message: "Product not found" });
     }
     response
-      .status(200)
+      .status(StatusCodes.OK)
       .json({ data: product, message: "Product of given id" });
   } catch (error) {
     console.log("Error occured in getProductById : ", error);

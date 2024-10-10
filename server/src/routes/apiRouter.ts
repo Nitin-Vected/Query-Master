@@ -51,7 +51,7 @@ import {
 import {
   viewConsellorListController,
   viewStudentListController,
-  viewUserListController,
+//   viewUserListController
 } from "../controller/userListController";
 import {
   UpdateProfileController,
@@ -67,11 +67,13 @@ import {
 import { uploadTransactionProof } from "../utilities/multer";
 import {
   validateAddNewLead,
-  validateEnrollLead,
-  validateGetLeadById,
   validateUpdateLead,
+  validateGetLeadById,
+  validateEnrollLead,
 } from "../utilities/validation/leadValidation";
 import { validateUpdateProfile } from "../utilities/validation/profileValidation";
+import { createUserController, viewUserListController } from "../controller/userController";
+import { validateCreateUser } from "../utilities/validation/userValidation";
 
 const apiRouter = express.Router();
 
@@ -154,7 +156,11 @@ apiRouter.get("/profile", viewProfileController);
  *       500:
  *         description: Something went wrong while updating profile
  */
-apiRouter.put("/profile/:userId", validateUpdateProfile, UpdateProfileController);
+apiRouter.put(
+  "/profile/:userId",
+  validateUpdateProfile,
+  UpdateProfileController
+);
 
 /**
  * @swagger
@@ -187,9 +193,35 @@ apiRouter.get("/consellor", viewConsellorListController);
 /**
  * @swagger
  * /api/user:
- *   get:
- *     summary: View List of Users
+ *   post:
+ *     summary: Create a new user
  *     tags: [Api]
+ *     requestBody:
+ *       description: User details for creating a new user
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               leadEmail:
+ *                 type: string
+ *                 example: john.doe@example.com
+ *               contactNumber:
+ *                 type: string
+ *                 example: '1234567890'
+ *               email:
+ *                 type: string
+ *                 example: admin@example.com
+ *               roleName:
+ *                 type: string
+ *                 example: Admin
  *     responses:
  *       200:
  *         description: Successful operation
@@ -197,8 +229,10 @@ apiRouter.get("/consellor", viewConsellorListController);
  *         description: Bad request
  *       401:
  *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
-apiRouter.get("/user", viewUserListController);
+apiRouter.post("/users", validateCreateUser, createUserController);
 
 /**
  * @swagger

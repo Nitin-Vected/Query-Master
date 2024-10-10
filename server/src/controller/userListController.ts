@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-
 import { StatusCodes, COUNSELLOR_ROLE_ID } from "../config";
 import userModel from "../model/userModel";
 import studentModel from "../model/studentModel";
@@ -30,7 +29,7 @@ export const viewStudentListController = async (
       },
     ]);
     if (studentList && studentList.length > 0) {
-        return response.status(StatusCodes.OK).json({
+      return response.status(StatusCodes.OK).json({
         studentList,
         message: "These are the registered students!",
       });
@@ -78,7 +77,7 @@ export const viewConsellorListController = async (
 export const viewUserListController = async (
   request: Request,
   response: Response
-) => {
+): Promise<Response> => {
   try {
     const userList = await userModel
       .find({}, { _id: 0 })
@@ -86,18 +85,18 @@ export const viewUserListController = async (
       .sort({ updatedAt: -1, createdAt: -1 });
 
     if (userList && userList.length > 0) {
-      response.status(StatusCodes.OK).json({
+      return response.status(StatusCodes.OK).json({
         userList: userList,
         message: "Registered user fetched successfully  ..!",
       });
     } else {
-      response
+      return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "User list not found ..!" });
     }
   } catch (error) {
     console.log("Error occure in viewUserListController : ", error);
-    response
+    return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Something went wrong ..!" });
   }

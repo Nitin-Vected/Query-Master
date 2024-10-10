@@ -1,4 +1,4 @@
-import { body, check, param } from "express-validator";
+import { body, param } from "express-validator";
 import { checkValidation } from "./checkValidation";
 
 export const validateUpdateLead = [
@@ -12,8 +12,7 @@ export const validateUpdateLead = [
       'Lead ID must follow the format "LEAD" followed by 4 digits, e.g., "LEAD0001"'
     ),
 
-  // Validate the request body fields
-  body("firstName")
+    body("firstName")
     .optional()
     .isString()
     .withMessage("First name must be a string"),
@@ -74,7 +73,6 @@ export const validateUpdateLead = [
 
   body("comment").optional().isString().withMessage("Comment must be a string"),
 
-  // Middleware to handle errors
   checkValidation,
 ];
 
@@ -140,7 +138,7 @@ export const validateEnrollLead = [
 
   body("transactionProof")
     .optional()
-    .custom((value, { req }) => {
+    .custom(({ req }) => {
       if (!req.file) {
         throw new Error("Transaction proof is required");
       }
@@ -230,7 +228,6 @@ export const validateAddNewLead = [
     .isString()
     .withMessage("Description must be a string"),
 
-  // Middleware to handle errors
   checkValidation,
 ];
 
@@ -245,6 +242,5 @@ export const validateGetLeadById = [
       'Lead ID must follow the format "LEAD" followed by 4 digits, e.g., "LEAD0001"'
     ),
 
-  // Middleware to handle validation errors
-  checkValidation,
+    checkValidation,
 ];
