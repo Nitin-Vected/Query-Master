@@ -66,12 +66,18 @@ import {
 import { uploadTransactionProof } from "../utilities/multer";
 import {
   validateAddNewLead,
-  validateEnrollLead,
-  validateGetLeadById,
   validateUpdateLead,
+  validateGetLeadById,
+  validateEnrollLead,
 } from "../utilities/validation/leadValidation";
 import { validateUpdateProfile } from "../utilities/validation/profileValidation";
-import { viewUserListController } from "../controller/userController";
+import {
+  createUserController,
+  viewUserListController,
+} from "../controller/userController";
+import { validateCreateUser } from "../utilities/validation/userValidation";
+import { validateTransaction } from "../utilities/validation/transactionValidation";
+import { createTransactionController } from "../controller/transactionController";
 
 const apiRouter = express.Router();
 
@@ -154,7 +160,11 @@ apiRouter.get("/profile", viewProfileController);
  *       500:
  *         description: Something went wrong while updating profile
  */
-apiRouter.put("/profile/:userId", validateUpdateProfile, UpdateProfileController);
+apiRouter.put(
+  "/profile/:userId",
+  validateUpdateProfile,
+  UpdateProfileController
+);
 
 /**
  * @swagger
@@ -187,9 +197,35 @@ apiRouter.get("/consellor", viewConsellorListController);
 /**
  * @swagger
  * /api/user:
- *   get:
- *     summary: View List of Users
+ *   post:
+ *     summary: Create a new user
  *     tags: [Api]
+ *     requestBody:
+ *       description: User details for creating a new user
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               leadEmail:
+ *                 type: string
+ *                 example: john.doe@example.com
+ *               contactNumber:
+ *                 type: string
+ *                 example: '1234567890'
+ *               email:
+ *                 type: string
+ *                 example: admin@example.com
+ *               roleName:
+ *                 type: string
+ *                 example: Admin
  *     responses:
  *       200:
  *         description: Successful operation
@@ -197,6 +233,20 @@ apiRouter.get("/consellor", viewConsellorListController);
  *         description: Bad request
  *       401:
  *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
+apiRouter.post("/user", validateCreateUser, createUserController);
+
+/**
+ * @swagger
+ * /api/user:
+ *   get:
+ *     summary: View List of User
+ *     tags: [Api]
+ *     responses:
+ *       200:
+ *         description: Successful operation
  */
 apiRouter.get("/user", viewUserListController);
 
@@ -925,6 +975,52 @@ apiRouter.post(
   uploadTransactionProof,
   validateEnrollLead,
   enrollLeadController
+);
+
+/**
+ * @swagger
+ * /api/transactions:
+ *   post:
+ *     summary: Create a new transaction
+ *     tags: [Api]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               paymentMode:
+ *                 type: string
+ *                 description: The payment method (e.g., credit card, PayPal).
+ *               transactionDate:
+ *                 type: string
+ *                 description: The date of the transaction.
+ *               transactionAmount:
+ *                 type: number
+ *                 description: The amount of the transaction.
+ *               orderId:
+ *                 type: string
+ *                 description: The ID of the order associated with the transaction.
+ *               proof:
+ *                 type: string
+ *                 format: binary
+ *                 description: The proof of transaction file (receipt, invoice, etc.).
+ *     responses:
+ *       201:
+ *         description: Transaction created successfully.
+ *       400:
+ *         description: Bad request (validation errors).
+ *       404:
+ *         description: Order not found or failed to update.
+ *       500:
+ *         description: Internal server error.
+ */
+apiRouter.post(
+  "/transactions",
+  uploadTransactionProof,
+  validateTransaction,
+  createTransactionController
 );
 
 export default apiRouter;

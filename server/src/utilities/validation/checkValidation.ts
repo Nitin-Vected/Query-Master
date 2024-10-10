@@ -3,13 +3,13 @@ import { validationResult } from 'express-validator';
 import { StatusCodes } from '../../config';
 
 export const checkValidation = (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(request);
   if (!errors.isEmpty()) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ errors: errors.array() });
+    return response.status(StatusCodes.BAD_REQUEST).json({ errors: errors.array() });
   }
   next();
 };
