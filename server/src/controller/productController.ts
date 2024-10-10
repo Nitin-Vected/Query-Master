@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import {
   CustomRequest,
   generateUniqueId,
+  Messages,
   StatusCodes,
 } from "../config";
 import productModel from "../model/productModel";
@@ -15,7 +16,7 @@ export const addNewProductController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
     const { email, roleName } = request.payload;
     const {
@@ -49,24 +50,24 @@ export const addNewProductController = async (
     });
     if (existingProduct) {
       response.status(StatusCodes.ALREADY_EXIST).json({
-        message: "Product Already exist with same name and category ..!",
+        message: "Product " + Messages.ALREADY_EXIST,
       });
     }
     const newProduct = await productModel.create(data);
     if (newProduct) {
       response.status(StatusCodes.CREATED).json({
-        message: "Product Added successfully ..!",
+        message: "Product " + Messages.CREATED_SUCCESSFULLY,
       });
     } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Something Went Wrong ..!",
+        message: Messages.SOMETHING_WENT_WRONG
       });
     }
   } catch (error) {
     console.log("Error occure in addNewProductController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -84,18 +85,18 @@ export const getAllProductController = async (
     if (productList && productList.length > 0) {
       response.status(StatusCodes.OK).json({
         productList: productList,
-        message: "Products fetched successfully  ..!",
+        message: "Products " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product list not found ..!" });
+        .json({ message: "Product list " + Messages.THIS_NOT_FOUND });
     }
   } catch (error) {
     console.log("Error occure in getAllProductController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -109,16 +110,16 @@ export const getProductByIdController = async (
     if (!product) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product not found" });
+        .json({ message: "Product " + Messages.THIS_NOT_FOUND });
     }
     response
       .status(StatusCodes.OK)
-      .json({ data: product, message: "Product of given id" });
+      .json({ data: product, message: "Product " + Messages.FETCHED_SUCCESSFULLY });
   } catch (error) {
     console.log("Error occured in getProductById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -130,11 +131,11 @@ export const updateProductByIdController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
 
     const { email, roleName } = request.payload;
-    const { productId } = request.params; // Your custom product ID, e.g., 'PRODUCT0001'
+    const { productId } = request.params;
     const {
       productName,
       productCategory,
@@ -144,13 +145,12 @@ export const updateProductByIdController = async (
       document,
     } = request.body;
 
-    // Use findOne to query based on custom productId
     const existingProduct = await productModel.findOne({ id: productId });
 
     if (!existingProduct) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Product not found." });
+        .json({ message: "Product " + Messages.THIS_NOT_FOUND });
     }
 
     const updatedFields: any = {};
@@ -172,7 +172,6 @@ export const updateProductByIdController = async (
     updatedFields.updatedBy = email;
     updatedFields.updaterRole = roleName;
 
-    // Update using the custom productId
     const updatedProduct = await productModel.findOneAndUpdate(
       { id: productId },
       updatedFields,
@@ -181,18 +180,18 @@ export const updateProductByIdController = async (
 
     if (updatedProduct) {
       return response.status(StatusCodes.OK).json({
-        message: "Product updated successfully!",
+        message: "Product " + Messages.UPDATED_SUCCESSFULLY,
         updatedProduct,
       });
     } else {
       return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Failed to update the product.",
+        message: "Product " + Messages.UPDATION_FAILED,
       });
     }
   } catch (error) {
     console.log("Error occurred in updateProductByIdController: ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };

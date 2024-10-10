@@ -5,6 +5,7 @@ import { tokenGenerator } from "../utilities/jwt";
 import {
   generateUniqueId,
   GOOGLE_DECODE_TOKEN_API,
+  Messages,
   StatusCodes,
 } from "../config";
 import roleModel from "../model/roleModel";
@@ -86,7 +87,7 @@ export const loginController = async (
       response.status(StatusCodes.CREATED).json({
         userData: result,
         token: token,
-        message: "Login Successful!",
+        message: "Login Successfull!",
       });
     } else {
       response
@@ -97,6 +98,6 @@ export const loginController = async (
     console.error(error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Internal Server Error in loginController" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };

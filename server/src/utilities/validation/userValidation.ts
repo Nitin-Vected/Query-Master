@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import { checkValidation } from "./checkValidation";
 
 export const validateCreateUser = [
@@ -9,5 +9,14 @@ export const validateCreateUser = [
     .isString()
     .isLength({ min: 10 })
     .withMessage("Contact number must be at least 10 characters long."),
+  checkValidation,
+];
+
+export const validateUserId = [
+  param("userId")
+    .notEmpty()
+    .withMessage("User ID is required")
+    .isString()
+    .withMessage("User ID must be a string"),
   checkValidation,
 ];

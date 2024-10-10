@@ -1,6 +1,6 @@
 import { Response } from "express";
 import transactionModel from "../model/transactionModel";
-import { CustomRequest, generateUniqueId, StatusCodes } from "../config";
+import { CustomRequest, generateUniqueId, Messages, StatusCodes } from "../config";
 import mongoose from "mongoose";
 import orderModel from "../model/orderModel";
 
@@ -12,7 +12,7 @@ export const createTransactionController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
 
     const { email, roleName } = request.payload;
@@ -22,7 +22,7 @@ export const createTransactionController = async (
     if (!paymentMode || !transactionDate || !transactionAmount || !orderId) {
       return response
         .status(StatusCodes.BAD_REQUEST)
-        .json({ error: "Missing required fields for transaction creation." });
+        .json({ error: Messages.MISSING_REQUIRED_FIELD + "Transaction" });
     }
 
     const transactionId = await generateUniqueId(
@@ -48,7 +48,7 @@ export const createTransactionController = async (
     if (!newTransaction) {
       return response
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ error: "Transaction creation failed." });
+        .json({ error: "Transaction " + Messages.CREATION_FAILED });
     }
 
     const updatedOrder = await orderModel.findOneAndUpdate(
@@ -60,12 +60,12 @@ export const createTransactionController = async (
     if (!updatedOrder) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ error: "Order not found or failed to update." });
+        .json({ error: "Order " + Messages.THIS_NOT_FOUND });
     }
 
     return response
       .status(StatusCodes.CREATED)
-      .json({ transactionId, message: "Transaction created successfully." });
+      .json({ transactionId, message: "Transaction " + Messages.CREATED_SUCCESSFULLY });
   } catch (error: unknown) {
     console.log("Error occurred in createTransactionController: ", error);
     if (error instanceof Error) {
@@ -75,7 +75,7 @@ export const createTransactionController = async (
     }
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "An unexpected error occurred." });
+      .json({ error: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -108,7 +108,7 @@ export const createTransaction = async (
   });
 
   if (!newTransaction) {
-    throw new Error("Transaction creation failed.");
+    throw new Error("Transaction " + Messages.CREATION_FAILED);
   }
 
   console.log("transaction created successfully -----");

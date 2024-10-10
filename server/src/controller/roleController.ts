@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import {
   CustomRequest,
   generateUniqueId,
+  Messages,
   StatusCodes,
 } from "../config";
 import roleModel from "../model/roleModel";
@@ -15,7 +16,7 @@ export const addNewRoleController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
     const { email, roleName } = request.payload;
     console.log("request.payload ", request.payload);
@@ -36,17 +37,17 @@ export const addNewRoleController = async (
     const newRole = await roleModel.create(data);
     if (newRole) {
       response.status(StatusCodes.CREATED).json({
-        message: "Role Added successfully ..!",
+        message: "Role " + Messages.CREATED_SUCCESSFULLY,
       });
     } else {
       response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Something Went Wrong ..!",
+        message: Messages.SOMETHING_WENT_WRONG,
       });
     }
   } catch (error) {
     console.error("Error in addNewRoleController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Something went wrong!",
+      message: Messages.SOMETHING_WENT_WRONG,
     });
   }
 };
@@ -64,18 +65,18 @@ export const getAllRolesController = async (
     if (roleList && roleList.length > 0) {
       response.status(StatusCodes.OK).json({
         roleList: roleList,
-        message: "Roles fetched successfully  ..!",
+        message: "Roles " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
       response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role list not found ..!" });
+        .json({ message: "Roles " + Messages.THIS_NOT_FOUND });
     }
   } catch (error) {
     console.log("Error occure in getAllRolesController : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -89,16 +90,16 @@ export const getRoleByIdController = async (
     if (!role) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role not found" });
+        .json({ message: "Role " + Messages.THIS_NOT_FOUND });
     }
     response
       .status(StatusCodes.OK)
-      .json({ data: role, message: "Role of given roleId : " });
+      .json({ data: role, message: "Role " + Messages.FETCHED_SUCCESSFULLY });
   } catch (error) {
     console.log("Error occured in getRoleById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -111,7 +112,7 @@ export const updateRoleController = async (
     if (!request.payload) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
 
     const { email, roleName } = request.payload;
@@ -131,17 +132,17 @@ export const updateRoleController = async (
     if (!updatedRole) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Role not found." });
+        .json({ message: "Role " + Messages.THIS_NOT_FOUND });
     }
 
     response.status(StatusCodes.OK).json({
-      message: "Role updated successfully!",
+      message: "Role " + Messages.UPDATED_SUCCESSFULLY,
       role: updatedRole,
     });
   } catch (error) {
     console.error("Error in updateRoleController:", error);
     response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Something went wrong!",
+      message: Messages.SOMETHING_WENT_WRONG,
     });
   }
 };

@@ -1,5 +1,5 @@
 import orderModel from "../model/orderModel";
-import { generateUniqueId } from "../config";
+import { generateUniqueId, Messages } from "../config";
 import mongoose from "mongoose";
 
 // For orchestration
@@ -30,7 +30,7 @@ export const createOrder = async (
   console.log("order created successfully -----");
 
   if (!newOrder) {
-    throw new Error("Order creation failed.");
+    throw new Error("Order " + Messages.CREATION_FAILED);
   }
 
   return orderId;
@@ -49,7 +49,7 @@ export const updateOrderWithTransactionId = async (
   );
 
   if (!updatedOrder) {
-    throw new Error("Order update failed.");
+    throw new Error("Order " + Messages.UPDATION_FAILED);
   }
 
   return updatedOrder;

@@ -1,5 +1,5 @@
 import studentModel from "../model/studentModel";
-import { generateUniqueId } from "../config";
+import { generateUniqueId, Messages } from "../config";
 import mongoose from "mongoose";
 
 // For orchestration
@@ -36,9 +36,9 @@ export const enrollStudent = async (
   const studentResult = await studentModel.create([studentData], { session });
 
   if (!studentResult) {
-    throw new Error("Student enrollment failed.");
+    throw new Error("Student " + Messages.REGISTRATION_FAILED);
   }
 
-  console.log("student created successfully -----");
+  console.log("Student " + Messages.CREATED_SUCCESSFULLY);
   return enrollmentNumber;
 };
