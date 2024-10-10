@@ -2,6 +2,7 @@ import { Response } from "express";
 import transactionModel from "../model/transactionModel";
 import { CustomRequest, generateUniqueId, StatusCodes } from "../config";
 import mongoose from "mongoose";
+import orderModel from "../model/orderModel";
 
 export const createTransactionController = async (
   request: CustomRequest,
@@ -13,6 +14,7 @@ export const createTransactionController = async (
         .status(StatusCodes.UNAUTHORIZED)
         .json({ message: "User payload is missing or invalid." });
     }
+
     const { email, roleName } = request.payload;
     const { paymentMode, transactionDate, transactionAmount, orderId } =
       request.body;
@@ -49,12 +51,27 @@ export const createTransactionController = async (
         .json({ error: "Transaction creation failed." });
     }
 
+    const updatedOrder = await orderModel.findOneAndUpdate(
+      { id: orderId },
+      { $push: { transactions: transactionId } },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return response
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: "Order not found or failed to update." });
+    }
+
     return response
       .status(StatusCodes.CREATED)
       .json({ transactionId, message: "Transaction created successfully." });
   } catch (error: unknown) {
+    console.log("Error occurred in createTransactionController: ", error);
     if (error instanceof Error) {
-      return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+      return response
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: error.message });
     }
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
