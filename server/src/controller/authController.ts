@@ -20,7 +20,7 @@ export const authenticateJWT = async (
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Authorization token is missing or invalid" });
+        .json({ message: Messages.AUTHORIZATION_TOKEN_MISSING });
     }
 
     const token = authHeader.split(" ")[1];
@@ -29,14 +29,14 @@ export const authenticateJWT = async (
     if (!payload || !payload.roleId) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Token is invalid or does not contain a role" });
+        .json({ message: "Token " + Messages.MISSING_OR_INVALID + " or Does not contain a Role" });
     }
 
     const secretKey = secretKeys[payload.roleName];
     if (!secretKey) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Role not recognized" });
+        .json({ message: Messages.ROLE_NOT_RECOGNIZED });
     }
     const verifiedPayload = jwt.verify(token, secretKey) as UserPayload;
     request.payload = verifiedPayload;
@@ -45,7 +45,7 @@ export const authenticateJWT = async (
   } catch (error) {
     response
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Invalid or expired token" });
+      .json({ message: Messages.INVALID_OR_EXPIRED_TOKEN });
   }
 };
 
@@ -58,7 +58,7 @@ export const authenticationController = async (
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Authorization token is missing or invalid" });
+        .json({ message: Messages.AUTHORIZATION_TOKEN_MISSING });
     }
     const token = authHeader.split(" ")[1];
     const payload = jwt.decode(token) as jwt.JwtPayload;
@@ -67,13 +67,13 @@ export const authenticationController = async (
     if (!payload || !payload.roleId) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Token is invalid or does not contain a role" });
+        .json({ message: "Token " + Messages.MISSING_OR_INVALID + " or Does not contain a Role" });
     }
     const secretKey = secretKeys[payload.roleName];
     if (!secretKey) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Role not recognized" });
+        .json({ message: Messages.ROLE_NOT_RECOGNIZED });
     }
     const verifiedPayload = jwt.verify(token, secretKey) as UserPayload;
     const user = await userModel.findOne({ email: verifiedPayload.email });
@@ -81,7 +81,7 @@ export const authenticationController = async (
     if (!user) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User not found or inactive" });
+        .json({ message: Messages.USER_NOT_FOUND });
     }
     const userData = {
       name: `${user.firstName} ${user.lastName}`,

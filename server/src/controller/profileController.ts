@@ -1,6 +1,6 @@
 import { Response } from "express";
 import userModel from "../model/userModel";
-import { CustomRequest, StatusCodes } from "../config";
+import { CustomRequest, Messages, StatusCodes } from "../config";
 
 export const viewProfileController = async (
   request: CustomRequest,
@@ -11,13 +11,13 @@ export const viewProfileController = async (
     if (!userId) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "Token not found" });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
     const result = await userModel.findOne({ id: userId });
     if (!result) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "The Account You are Trying to Access not find..!" });
+        .json({ message: "Account " + Messages.THIS_NOT_FOUND });
     } else if (result?.status) {
       const userData = {
         name: result?.firstName + " " + result?.lastName,
@@ -28,14 +28,14 @@ export const viewProfileController = async (
       };
       response.status(StatusCodes.OK).json({
         userData: userData,
-        message: "UserData fetched successfully ..!",
+        message: "Userdata " + Messages.FETCHED_SUCCESSFULLY
       });
     }
   } catch (error) {
     console.log(error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong ..!" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
 
@@ -48,14 +48,14 @@ export const UpdateProfileController = async (
     if (!email || !roleName) {
       return response
         .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "User payload is missing or invalid." });
+        .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
     const { userId } = request.params;
-    const user = await userModel.findById(userId);
+    const user = await userModel.findOne({ id: userId });
     if (!user) {
       return response
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: "User not found" });
+        .json({ message: Messages.USER_NOT_FOUND });
     }
     const { firstName, lastName, userEmail, contactNumber, roleId, isActive } =
       request.body;
@@ -82,13 +82,13 @@ export const UpdateProfileController = async (
     const updatedUser = await user.save();
 
     return response.status(StatusCodes.OK).json({
-      message: "Profile updated successfully",
+      message: "Profile " + Messages.UPDATED_SUCCESSFULLY,
       updatedUser,
     });
   } catch (error) {
     console.error("Error in UpdateProfile:", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong while updating profile" });
+      .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
 };
