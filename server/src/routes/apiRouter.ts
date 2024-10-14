@@ -220,13 +220,10 @@ apiRouter.get("/counsellor", viewCounsellorListController);
  *               lastName:
  *                 type: string
  *                 example: Doe
- *               leadEmail:
- *                 type: string
- *                 example: john.doe@example.com
  *               contactNumber:
  *                 type: string
  *                 example: '1234567890'
- *               email:
+ *               userEmail:
  *                 type: string
  *                 example: admin@example.com
  *               roleName:
@@ -243,6 +240,7 @@ apiRouter.get("/counsellor", viewCounsellorListController);
  *         description: Internal Server Error
  */
 apiRouter.post("/user", validateCreateUser, createUserController);
+
 /**
  * @swagger
  * /api/user/{userId}:
@@ -299,9 +297,6 @@ apiRouter.get("/user", viewUserListController);
  *                 type: array
  *                 items:
  *                   type: string
- *                   example:
- *                    - view profile
- *                    - edit profile
  *     responses:
  *       201:
  *         description: Role added

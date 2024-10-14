@@ -3,10 +3,12 @@ import { checkValidation } from "./checkValidation";
 
 export const validateUpdateProfile = [
   param("userId")
+    .notEmpty()
+    .withMessage("User ID is required")
     .isString()
     .withMessage("User ID must be a string")
-    .isLength({ min: 1 })
-    .withMessage("User ID must not be empty"),
+    .matches(/^USER\d{4}$/)
+    .withMessage('User ID must follow the format "USER" followed by 4 digits, e.g., "USER0001"'),
   body("firstName")
     .optional()
     .isString()
@@ -23,7 +25,9 @@ export const validateUpdateProfile = [
     .optional()
     .isString()
     .withMessage("Contact number must be a string"),
-  body("roleId").optional().isString().withMessage("Role ID must be a string"),
+  body("roleId").optional().isString().withMessage("Role ID must be a string")
+    .matches(/^ROLE\d{4}$/)
+    .withMessage('Role ID must follow the format "ROLE" followed by 4 digits, e.g., "ROLE0001"'),
   body("isActive")
     .optional()
     .isBoolean()

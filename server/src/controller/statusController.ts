@@ -146,7 +146,7 @@ export const updateStatusController = async (
     }
 
     response.status(StatusCodes.OK).json({
-      message: "Status " + Messages.CREATED_SUCCESSFULLY,
+      message: "Status " + Messages.UPDATED_SUCCESSFULLY,
       status: updatedStatus,
     });
   } catch (error) {

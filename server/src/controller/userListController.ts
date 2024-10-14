@@ -3,49 +3,6 @@ import { StatusCodes, COUNSELLOR_ROLE_ID, Messages } from "../config";
 import userModel from "../model/userModel";
 import studentModel from "../model/studentModel";
 
-// export const viewStudentListController = async (
-//   request: Request,
-//   response: Response
-// ) => {
-//   try {
-//     const studentList = await studentModel.aggregate([
-//       {
-//         $lookup: {
-//           from: "users",
-//           localField: "userId",
-//           foreignField: "id",
-//           as: "profileDetails",
-//         },
-//       },
-//       { $unwind: "$profileDetails" },
-//       {
-//         $project: {
-//           _id: 0,
-//           "profileDetails._id": 0,
-//           "profileDetails.userId": 0,
-//           "profileDetails.createdAt": 0,
-//           "profileDetails.updatedAt": 0,
-//         },
-//       },
-//     ]);
-//     if (studentList && studentList.length > 0) {
-//       return response.status(StatusCodes.OK).json({
-//         data: studentList,
-//         message: "Students " + Messages.FETCHED_SUCCESSFULLY,
-//       });
-//     }
-//     return response.status(StatusCodes.OK).json({
-//       data: studentList,
-//       message: "Students " + Messages.THIS_NOT_FOUND,
-//     });
-//   } catch (error) {
-//     console.log("Error occurred in viewStudentListController: ", error);
-//     response
-//       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//       .json({ message: Messages.SOMETHING_WENT_WRONG });
-//   }
-// };
-
 export const viewStudentListController = async (
   request: Request,
   response: Response
@@ -69,9 +26,21 @@ export const viewStudentListController = async (
         $project: {
           _id: 0,
           "profileDetails._id": 0,
-          "profileDetails.userId": 0,
+          "profileDetails.id": 0,
+          "profileDetails.roleId": 0,
           "profileDetails.createdAt": 0,
           "profileDetails.updatedAt": 0,
+          "profileDetails.createrRole": 0,
+          "profileDetails.updaterRole": 0,
+          "profileDetails.createdBy": 0,
+          "profileDetails.updatedBy": 0,
+          "profileDetails.isActive": 0,
+          "createdAt": 0,
+          "updatedAt": 0,
+          "createrRole": 0,
+          "updaterRole": 0,
+          "createdBy": 0,
+          "updatedBy": 0,
         },
       },
     ]);
@@ -117,7 +86,7 @@ export const viewCounsellorListController = async (
   try {
     const counsellorList = await userModel
       .find({ roleId: COUNSELLOR_ROLE_ID })
-      .select("-_id id firstName lastName contactNumber email profileImg roleId")
+      .select("-_id id firstName lastName contactNumber email profileImg")
       .sort({ updatedAt: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit || 0);

@@ -25,16 +25,20 @@ export const validateRoleId = [
     .notEmpty()
     .withMessage("Role ID is required")
     .isString()
-    .withMessage("Role ID must be a string"),
+    .withMessage("Role ID must be a string")
+    .matches(/^ROLE\d{4}$/)
+    .withMessage('Role ID must follow the format "ROLE" followed by 4 digits, e.g., "ROLE0001"'),
   checkValidation,
 ];
 
 export const validateUpdateRole = [
   param("roleId")
-    .notEmpty()
-    .withMessage("Role ID is required")
-    .isString()
-    .withMessage("Role ID must be a string"),
+  .notEmpty()
+  .withMessage("Role ID is required")
+  .isString()
+  .withMessage("Role ID must be a string")
+  .matches(/^ROLE\d{4}$/)
+  .withMessage('Role ID must follow the format "ROLE" followed by 4 digits, e.g., "ROLE0001"'),
 
   body("userRole")
     .optional()
