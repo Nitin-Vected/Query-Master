@@ -55,8 +55,8 @@ export const getAllChannelsController = async (
 ) => {
   try {
     const chanelList = await channelModel
-      .find({}, { _id: 0 })
-      .select("id name")
+      .find()
+      .select("-_id id name")
       .sort({ updatedAt: -1, createdAt: -1 });
 
     if (chanelList && chanelList.length > 0) {
@@ -83,7 +83,8 @@ export const getChannelByIdController = async (
 ) => {
   const { channelId } = request.params;
   try {
-    const channel = await channelModel.findOne({ id: channelId });
+    const channel = await channelModel.findOne({ id: channelId })
+    .select("-_id id name");
     if (!channel) {
       return response
         .status(StatusCodes.NOT_FOUND)

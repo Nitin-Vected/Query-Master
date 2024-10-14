@@ -18,7 +18,7 @@ export const viewProfileController = async (
       return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Account " + Messages.THIS_NOT_FOUND });
-    } else if (result?.status) {
+    } else {
       const userData = {
         name: result?.firstName + " " + result?.lastName,
         email: result?.email,
@@ -59,6 +59,14 @@ export const UpdateProfileController = async (
     }
     const { firstName, lastName, userEmail, contactNumber, roleId, isActive } =
       request.body;
+    if (user?.email !== userEmail) {
+      const userEmailCheck = await userModel.findOne({ email: userEmail });
+      if (userEmailCheck) {
+        return response
+          .status(StatusCodes.ALREADY_EXIST)
+          .json({ message: "An User with this email Already Exist you can't Update! Give Another Email." });
+      }
+    }
     if (firstName && firstName !== user.firstName) {
       user.firstName = firstName;
     }

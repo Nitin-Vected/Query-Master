@@ -90,21 +90,36 @@ export const getAllLeadsController = async (
     request: Request,
     response: Response
 ) => {
+    const page = parseInt(request.query.page as string) || 1;
+    const limit = parseInt(request.query.limit as string) || 0;
+    const skip = (page - 1) * limit;
+
     try {
-        const leads = await leadModel.find();
-        if (leads) {
-            return response.status(StatusCodes.OK).json({
+        const leads = await leadModel
+            .find()
+            .select("-_id id firstName lastName email contactNumber discount statusId productId description assignedTo productAmount")
+            .sort({ updatedAt: -1, createdAt: -1 })
+            .skip(skip)
+            .limit(limit || 0);
+
+        const totalLeads = await leadModel.countDocuments();
+
+        const totalPages = limit ? Math.ceil(totalLeads / limit) : 1;
+
+        if (leads && leads.length > 0) {
+            response.status(StatusCodes.OK).json({
                 leads: leads,
+                totalPages: totalPages,
                 message: "Leads " + Messages.FETCHED_SUCCESSFULLY,
             });
         } else {
-            return response
+            response
                 .status(StatusCodes.NOT_FOUND)
                 .json({ leads: null, message: "Leads " + Messages.THIS_NOT_FOUND });
         }
     } catch (error) {
-        console.log("Error occured in getAllLeads : ", error);
-        return response
+        console.log("Error occurred in getAllLeads: ", error);
+        response
             .status(StatusCodes.INTERNAL_SERVER_ERROR)
             .json({ message: Messages.SOMETHING_WENT_WRONG });
     }
@@ -116,7 +131,8 @@ export const getLeadByIdController = async (
 ) => {
     try {
         const { leadId } = request.params;
-        const lead = await leadModel.findOne({ id: leadId });
+        const lead = await leadModel.findOne({ id: leadId })
+            .select("-_id id firstName lastName email contactNumber discount statusId productId description assignedTo productAmount");
 
         if (!lead) {
             return response

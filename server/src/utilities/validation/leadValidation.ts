@@ -8,9 +8,7 @@ export const validateUpdateLead = [
     .isString()
     .withMessage("Lead ID must be a string")
     .matches(/^LEAD\d{4}$/)
-    .withMessage(
-      'Lead ID must follow the format "LEAD" followed by 4 digits, e.g., "LEAD0001"'
-    ),
+    .withMessage('Lead ID must follow the format "LEAD" followed by 4 digits, e.g., "LEAD0001"'),
 
   body("firstName")
     .optional()
@@ -49,17 +47,23 @@ export const validateUpdateLead = [
   body("channelId")
     .optional()
     .isString()
-    .withMessage("Channel ID must be a string"),
+    .withMessage("Channel ID must be a string")
+    .matches(/^CHANNEL\d{4}$/)
+    .withMessage('Channel ID must follow the format "CHANNEL" followed by 4 digits, e.g., "CHANNEL0001"'),
 
   body("statusId")
     .optional()
     .isString()
-    .withMessage("Status ID must be a string"),
+    .withMessage("Status ID must be a string")
+    .matches(/^STATUS\d{4}$/)
+    .withMessage('Status ID must follow the format "STATUS" followed by 4 digits, e.g., "STATUS0001"'),
 
   body("productId")
     .optional()
     .isString()
-    .withMessage("Product ID must be a string"),
+    .withMessage("Product ID must be a string")
+    .matches(/^PRODUCT\d{4}$/)
+    .withMessage('Product ID must follow the format "PRODUCT" followed by 4 digits, e.g., "PRODUCT0001"'),
 
   body("description")
     .optional()
@@ -111,9 +115,17 @@ export const validateEnrollLead = [
     if (typeof value === "string") {
       value = value.split(",");
     }
+
+    if (!Array.isArray(value)) {
+      throw new Error("Products must be an array");
+    }
+
     value.forEach((item: string) => {
       if (typeof item !== "string") {
         throw new Error("Each product must be a string");
+      }
+      if (!/^PRODUCT\d{4}$/.test(item)) {
+        throw new Error('Product ID must follow the format "PRODUCT" followed by 4 digits, e.g., "PRODUCT0001"');
       }
     });
     return true;
@@ -197,22 +209,25 @@ export const validateAddNewLead = [
     .withMessage("Discount must be a number"),
 
   body("channelId")
-    .notEmpty()
-    .withMessage("Channel ID is required")
+    .optional()
     .isString()
-    .withMessage("Channel ID must be a string"),
+    .withMessage("Channel ID must be a string")
+    .matches(/^CHANNEL\d{4}$/)
+    .withMessage('Channel ID must follow the format "CHANNEL" followed by 4 digits, e.g., "CHANNEL0001"'),
 
   body("statusId")
-    .notEmpty()
-    .withMessage("Status ID is required")
+    .optional()
     .isString()
-    .withMessage("Status ID must be a string"),
+    .withMessage("Status ID must be a string")
+    .matches(/^STATUS\d{4}$/)
+    .withMessage('Status ID must follow the format "STATUS" followed by 4 digits, e.g., "STATUS0001"'),
 
   body("productId")
-    .notEmpty()
-    .withMessage("Product ID is required")
+    .optional()
     .isString()
-    .withMessage("Product ID must be a string"),
+    .withMessage("Product ID must be a string")
+    .matches(/^PRODUCT\d{4}$/)
+    .withMessage('Product ID must follow the format "PRODUCT" followed by 4 digits, e.g., "PRODUCT0001"'),
 
   body("description")
     .optional()

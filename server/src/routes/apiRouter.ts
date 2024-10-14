@@ -80,8 +80,10 @@ import {
   viewUserListController,
 } from "../controller/userController";
 import { validateCreateUser, validateUserId } from "../utilities/validation/userValidation";
-import { validateTransaction } from "../utilities/validation/transactionValidation";
-import { createTransactionController } from "../controller/transactionController";
+import { validateTransaction, validateTransactionId } from "../utilities/validation/transactionValidation";
+import { createTransactionController, getAllTransactionsController, getTransactionByIdController } from "../controller/transactionController";
+import { getAllOrdersController, getOrderByIdController } from "../controller/orderController";
+import { validateOrderId } from "../utilities/validation/orderValidation";
 
 const apiRouter = express.Router();
 
@@ -218,13 +220,10 @@ apiRouter.get("/counsellor", viewCounsellorListController);
  *               lastName:
  *                 type: string
  *                 example: Doe
- *               leadEmail:
- *                 type: string
- *                 example: john.doe@example.com
  *               contactNumber:
  *                 type: string
  *                 example: '1234567890'
- *               email:
+ *               userEmail:
  *                 type: string
  *                 example: admin@example.com
  *               roleName:
@@ -241,6 +240,7 @@ apiRouter.get("/counsellor", viewCounsellorListController);
  *         description: Internal Server Error
  */
 apiRouter.post("/user", validateCreateUser, createUserController);
+
 /**
  * @swagger
  * /api/user/{userId}:
@@ -297,9 +297,6 @@ apiRouter.get("/user", viewUserListController);
  *                 type: array
  *                 items:
  *                   type: string
- *                   example:
- *                    - view profile
- *                    - edit profile
  *     responses:
  *       201:
  *         description: Role added
@@ -1056,5 +1053,83 @@ apiRouter.post(
   validateTransaction,
   createTransactionController
 );
+
+/**
+ * @swagger
+ * /api/transaction/{transactionId}:
+ *   get:
+ *     summary: Get Transaction by ID
+ *     tags: [Api]
+ *     parameters:
+ *       - in: path
+ *         name: transactionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the transaction
+ *     responses:
+ *       200:
+ *         description: Ttransaction details retrieved
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+apiRouter.get("/transaction/:transactionId", validateTransactionId, getTransactionByIdController);
+
+/**
+ * @swagger
+ * /api/transaction:
+ *   get:
+ *     summary: Retrieve all Transactions
+ *     tags: [Api]
+ *     responses:
+ *       200:
+ *         description: List of all Transaction
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+apiRouter.get("/transaction", getAllTransactionsController);
+
+/**
+ * @swagger
+ * /api/order/{orderId}:
+ *   get:
+ *     summary: Get Order by ID
+ *     tags: [Api]
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the Order
+ *     responses:
+ *       200:
+ *         description: Order details retrieved
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+apiRouter.get("/order/:orderId", validateOrderId, getOrderByIdController)
+
+/**
+ * @swagger
+ * /api/order:
+ *   get:
+ *     summary: Retrieve all Orders
+ *     tags: [Api]
+ *     responses:
+ *       200:
+ *         description: List of all Orders
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ */
+apiRouter.get("/order", getAllOrdersController);
 
 export default apiRouter;

@@ -82,16 +82,26 @@ export const getAllProductController = async (
   request: CustomRequest,
   response: Response
 ) => {
+  const page = parseInt(request.query.page as string) || 1; 
+  const limit = parseInt(request.query.limit as string) || 0; 
+  const skip = (page - 1) * limit; 
+
   try {
     const productList = await productModel
-      .find({}, { _id: 0 })
-      .select("productName productCategory productFees productDescription ")
-      .sort({ updatedAt: -1, createdAt: -1 });
-    console.log(productList);
+      .find()
+      .select("-_id id name category price discountPrice description assets")
+      .sort({ updatedAt: -1, createdAt: -1 }) 
+      .skip(skip) 
+      .limit(limit || 0);
+
+    const totalProducts = await productModel.countDocuments();
+
+    const totalPages = limit ? Math.ceil(totalProducts / limit) : 1;
 
     if (productList && productList.length > 0) {
       response.status(StatusCodes.OK).json({
         productList: productList,
+        totalPages: totalPages, 
         message: "Products " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
@@ -100,7 +110,7 @@ export const getAllProductController = async (
         .json({ message: "Product list " + Messages.THIS_NOT_FOUND });
     }
   } catch (error) {
-    console.log("Error occure in getAllProductController : ", error);
+    console.log("Error occurred in getAllProductController: ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: Messages.SOMETHING_WENT_WRONG });
@@ -113,7 +123,8 @@ export const getProductByIdController = async (
 ) => {
   const { productId } = request.params;
   try {
-    const product = await productModel.findOne({ id: productId }, { _id: 0 });
+    const product = await productModel.findOne({ id: productId })
+      .select("-_id id name category price discountPrice description assets");
     if (!product) {
       return response
         .status(StatusCodes.NOT_FOUND)
