@@ -12,7 +12,6 @@ interface Payload {
   roleId: string;
   roleName: string;
   googleToken: string;
-  status: string;
 }
 
 const getSecretKey = (roleName: string): string | undefined => {

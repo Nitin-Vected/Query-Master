@@ -56,15 +56,26 @@ export const getAllRolesController = async (
   request: CustomRequest,
   response: Response
 ) => {
+  const page = parseInt(request.query.page as string) || 1;
+  const limit = parseInt(request.query.limit as string) || 0;
+  const skip = (page - 1) * limit;
+
   try {
     const roleList = await roleModel
-      .find({}, { _id: 0 })
-      .select("id name access")
-      .sort({ updatedAt: -1, createdAt: -1 });
+      .find()
+      .select("-_id id name access")
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalRoles = await roleModel.countDocuments();
+
+    const totalPages = Math.ceil(totalRoles / limit);
 
     if (roleList && roleList.length > 0) {
       response.status(StatusCodes.OK).json({
         roleList: roleList,
+        totalPages: totalPages,
         message: "Roles " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
@@ -73,7 +84,7 @@ export const getAllRolesController = async (
         .json({ message: "Roles " + Messages.THIS_NOT_FOUND });
     }
   } catch (error) {
-    console.log("Error occure in getAllRolesController : ", error);
+    console.log("Error occurred in getAllRolesController: ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: Messages.SOMETHING_WENT_WRONG });
@@ -86,7 +97,8 @@ export const getRoleByIdController = async (
 ) => {
   const { roleId } = request.params;
   try {
-    const role = await roleModel.findOne({ id: roleId });
+    const role = await roleModel.findOne({ id: roleId })
+      .select("-_id id name access");
     if (!role) {
       return response
         .status(StatusCodes.NOT_FOUND)

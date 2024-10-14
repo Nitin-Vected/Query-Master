@@ -7,7 +7,6 @@ export interface User extends Document {
   email: string;
   contactNumber: string;
   roleId: string;
-  status: string;
   profileImg: string;
   isActive: boolean;
   createdBy: string;
@@ -47,10 +46,6 @@ const UserSchema = new Schema<User>(
       type: String,
       required: true,
       ref: "roleMaster",
-    },
-    status: {
-      type: String,
-      required: true,
     },
     profileImg: {
       type: String,

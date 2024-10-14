@@ -18,7 +18,7 @@ export const viewProfileController = async (
       return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Account " + Messages.THIS_NOT_FOUND });
-    } else if (result?.status) {
+    } else {
       const userData = {
         name: result?.firstName + " " + result?.lastName,
         email: result?.email,

@@ -77,7 +77,8 @@ export const getUserByIdController = async (
 ) => {
   const { userId } = request.params;
   try {
-    const role = await userModel.findOne({ id: userId });
+    const role = await userModel.findOne({ id: userId })
+      .select("-_id id firstName lastName contactNumber email profileImg roleId");
     if (!role) {
       return response
         .status(StatusCodes.NOT_FOUND)
@@ -132,15 +133,26 @@ export const viewUserListController = async (
   request: Request,
   response: Response
 ): Promise<Response> => {
+  const page = parseInt(request.query.page as string) || 1;
+  const limit = parseInt(request.query.limit as string) || 0;
+  const skip = (page - 1) * limit;
+
   try {
     const userList = await userModel
-      .find({}, { _id: 0 })
-      .select("name email contactNumber role profileImg status")
-      .sort({ updatedAt: -1, createdAt: -1 });
+      .find()
+      .select("-_id id firstName lastName contactNumber email profileImg roleId")
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit || 0);
+
+    const totalUsers = await userModel.countDocuments();
+
+    const totalPages = limit ? Math.ceil(totalUsers / limit) : 1;
 
     if (userList && userList.length > 0) {
       return response.status(StatusCodes.OK).json({
         userList: userList,
+        totalPages: totalPages,
         message: "Userdata " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
@@ -149,7 +161,7 @@ export const viewUserListController = async (
         .json({ message: "Userdata " + Messages.THIS_NOT_FOUND });
     }
   } catch (error) {
-    console.log("Error occure in viewUserListController : ", error);
+    console.log("Error occurred in viewUserListController: ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: Messages.SOMETHING_WENT_WRONG });

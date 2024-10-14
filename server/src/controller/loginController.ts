@@ -47,7 +47,6 @@ export const loginController = async (
         user.profileImg = picture;
         user.firstName = given_name;
         user.lastName = family_name;
-        user.status = email_verified;
         await user.save();
       } else {
         const userId = await generateUniqueId(userModel, "USER");
@@ -57,7 +56,6 @@ export const loginController = async (
           firstName: given_name,
           lastName: family_name,
           profileImg: picture,
-          status: email_verified,
           roleId: "ROLE0002",
           contactNumber: "8319024349",
           isActive: true
@@ -80,7 +78,6 @@ export const loginController = async (
         roleId: user.roleId,
         roleName: roleDetails ? roleDetails.name : "Not mentioned",
         googleToken: tokenResponse?.access_token,
-        status: user.status,
       };
 
       let token = tokenGenerator(payload);

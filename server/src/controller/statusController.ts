@@ -54,25 +54,36 @@ export const getAllStatusController = async (
   request: CustomRequest,
   response: Response
 ) => {
+  const page = parseInt(request.query.page as string) || 1;
+  const limit = parseInt(request.query.limit as string) || 0;
+  const skip = (page - 1) * limit;
+
   try {
     const statusList = await statusModel
-      .find({}, { _id: 0 })
-      .select("id name")
-      .sort({ updatedAt: -1, createdAt: -1 });
+      .find()
+      .select("-_id id name")
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit || 0);
+
+    const totalStatuses = await statusModel.countDocuments();
+
+    const totalPages = limit ? Math.ceil(totalStatuses / limit) : 1;
 
     if (statusList && statusList.length > 0) {
-      response.status(StatusCodes.OK).json({
+      return response.status(StatusCodes.OK).json({
         statusList: statusList,
+        totalPages: totalPages,
         message: "Status " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
-      response
+      return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Statuslist " + Messages.THIS_NOT_FOUND });
     }
   } catch (error) {
-    console.log("Error occure in getAllStatusController : ", error);
-    response
+    console.log("Error occurred in getAllStatusController: ", error);
+    return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
@@ -84,7 +95,8 @@ export const getStatusByIdController = async (
 ) => {
   const { statusId } = request.params;
   try {
-    const status = await statusModel.findOne({ id: statusId });
+    const status = await statusModel.findOne({ id: statusId })
+      .select("-_id id name");
     if (!status) {
       return response
         .status(StatusCodes.NOT_FOUND)
