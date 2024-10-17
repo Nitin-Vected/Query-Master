@@ -9,7 +9,7 @@ import history from "./history.svg";
 import note from "./note.svg";
 import reminder from "./reminder.svg";
 import eyes from "./eyes.svg";
-import watch from "./watch.svg";
+import google from "./google.png";
 
 export default {
   vectorLogo,
@@ -23,5 +23,5 @@ export default {
   note,
   reminder,
   eyes,
-  watch,
+  google,
 };
