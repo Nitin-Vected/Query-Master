@@ -18,6 +18,8 @@ import { Search, Menu as MenuIcon, Close } from "@mui/icons-material";
 import image from "../../assets/image";
 import { useNavigate, useLocation } from "react-router-dom";
 import theme from "../../theme/theme";
+import { clearUserData } from "../../app/authSlice";
+import { useDispatch } from "react-redux";
 
 const HeaderView = () => {
   interface MenuItem {
@@ -38,7 +40,7 @@ const HeaderView = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const dispatch = useDispatch();
   const activeButtonIndex = menuItems.findIndex(
     (item) => item.path === location.pathname
   );
@@ -67,6 +69,8 @@ const HeaderView = () => {
   };
 
   const handleLogoutClick = () => {
+    dispatch(clearUserData());
+    navigate("/login");
     handleCloseMenu();
   };
 
