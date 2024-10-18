@@ -5,7 +5,7 @@ import { RootState } from "../app/store"; // Import the RootState type
 
 const PrivateRoute: React.FC = () => {
   const userData = useSelector((state: RootState) => state.auth.userData);
-
+  console.log("userData", userData);
   const isLoggedIn = !!userData;
 
   return isLoggedIn ? <Outlet /> : <Navigate to="/login" />;

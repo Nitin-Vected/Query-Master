@@ -5,49 +5,22 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { useDispatch, useSelector } from "react-redux";
 import Spinner from "../../components/Spinner";
 import image from "../../assets/image";
-import { setLoading, setUserData } from "../../app/authSlice";
-import { loginWithGoogleApi } from "../../utility/utility";
+import { loginWithGoogle } from "../../app/authSlice"; // Import login action
 import { AppDispatch, RootState } from "../../app/store";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const loading = useSelector((state: RootState) => state.auth.loading);
-  const [error, setError] = useState<string | null>(null); // State for managing error
+  const [error, setError] = useState<string | null>(null);
 
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: async ({ access_token }: { access_token: string }) => {
-      dispatch(setLoading(true));
-      setError(null); // Clear any previous error
-
-      try {
-        if (access_token) {
-          const { data } = await loginWithGoogleApi(access_token);
-          console.log("Data===> ", data);
-          const { userData, token } = data;
-
-          const userDataObj = {
-            email: userData.email,
-            name: userData.name,
-            token,
-            role: userData.role,
-          };
-
-          dispatch(setUserData(userDataObj));
-          navigate("/");
-        }
-      } catch (err: any) {
-        if (err.response && err.response.data && err.response.data.message) {
-          setError(err.response.data.message);
-        } else {
-          setError("An unexpected error occurred. Please try again.");
-        }
-      } finally {
-        dispatch(setLoading(false));
-      }
+  const loginWithGoogleHandler = useGoogleLogin({
+    onSuccess: ({ access_token }: { access_token: string }) => {
+      console.log("Google Access Token:", access_token);
+      dispatch(loginWithGoogle({ access_token })); // This should work now
+      navigate("/"); // Navigate on success
     },
     onError: (err) => {
-      console.error("Google OAuth error:", err);
       setError("Google authentication failed. Please try again.");
     },
   });
@@ -72,7 +45,7 @@ const Login: React.FC = () => {
               }}
               type="button"
               className="btn"
-              onClick={() => loginWithGoogle()}
+              onClick={() => loginWithGoogleHandler()} // Trigger Google login
             >
               <img
                 src={image.google}

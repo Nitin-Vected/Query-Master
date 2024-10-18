@@ -5,7 +5,7 @@ import {
   Grid,
   SelectChangeEvent,
 } from "@mui/material";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import LeadPreviewModal from "../../components/lead-preview-modal";
 import LeadsModal from "../../components/leads-modal";
 import { RemoveRedEyeOutlined } from "@mui/icons-material";
@@ -20,6 +20,9 @@ import CustomPagination from "../../template/custom-pagination";
 import EnrollmentModal from "../../components/enrollment-modal";
 import { TableColumn } from "../../template/custom-table/interface";
 import theme from "../../theme/theme";
+import { getApi } from "../../services/api/userApi";
+import { useSelector } from "react-redux";
+import { RootState } from "../../app/store";
 
 const Lead = () => {
   const [rows, setRows] = useState([
@@ -68,8 +71,9 @@ const Lead = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const handlePageChange = (
+  const userData: any = useSelector((state: RootState) => state);
+  console.log("userData", userData.ledas);
+   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
   ) => {
@@ -91,6 +95,9 @@ const Lead = () => {
     setIsEdit(type);
   };
 
+  useEffect(() => {
+    getApi(userData.auth.userData.token);
+  }, []);
   const handleLeadChange = (event: SelectChangeEvent<string>) => {
     setSelectedLead(event.target.value);
   };
