@@ -101,7 +101,7 @@ export const getAllLeadsController = async (
                     from: "statusMaster", 
                     localField: "statusId", 
                     foreignField: "id",
-                    as: "statusDetails", 
+                    as: "statusDetail", 
                 },
             },
             {
@@ -109,7 +109,7 @@ export const getAllLeadsController = async (
                     from: "products", 
                     localField: "productId",
                     foreignField: "id", 
-                    as: "productDetails",
+                    as: "productDetail",
                 },
             },
             {
@@ -121,10 +121,21 @@ export const getAllLeadsController = async (
                 },
             },
             {
-                $unwind: "$statusDetails", 
+                $lookup: {
+                    from: "channelMaster", 
+                    localField: "channelId", 
+                    foreignField: "id", 
+                    as: "channelDetail", 
+                },
             },
             {
-                $unwind: "$productDetails", 
+                $unwind: "$statusDetail", 
+            },
+            {
+                $unwind: "$productDetail", 
+            },
+            {
+                $unwind: "$channelDetail", 
             },
             {
                 $unwind: {
@@ -149,9 +160,9 @@ export const getAllLeadsController = async (
                     discount: 1,
                     auditLogs: 1,
                     comments: 1,
-                    channel: 1, 
-                    status: "$statusDetails.name", 
-                    product: "$productDetails.name", 
+                    channel: "$channelDetail.name", 
+                    status: "$statusDetail.name", 
+                    product: "$productDetail.name", 
                     description: 1,
                     assignedTo: {
                         $cond: {
