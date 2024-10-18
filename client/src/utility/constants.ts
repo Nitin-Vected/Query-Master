@@ -8,6 +8,8 @@ const constants = {
   BaseURL: BaseURL,
   Get_All_lead_Api: `${BaseURL}/lead`,
   GET_All_Counsellor: `${BaseURL}/counsellor`,
+  GET_All_Status: `${BaseURL}/status`,
+  
 };
 
 export default constants;

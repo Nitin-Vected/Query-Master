@@ -16,7 +16,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
   return (
     <Select
       name={name}
-      value={value}
+      value={value} // This will display "Not Assigned" as the default if the value is undefined or null
       onChange={onChange}
       displayEmpty
       disabled={disabled}

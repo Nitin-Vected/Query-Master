@@ -34,25 +34,3 @@ export const getAllLeads = async (token: string) => {
     throw error; // Re-throw the error for further handling
   }
 };
-
-export const getallCounsellor = async (token: string) => {
-  try {
-    store.dispatch(fetchLeadDataStart()); // Dispatch start action
-    const response = await axios.get(`${constants.GET_All_Counsellor}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    // console.log("data", response.data);
-    store.dispatch(fetchLeadDataSuccess(response.data)); // Dispatch success action
-    return response.data; // Return the data from the response
-  } catch (error) {
-    console.error("Error occurred during API call:", error);
-    // Type assertion to handle the error
-    const errorMessage =
-      (error as Error).message || "An unknown error occurred";
-
-    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
-    throw error; // Re-throw the error for further handling
-  }
-};

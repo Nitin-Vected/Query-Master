@@ -11,7 +11,7 @@ import LeadsModal from "../../components/leads-modal";
 import { RemoveRedEyeOutlined } from "@mui/icons-material";
 import editIcon from "../../assets/image/editIcon.png";
 import SelectDropdown from "../../template/select-dropdown";
-import { LeadData } from "./interface";
+import { Counsellor, LeadData, ManageStatus } from "./interface";
 import FileImportButton from "../../template/file-import-button";
 import SearchInput from "../../template/search-input";
 import ComponentHeading from "../../template/component-heading";
@@ -23,56 +23,23 @@ import theme from "../../theme/theme";
 import { getAllLeads } from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import { getallCounsellor } from "../../services/api/counselloapi";
+import { getallManageStatusApi } from "../../services/manageStatusapi";
 
 const Lead = () => {
-  const [rows, setRows] = useState([
-    {
-      name: "John Doe",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Instagram",
-      counsellor: "Peter",
-      status: "Not Enrolled",
-      action: "",
-    },
-    {
-      name: "Sarah Haw",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Youtube",
-      counsellor: "Not Assigned",
-      status: "Enrolled",
-      action: "",
-    },
-    {
-      name: "Tyson Tan",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Facebook",
-      counsellor: "Not Assigned",
-      status: "Enrolled",
-      action: "",
-    },
-    {
-      name: "Robert Shell",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Youtube",
-      counsellor: "Not Assigned",
-      status: "Enrolled",
-      action: "",
-    },
-  ]);
   const [open, setOpen] = useState(false);
   const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
   const [leadData, setLeadData] = useState<LeadData | null>(null);
   const [page, setPage] = useState<number>(1);
   const [selectedLead, setSelectedLead] = useState("All Leads");
+  const [counsellorList, setCounsellorList] = useState<Counsellor[]>([]);
+  const [manageStatusList, setManageStatusList] = useState<ManageStatus[]>([]);
   const [isEdit, setIsEdit] = useState(false);
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
   const AllLedaData = userData.leads.data;
+  const [rows, setRows] = useState([]);
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
@@ -86,7 +53,6 @@ const Lead = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file: File | null = event.target.files?.[0] || null;
-    console.log("file data", file);
   };
 
   const handleEdit = (row: LeadData, type: boolean) => {
@@ -95,8 +61,26 @@ const Lead = () => {
     setIsEdit(type);
   };
 
+  const fetchCounsellorData = async (token: string) => {
+    try {
+      const data = await getallCounsellor(token); // Fetch the data
+      setCounsellorList(data.counsellorList || []); // Ensure to set the counsellorList
+    } catch (error) {
+      console.error("Failed to fetch counsellor data:", error);
+    }
+  };
+  const getallManage = async (token: string) => {
+    try {
+      const data = await getallManageStatusApi(token); // Fetch the data
+      setManageStatusList(data.statusList); // Ensure to set the counsellorList
+    } catch (error) {
+      console.error("Failed to fetch get all Manage data:", error);
+    }
+  };
   useEffect(() => {
     getAllLeads(userData.auth.userData.token);
+    fetchCounsellorData(userData.auth.userData.token);
+    getallManage(userData.auth.userData.token);
   }, [userData.auth.userData.token]);
 
   const handleLeadChange = (event: SelectChangeEvent<string>) => {
@@ -107,12 +91,22 @@ const Lead = () => {
     event: SelectChangeEvent<string>,
     rowIndex: number
   ) => {
-    if (event.target.value === "Enrolled") {
+    // Get the selected value from the dropdown
+    const selectedValue = event.target.value;
+
+    // Open enrollment modal if the selected status is "Enrolled"
+    if (selectedValue === "Enrolled") {
       setIsEnrollmentModalOpen(true);
     }
+
+    // Create a new copy of rows to avoid mutating the original state
     const newRows = [...rows];
-    newRows[rowIndex].status = event.target.value;
-    setRows(newRows);
+
+    // Update the status of the specific row at rowIndex
+    newRows[rowIndex].status = selectedValue;
+
+    // Update the state with the modified rows
+    setManageStatusList(newRows);
   };
 
   const handleAssignedToChange = (
@@ -131,6 +125,12 @@ const Lead = () => {
       console.error("Error occurred during lead creation:", error);
     }
   };
+  const options = counsellorList.map((user) => ({
+    label: `${user.firstName} ${user.lastName}`, // Concatenate first and last names
+    value: `${user.firstName} ${user.lastName}`,
+  }));
+
+  options.push({ label: "Unassigned", value: "Unassigned" });
 
   const headers: TableColumn<LeadData>[] = [
     { label: "Full Name", key: "fullName" },
@@ -138,42 +138,46 @@ const Lead = () => {
     { label: "Email Id", key: "email" },
     {
       label: "Manage Status",
-      key: "statusId",
-      render: (value: string, _row: LeadData, index: number) =>
-        value === "Enrolled" ? (
-          value
-        ) : (
+      key: "status",
+      render: (
+        value: string | boolean | null, // Changed 'undefined' to 'null'
+        _row: any,
+        index: number
+      ) => {
+        return (
           <SelectDropdown
             name={`status${index}`}
-            value={value}
-            onChange={(e) => handleStatusChange(e, index)}
-            options={[
-              { label: "Enrolled", value: "Enrolled" },
-              { label: "Not Enrolled", value: "Not Enrolled" },
-            ]}
+            disabled={value == "Enrolled"}
+            value={value || "status"}
+            onChange={(e) => handleStatusChange(e, index)} // Call the status change handler
+            options={manageStatusList.map((status) => ({
+              label: status.name,
+              value: status.name, // Use the name from the status object as the value
+            }))}
           />
-        ),
+        );
+      },
     },
-    { label: "Channel", key: "channelId" },
+    { label: "Channel", key: "channel" },
     {
       label: "Counsellor Name",
       key: "assignedTo",
-      render: (value: string, _row: LeadData, index: number) => (
-        <SelectDropdown
-          name={`assignedTo${index}`}
-          value={value}
-          onChange={(e) => handleAssignedToChange(e, index)}
-          options={[
-            { label: "Peter", value: "Peter" },
-            { label: "Not Assigned", value: "Not Assigned" },
-          ]}
-        />
-      ),
+      render: (value: string | null, index: number | string) => {
+        return (
+          <SelectDropdown
+            disabled={value !== "Unassigned"} // Disable if the current value is not "Unassigned"
+            name={`assignedTo${index}`} // Name is based on the index
+            value={value || "Unassigned"} // Set the dropdown value to the current value or "Unassigned"
+            onChange={(e) => handleAssignedToChange(e, index)}
+            options={options} // Use the dynamic options here
+          />
+        );
+      },
     },
     {
       label: "Action",
       key: "action",
-      render: (_value: string, row: LeadData) => (
+      render: (_value: string, row: any) => (
         <>
           <IconButton onClick={() => handleEdit(row, false)}>
             <img

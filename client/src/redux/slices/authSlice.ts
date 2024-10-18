@@ -35,10 +35,11 @@ const authSlice = createSlice({
     },
     loginWithGoogleSuccess(state, action: PayloadAction<UserData>) {
       console.log("sss", action.payload);
-      state.userData = action.payload; // Set user data on success
+      state.userData = action.payload; // Store user data
       state.loading = false; // Stop loading
-      state.error = null; // Clear error
+      state.error = null; // Clear any errors
     },
+
     loginWithGoogleFailure(state, action: PayloadAction<string>) {
       state.loading = false; // Stop loading
       state.error = action.payload; // Set error message

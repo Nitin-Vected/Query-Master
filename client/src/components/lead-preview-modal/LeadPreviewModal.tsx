@@ -45,8 +45,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
     if (isEdit) {
       setIsEditable(true);
       console.log(isEditable);
-      console.log("data --12 ", data);
-    } else {
+     } else {
       setIsEditable(false);
     }
   }, [isEdit]);
@@ -493,7 +492,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       sx={{ flexGrow: 1 }}
                     >
                       <img
-                        src={image.watch}
+                        src={image.history}
                         alt="history"
                         style={{
                           width: "20px",

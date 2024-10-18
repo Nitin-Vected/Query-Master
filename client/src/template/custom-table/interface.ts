@@ -23,8 +23,8 @@ export interface Lead {
   contactNumber: string;
   productAmount: number;
   discount: number;
-  channelId: string; // Added based on your JSON
-  statusId: string;
+  channel: string; // Added based on your JSON
+  status: string;
   productId: string;
   description: string;
   assignedTo: string | null;
