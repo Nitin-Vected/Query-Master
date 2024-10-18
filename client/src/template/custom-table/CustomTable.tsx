@@ -8,7 +8,7 @@ import {
   Paper,
   styled,
 } from "@mui/material";
-import { CustomTableProps } from "./interface";
+import { CustomTableProps, Lead } from "./interface";
 import theme from "../../theme/theme";
 
 const CustomTableCell = styled(TableCell)(() => ({
@@ -18,7 +18,7 @@ const CustomTableCell = styled(TableCell)(() => ({
   whiteSpace: "nowrap",
 }));
 
-const CustomTable = <T,>({ headers, rows }: CustomTableProps<T>) => {
+const CustomTable = ({ headers, rows }: CustomTableProps) => {
   return (
     <TableContainer
       component={Paper}
@@ -44,19 +44,23 @@ const CustomTable = <T,>({ headers, rows }: CustomTableProps<T>) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row, rowIndex) => (
-            <TableRow key={rowIndex}>
-              {headers.map((header, colIndex) => (
-                <CustomTableCell key={colIndex}>
-                  {header.render && header.key
-                    ? header.render(row[header.key], row, rowIndex)
-                    : header.key
-                    ? String(row[header.key])
-                    : null}
-                </CustomTableCell>
-              ))}
-            </TableRow>
-          ))}
+          {rows?.leads?.map((row: Lead, rowIndex: number) => {
+            return (
+              <TableRow key={rowIndex}>
+                {headers.map((header, colIndex) => (
+                  <CustomTableCell key={colIndex}>
+                    {header.render && header.key
+                      ? header.render(row[header.key], row, rowIndex)
+                      : header.key && header.value // Check if both key and value exist
+                      ? `${row[header.key]} ${row[header.value]}` // Combine key and value fields
+                      : header.key
+                      ? String(row[header.key]) // If only key exists
+                      : null}
+                  </CustomTableCell>
+                ))}
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>

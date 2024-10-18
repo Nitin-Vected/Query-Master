@@ -97,7 +97,7 @@ export const getAllLeadsController = async (
     try {
         const leads = await leadModel
             .find()
-            .select("-_id id firstName lastName email contactNumber discount statusId productId description assignedTo productAmount")
+            .select("-_id id firstName lastName email contactNumber discount channelId statusId productId description assignedTo productAmount")
             .sort({ updatedAt: -1, createdAt: -1 })
             .skip(skip)
             .limit(limit || 0);

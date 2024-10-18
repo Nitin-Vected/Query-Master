@@ -20,9 +20,9 @@ import CustomPagination from "../../template/custom-pagination";
 import EnrollmentModal from "../../components/enrollment-modal";
 import { TableColumn } from "../../template/custom-table/interface";
 import theme from "../../theme/theme";
-import { getApi } from "../../services/api/userApi";
+import { getAllLeads } from "../../services/api/userApi";
 import { useSelector } from "react-redux";
-import { RootState } from "../../app/store";
+import { RootState } from "../../redux/store";
 
 const Lead = () => {
   const [rows, setRows] = useState([
@@ -72,8 +72,8 @@ const Lead = () => {
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
-  console.log("userData", userData.ledas);
-   const handlePageChange = (
+  const AllLedaData = userData.leads.data;
+  const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
   ) => {
@@ -96,8 +96,9 @@ const Lead = () => {
   };
 
   useEffect(() => {
-    getApi(userData.auth.userData.token);
-  }, []);
+    getAllLeads(userData.auth.userData.token);
+  }, [userData.auth.userData.token]);
+
   const handleLeadChange = (event: SelectChangeEvent<string>) => {
     setSelectedLead(event.target.value);
   };
@@ -132,12 +133,12 @@ const Lead = () => {
   };
 
   const headers: TableColumn<LeadData>[] = [
-    { label: "Full Name", key: "name" },
-    { label: "Contact Number", key: "contact" },
+    { label: "Full Name", key: "firstName" },
+    { label: "Contact Number", key: "contactNumber" },
     { label: "Email Id", key: "email" },
     {
       label: "Manage Status",
-      key: "status",
+      key: "statusId",
       render: (value: string, _row: LeadData, index: number) =>
         value === "Enrolled" ? (
           value
@@ -153,10 +154,10 @@ const Lead = () => {
           />
         ),
     },
-    { label: "Channel", key: "channel" },
+    { label: "Channel", key: "channelId" },
     {
       label: "Counsellor Name",
-      key: "counsellor",
+      key: "assignedTo",
       render: (value: string, _row: LeadData, index: number) => (
         <SelectDropdown
           name={`assignedTo${index}`}
@@ -272,7 +273,7 @@ const Lead = () => {
             <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
           </Box>
 
-          <CustomTable headers={headers} rows={rows} />
+          <CustomTable headers={headers} rows={AllLedaData} />
 
           <CustomPagination count={3} page={page} onChange={handlePageChange} />
         </Box>
