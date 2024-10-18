@@ -86,44 +86,6 @@ export const addNewLeadController = async (
     }
 };
 
-// export const getAllLeadsController = async (
-//     request: Request,
-//     response: Response
-// ) => {
-//     const page = parseInt(request.query.page as string) || 1;
-//     const limit = parseInt(request.query.limit as string) || 0;
-//     const skip = (page - 1) * limit;
-
-//     try {
-//         const leads = await leadModel
-//             .find()
-//             .select("-_id id firstName lastName email contactNumber discount statusId productId description assignedTo productAmount")
-//             .sort({ updatedAt: -1, createdAt: -1 })
-//             .skip(skip)
-//             .limit(limit || 0);
-
-//         const totalLeads = await leadModel.countDocuments();
-
-//         const totalPages = limit ? Math.ceil(totalLeads / limit) : 1;
-
-//         if (leads && leads.length > 0) {
-//             response.status(StatusCodes.OK).json({
-//                 leads: leads,
-//                 totalPages: totalPages,
-//                 message: "Leads " + Messages.FETCHED_SUCCESSFULLY,
-//             });
-//         } else {
-//             response
-//                 .status(StatusCodes.NOT_FOUND)
-//                 .json({ leads: null, message: "Leads " + Messages.THIS_NOT_FOUND });
-//         }
-//     } catch (error) {
-//         console.log("Error occurred in getAllLeads: ", error);
-//         response
-//             .status(StatusCodes.INTERNAL_SERVER_ERROR)
-//             .json({ message: Messages.SOMETHING_WENT_WRONG });
-//     }
-// };
 export const getAllLeadsController = async (
     request: Request,
     response: Response
@@ -174,8 +136,13 @@ export const getAllLeadsController = async (
                 $project: {
                     _id: 0,
                     id: 1,
-                    firstName: 1,
-                    lastName: 1,
+                    fullName: {
+                        $concat: [
+                            { $ifNull: ["$firstName", ""] },
+                            " ",
+                            { $ifNull: ["$lastName", ""] }
+                        ]
+                    },
                     email: 1,
                     contactNumber: 1,
                     productAmount: 1,
@@ -231,7 +198,6 @@ export const getAllLeadsController = async (
             .json({ message: Messages.SOMETHING_WENT_WRONG });
     }
 };
-
 
 export const getLeadByIdController = async (
     request: Request,
