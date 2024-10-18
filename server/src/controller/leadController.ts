@@ -95,12 +95,86 @@ export const getAllLeadsController = async (
     const skip = (page - 1) * limit;
 
     try {
-        const leads = await leadModel
-            .find()
-            .select("-_id id firstName lastName email contactNumber discount channelId statusId productId description assignedTo productAmount")
-            .sort({ updatedAt: -1, createdAt: -1 })
-            .skip(skip)
-            .limit(limit || 0);
+        const leads = await leadModel.aggregate([
+            {
+                $lookup: {
+                    from: "statusMaster", 
+                    localField: "statusId", 
+                    foreignField: "id",
+                    as: "statusDetails", 
+                },
+            },
+            {
+                $lookup: {
+                    from: "products", 
+                    localField: "productId",
+                    foreignField: "id", 
+                    as: "productDetails",
+                },
+            },
+            {
+                $lookup: {
+                    from: "users", 
+                    localField: "assignedTo", 
+                    foreignField: "id", 
+                    as: "assignedCounsellor", 
+                },
+            },
+            {
+                $unwind: "$statusDetails", 
+            },
+            {
+                $unwind: "$productDetails", 
+            },
+            {
+                $unwind: {
+                    path: "$assignedCounsellor",
+                    preserveNullAndEmptyArrays: true, 
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    fullName: {
+                        $concat: [
+                            { $ifNull: ["$firstName", ""] },
+                            " ",
+                            { $ifNull: ["$lastName", ""] }
+                        ]
+                    },
+                    email: 1,
+                    contactNumber: 1,
+                    productAmount: 1,
+                    discount: 1,
+                    auditLogs: 1,
+                    comments: 1,
+                    channel: 1, 
+                    status: "$statusDetails.name", 
+                    product: "$productDetails.name", 
+                    description: 1,
+                    assignedTo: {
+                        $cond: {
+                            if: { $ifNull: ["$assignedCounsellor", false] }, 
+                            then: {
+                                $concat: [
+                                    { $ifNull: ["$assignedCounsellor.firstName", ""] },
+                                    " ",
+                                    { $ifNull: ["$assignedCounsellor.lastName", ""] }
+                                ]
+                            },
+                            else: "Unassigned", 
+                        },
+                    }, 
+                },
+            },
+            { $sort: { updatedAt: -1, createdAt: -1 } },
+            { $skip: skip },
+        ]);
+
+        if (limit > 0) {
+            leads.push({ $limit: limit });
+        }
 
         const totalLeads = await leadModel.countDocuments();
 
