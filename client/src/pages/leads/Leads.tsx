@@ -1,61 +1,78 @@
 import {
   Box,
   Button,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   IconButton,
-  Select,
-  MenuItem,
-  InputBase,
-  Paper,
-  Pagination,
   Grid,
-  Avatar,
-  styled,
-  Modal,
+  SelectChangeEvent,
 } from "@mui/material";
-import { useRef, useState } from "react";
-import HeaderView from "../../template/HeaderView";
+import { useEffect, useRef, useState } from "react";
 import LeadPreviewModal from "../../components/lead-preview-modal";
 import LeadsModal from "../../components/leads-modal";
-import { Search, RemoveRedEyeOutlined } from "@mui/icons-material";
+import { RemoveRedEyeOutlined } from "@mui/icons-material";
 import editIcon from "../../assets/image/editIcon.png";
-import LeadPreviewFormModal from "../../components/lead-preview-modal/LeadPreviewModal";
-// import axios from "axios";
-
-const CustomPagination = styled(Pagination)(() => ({
-  "& .MuiPaginationItem-root": {
-    border: "1px solid #E5E7EB",
-    borderRadius: "5px",
-    color: "#374151",
-    fontWeight: "bold",
-    width: "40px",
-    height: "40px",
-    "&:hover": {
-      backgroundColor: "#F3F4F6",
-    },
-  },
-  "& .Mui-selected": {
-    backgroundColor: "#1F2937",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#1F2937",
-    },
-  },
-}));
+import SelectDropdown from "../../template/select-dropdown";
+import { LeadData } from "./interface";
+import FileImportButton from "../../template/file-import-button";
+import SearchInput from "../../template/search-input";
+import ComponentHeading from "../../template/component-heading";
+import CustomTable from "../../template/custom-table";
+import CustomPagination from "../../template/custom-pagination";
+import EnrollmentModal from "../../components/enrollment-modal";
+import { TableColumn } from "../../template/custom-table/interface";
+import theme from "../../theme/theme";
+import { getAllLeads } from "../../services/api/userApi";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 const Lead = () => {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [rows, setRows] = useState([
+    {
+      name: "John Doe",
+      contact: "9774432345",
+      email: "johndoe@gmail.com",
+      channel: "Instagram",
+      counsellor: "Peter",
+      status: "Not Enrolled",
+      action: "",
+    },
+    {
+      name: "Sarah Haw",
+      contact: "9774432345",
+      email: "johndoe@gmail.com",
+      channel: "Youtube",
+      counsellor: "Not Assigned",
+      status: "Enrolled",
+      action: "",
+    },
+    {
+      name: "Tyson Tan",
+      contact: "9774432345",
+      email: "johndoe@gmail.com",
+      channel: "Facebook",
+      counsellor: "Not Assigned",
+      status: "Enrolled",
+      action: "",
+    },
+    {
+      name: "Robert Shell",
+      contact: "9774432345",
+      email: "johndoe@gmail.com",
+      channel: "Youtube",
+      counsellor: "Not Assigned",
+      status: "Enrolled",
+      action: "",
+    },
+  ]);
   const [open, setOpen] = useState(false);
   const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
-  const [fileSelected, setFileSelected] = useState(false);
+  const [leadData, setLeadData] = useState<LeadData | null>(null);
   const [page, setPage] = useState<number>(1);
-
+  const [selectedLead, setSelectedLead] = useState("All Leads");
+  const [isEdit, setIsEdit] = useState(false);
+  const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const userData: any = useSelector((state: RootState) => state);
+  const AllLedaData = userData.leads.data;
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
@@ -63,381 +80,232 @@ const Lead = () => {
     setPage(value);
   };
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-  
   const handleClose = () => {
     setOpen(false);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const file: File | null = event.target.files?.[0] || null;
     console.log("file data", file);
   };
 
-  const handleEdit = (row: any) => {
+  const handleEdit = (row: LeadData, type: boolean) => {
     setOpen(true);
-    setFileSelected(row);
+    setLeadData(row);
+    setIsEdit(type);
   };
 
-  const leadDataSubmit = async (leadData: any) => {
+  useEffect(() => {
+    getAllLeads(userData.auth.userData.token);
+  }, [userData.auth.userData.token]);
+
+  const handleLeadChange = (event: SelectChangeEvent<string>) => {
+    setSelectedLead(event.target.value);
+  };
+
+  const handleStatusChange = (
+    event: SelectChangeEvent<string>,
+    rowIndex: number
+  ) => {
+    if (event.target.value === "Enrolled") {
+      setIsEnrollmentModalOpen(true);
+    }
+    const newRows = [...rows];
+    newRows[rowIndex].status = event.target.value;
+    setRows(newRows);
+  };
+
+  const handleAssignedToChange = (
+    event: SelectChangeEvent<string>,
+    rowIndex: number
+  ) => {
+    const newRows = [...rows];
+    newRows[rowIndex].counsellor = event.target.value;
+    setRows(newRows);
+  };
+
+  const leadDataSubmit = async (leadData: LeadData) => {
     try {
       console.log("leadData", leadData);
-      //   const response = await axios.post("/api/lead", leadData);
-
-      //   if (response.status === 201) {
-      //     console.log("Lead created successfully:", response.data);
-      //   } else {
-      //     console.error("Unexpected response:", response);
-      //   }
     } catch (error) {
       console.error("Error occurred during lead creation:", error);
     }
   };
 
-  const rows = [
+  const headers: TableColumn<LeadData>[] = [
+    { label: "Full Name", key: "firstName" },
+    { label: "Contact Number", key: "contactNumber" },
+    { label: "Email Id", key: "email" },
     {
-      name: "John Doe",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Instagram",
-      counselor: "Peter",
+      label: "Manage Status",
+      key: "statusId",
+      render: (value: string, _row: LeadData, index: number) =>
+        value === "Enrolled" ? (
+          value
+        ) : (
+          <SelectDropdown
+            name={`status${index}`}
+            value={value}
+            onChange={(e) => handleStatusChange(e, index)}
+            options={[
+              { label: "Enrolled", value: "Enrolled" },
+              { label: "Not Enrolled", value: "Not Enrolled" },
+            ]}
+          />
+        ),
+    },
+    { label: "Channel", key: "channelId" },
+    {
+      label: "Counsellor Name",
+      key: "assignedTo",
+      render: (value: string, _row: LeadData, index: number) => (
+        <SelectDropdown
+          name={`assignedTo${index}`}
+          value={value}
+          onChange={(e) => handleAssignedToChange(e, index)}
+          options={[
+            { label: "Peter", value: "Peter" },
+            { label: "Not Assigned", value: "Not Assigned" },
+          ]}
+        />
+      ),
     },
     {
-      name: "Sarah Haw",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Youtube",
-      counselor: "Not Assigned",
-    },
-    {
-      name: "Tyson Tan",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Facebook",
-      counselor: "Not Assigned",
-    },
-    {
-      name: "Robert Shell",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Youtube",
-      counselor: "Not Assigned",
+      label: "Action",
+      key: "action",
+      render: (_value: string, row: LeadData) => (
+        <>
+          <IconButton onClick={() => handleEdit(row, false)}>
+            <img
+              src={editIcon}
+              alt="editLogo"
+              style={{ width: 25, height: 25 }}
+            />
+          </IconButton>
+          <IconButton onClick={() => handleEdit(row, true)}>
+            <RemoveRedEyeOutlined
+              sx={{ color: theme.palette.secondary.main }}
+            />
+          </IconButton>
+        </>
+      ),
     },
   ];
 
-  return (<>
-    <Box sx={{ backgroundColor: "#F9FAFB", height: "100vh" }}>
-      <HeaderView />
-      <Box sx={{ paddingInline: 3, pt: { xs: 8, md: 10 } }}>
-        <Typography variant="h4" fontWeight="bold">
-          Lead
-        </Typography>
-      </Box>
+  return (
+    <>
+      <Box sx={{ flexGrow: 1, p: 3, mt: 10 }}>
+        <ComponentHeading heading="Leads" />
 
-      <Box
-        sx={{
-          maxWidth: "1200px",
-          margin: "auto",
-          padding: 2,
-          boxShadow: "0px 0px 5px 0px #00000040",
-        }}
-      >
-        <Grid
-          container
-          spacing={2}
+        <Box
           sx={{
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-            pb: 2,
-            borderBottom: "1px solid #D1D5DB",
+            // margin: "auto",
+            padding: 2,
+            boxShadow: `0px 0px 5px 0px ${theme.palette.primary.dark}`,
           }}
         >
-          <Grid item xs={12} sm={6} md={6} display="flex" gap={2}>
-            <Select
-              defaultValue="All Leads"
-              sx={{
-                height: "45px",
-                backgroundColor: "#FFFFFF",
-                borderColor: "#D1D5DB",
-                color: "#374151",
-                borderRadius: "8px",
-                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                maxWidth: "180px",
-              }}
-            >
-              <MenuItem value="Enrolled">Enrolled</MenuItem>
-              <MenuItem value="All Leads">All Leads</MenuItem>
-            </Select>
-
-            <Button
-              sx={{
-                height: "45px",
-                color: "#374151",
-                textTransform: "none",
-                borderRadius: "8px",
-                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                maxWidth: "180px",
-              }}
-              onClick={() => setIsLeadsModalOpen(true)}
-            >
-              + Create Lead
-            </Button>
-          </Grid>
-
           <Grid
-            item
-            xs={12}
-            sm={6}
-            md={6}
-            display="flex"
+            container
+            spacing={2}
             sx={{
-              justifyContent: { xs: "flex-start", sm: "flex-end" },
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+              pb: 2,
+              borderBottom: `1px solid ${theme.palette.primary.dark}`,
             }}
           >
-            <Button
-              sx={{
-                height: "45px",
-                color: "#374151",
-                borderColor: "#2563EB",
-                textTransform: "none",
-                borderRadius: "8px",
-                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                maxWidth: "200px",
-              }}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Import from Excel
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                onChange={handleFileChange}
+            <Grid item xs={12} sm={6} md={6} display="flex" gap={2}>
+              <SelectDropdown
+                name="leadFilter"
+                value={selectedLead}
+                onChange={handleLeadChange}
+                options={[
+                  { label: "All Leads", value: "All Leads" },
+                  { label: "Enrolled", value: "Enrolled" },
+                ]}
+                sx={{
+                  borderRadius: "8px",
+                  maxWidth: "180px",
+                }}
+                fullWidth={false}
               />
-            </Button>
+
+              <Button
+                sx={{
+                  height: "40px",
+                  color: theme.palette.secondary.main,
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  border: `1px solid ${theme.palette.primary.dark}`,
+                  maxWidth: "180px",
+                }}
+                onClick={() => setIsLeadsModalOpen(true)}
+              >
+                + Create Lead
+              </Button>
+            </Grid>
+
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={6}
+              display="flex"
+              sx={{
+                justifyContent: { xs: "flex-start", sm: "flex-end" },
+              }}
+            >
+              <FileImportButton
+                onFileChange={handleFileChange}
+                fileInputRef={fileInputRef}
+              />
+            </Grid>
           </Grid>
-        </Grid>
 
-        <Box
-          sx={{
-            mb: 3,
-            display: "flex",
-            justifyContent: "flex-start",
-          }}
-        >
-          <InputBase
-            placeholder="Search Lead"
-            startAdornment={<Search sx={{ mr: 1, color: "#9CA3AF" }} />}
+          <Box
             sx={{
-              border: "1px solid #D1D5DB",
-              borderRadius: "8px",
-              padding: "2px 8px",
-              width: "100%",
-              maxWidth: "280px",
-              bgcolor: "#FFFFFF",
-              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+              mb: 3,
+              display: "flex",
+              justifyContent: "flex-start",
             }}
-          />
+          >
+            <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
+          </Box>
+
+          <CustomTable headers={headers} rows={AllLedaData} />
+
+          <CustomPagination count={3} page={page} onChange={handlePageChange} />
         </Box>
-        <TableContainer
-          component={Paper}
-          sx={{
-            borderRadius: "8px",
-            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // Box shadow
-          }}
-        >
-          <Table sx={{ minWidth: 650 }}>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "#F3F4F6" }}>
-                {[
-                  "Full Name",
-                  "Contact Number",
-                  "Email Id",
-                  "Manage Status",
-                  "Channel",
-                  "Counselor Name",
-                  "Action",
-                ].map((header) => (
-                  <TableCell
-                    key={header}
-                    sx={{
-                      color: "#6B7280",
-                      fontWeight: "bold",
-                      padding: "10px",
-                      textAlign: "center",
-                    }}
-                  >
-                    {header}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell sx={{ padding: "10px", textWrap: "nowrap" }}>
-                    {row.name}
-                  </TableCell>
-                  <TableCell sx={{ padding: "10px" }}>{row.contact}</TableCell>
-                  <TableCell sx={{ padding: "10px" }}>{row.email}</TableCell>
 
-                  {/* Status Dropdown */}
-                  <TableCell sx={{ padding: "10px" }}>
-                    <Select
-                      defaultValue="Select Status"
-                      fullWidth
-                      sx={{
-                        padding: "4px 12px", // Adjusting padding inside the select input
-                        fontSize: "0.875rem", // Slightly smaller font
-                        height: "36px", // Adjust the height of the Select component
-                      }}
-                    >
-                      <MenuItem value="Select Status">Select Status</MenuItem>
-                      <MenuItem value="Enrolled">Enrolled</MenuItem>
-                      <MenuItem value="In Progress">In Progress</MenuItem>
-                      <MenuItem value="Completed">Completed</MenuItem>
-                    </Select>
-                  </TableCell>
-                  <TableCell sx={{ padding: "10px" }}>{row.channel}</TableCell>
-                  <TableCell sx={{ padding: "10px" }}>
-                    <Select
-                      defaultValue="Not Assigned"
-                      fullWidth
-                      sx={{
-                        padding: "4px 12px",
-                        fontSize: "0.875rem",
-                        height: "36px",
-                      }}
-                    >
-                      <MenuItem value="Not Assigned">Not Assigned</MenuItem>
-                      <MenuItem value="Peter">
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Avatar
-                            sx={{
-                              bgcolor: "#FFCA28",
-                              color: "black",
-                              width: 24,
-                              height: 24,
-                              fontSize: "0.8rem",
-                              mr: 1,
-                            }}
-                          >
-                            P
-                          </Avatar>
-                          Peter
-                        </Box>
-                      </MenuItem>
-                    </Select>
-                  </TableCell>
-
-                  <TableCell
-                    sx={{
-                      padding: "10px",
-                      textAlign: "center",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: 1,
-                    }}
-                  >
-                    <img
-                      src={editIcon}
-                      style={{
-                        width: "25px",
-                        height: "25px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleEdit(row)}
-                      alt="editLogo"
-                    />
-                    <IconButton>
-                      <RemoveRedEyeOutlined
-                        sx={{ width: "25px", height: "25px", color: "#000000" }}
-                      />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <Box
-          sx={{
-            mt: 3,
-            display: "flex",
-            justifyContent: "center",
-            width: "100%",
-          }}
-        >
-          <CustomPagination
-            count={100}
-            page={page}
-            onChange={handlePageChange}
-            variant="outlined"
-            siblingCount={0}
-            boundaryCount={1}
-            color="primary"
-            sx={{
-              ".MuiPagination-ul": {
-                display: "flex",
-                flexWrap: "nowrap", // Prevent wrapping
-                justifyContent: "center", // Center items
-              },
-              ".MuiPaginationItem-root": {
-                minWidth: "36px", // Adjust button width
-                padding: "6px", // Adjust padding for smaller screens
-              },
-              "@media (max-width: 600px)": {
-                ".MuiPaginationItem-root": {
-                  fontSize: "0.75rem", // Smaller font size on mobile
-                  minWidth: "28px", // Smaller width on mobile
-                  padding: "4px", // Less padding on mobile
-                },
-              },
+        {isLeadsModalOpen && (
+          <LeadsModal
+            open={isLeadsModalOpen}
+            onClose={() => {
+              setIsLeadsModalOpen(false);
             }}
+            onSubmit={leadDataSubmit}
           />
-        </Box>
+        )}
+
+        {open && (
+          <LeadPreviewModal
+            open={open}
+            handleClose={handleClose}
+            data={leadData}
+            isEdit={isEdit}
+          />
+        )}
+
+        <EnrollmentModal
+          openEnrollment={isEnrollmentModalOpen}
+          closeModal={() => {
+            setIsEnrollmentModalOpen(false);
+          }}
+        />
       </Box>
-
-      <LeadPreviewModal
-        open={open}
-        handleClose={handleClose}
-        handleOpen={handleClickOpen}
-        data={fileSelected}
-      />
-      <LeadsModal
-        open={isLeadsModalOpen}
-        onClose={() => {
-          setIsLeadsModalOpen(false);
-        }}
-        onSubmit={leadDataSubmit}
-      />
-    </Box>
-
-    {/* <Modal open={open} onClose={handleClose} aria-labelledby="modal-title">
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: { xs: '90%', sm: '80%', md: '70%', lg: 800 }, // Responsive width
-          bgcolor: 'background.paper',
-          boxShadow: 24,
-          p: { xs: 2, sm: 3, md: 4 }, // Responsive padding
-          borderRadius: 2,
-        }}
-      >
-        <LeadPreviewFormModal onClose={handleClose} />
-      </Box>
-    </Modal> */}
-
-
-
-  </>);
+    </>
+  );
 };
 
 export default Lead;

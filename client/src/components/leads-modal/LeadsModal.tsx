@@ -1,33 +1,18 @@
 import React from "react";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  TextField,
-  Button,
   Grid,
-  MenuItem,
-  Select,
-  FormControl,
   DialogActions,
-  Typography,
-  FormHelperText,
-  IconButton,
-  Box,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import theme from "../../theme/theme";
+import ButtonView from "../../template/button-view";
+import ModalHeader from "../../template/modal-header";
+import { LeadFormModalProps } from "./interface";
+import FormTextField from "../../template/form-text-field";
+import FormSelectField from "../../template/form-select-field";
 
-// Define the types for props
-interface LeadFormModalProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (leadData: any) => void;
-}
-
-// Yup Validation schema
 const validationSchema = Yup.object({
   fullName: Yup.string().required("Full name is required"),
   contactNumber: Yup.string()
@@ -46,15 +31,14 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  // Initialize Formik
   const formik = useFormik({
     initialValues: {
       fullName: "",
       contactNumber: "",
       leadEmail: "",
-      course: "",
-      status: "",
-      channel: "",
+      course: "Course1",
+      status: "Interested",
+      channel: "Instagram",
       description: "",
     },
     validationSchema: validationSchema,
@@ -70,239 +54,100 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle
-        style={{ textAlign: "center", position: "relative", paddingTop: 0 }}
-      >
-        <Box
-          component={"span"}
-          sx={{
-            background: theme.palette.background.paper,
-            color: "white",
-            padding: 1,
-          }}
-        >
-          Create Lead
-        </Box>
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          style={{ position: "absolute", right: 8, top: 8 }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-
+      <ModalHeader title={"Create Lead"} onClose={onClose} />
       <form onSubmit={formik.handleSubmit}>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2">
-                Full Name<span style={{ color: "red" }}>*</span>
-              </Typography>
-              <TextField
-                fullWidth
-                required
+              <FormTextField
+                label="Full Name"
                 name="fullName"
-                value={formik.values.fullName}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
                 placeholder="John Doe"
-                error={
-                  formik.touched.fullName && Boolean(formik.errors.fullName)
-                }
-                helperText={formik.touched.fullName && formik.errors.fullName}
-                sx={{
-                  "& .MuiInputBase-root": {
-                    height: 40,
-                  },
-                }}
+                formik={formik}
+                required
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2">
-                Contact Number<span style={{ color: "red" }}>*</span>
-              </Typography>
-              <TextField
-                fullWidth
-                required
+              <FormTextField
+                label="Contact Number"
                 name="contactNumber"
-                value={formik.values.contactNumber}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
                 placeholder="9774432345"
-                error={
-                  formik.touched.contactNumber &&
-                  Boolean(formik.errors.contactNumber)
-                }
-                helperText={
-                  formik.touched.contactNumber && formik.errors.contactNumber
-                }
-                sx={{
-                  "& .MuiInputBase-root": {
-                    height: 40,
-                  },
-                }}
+                formik={formik}
+                required
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2">
-                Email Id<span style={{ color: "red" }}>*</span>
-              </Typography>
-              <TextField
-                fullWidth
-                required
+              <FormTextField
+                label="Email Id"
                 name="leadEmail"
-                value={formik.values.leadEmail}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
                 placeholder="johndoe@gmail.com"
-                error={
-                  formik.touched.leadEmail && Boolean(formik.errors.leadEmail)
-                }
-                helperText={formik.touched.leadEmail && formik.errors.leadEmail}
-                sx={{
-                  "& .MuiInputBase-root": {
-                    height: 40,
-                  },
-                }}
+                formik={formik}
+                required
               />
             </Grid>
+
             <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2">
-                Course<span style={{ color: "red" }}>*</span>
-              </Typography>
-              <FormControl
-                fullWidth
-                error={formik.touched.course && Boolean(formik.errors.course)}
-              >
-                <Select
-                  name="course"
-                  value={formik.values.course}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  displayEmpty
-                  sx={{
-                    height: 40,
-                    "& .MuiSelect-select": {
-                      padding: "8px 14px",
-                    },
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Select Course</em>
-                  </MenuItem>
-                  <MenuItem value="Course1">Course 1</MenuItem>
-                  <MenuItem value="Course2">Course 2</MenuItem>
-                  <MenuItem value="Course3">Course 3</MenuItem>
-                </Select>
-                {formik.touched.course && formik.errors.course && (
-                  <FormHelperText>{formik.errors.course}</FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2">
-                Status<span style={{ color: "red" }}>*</span>
-              </Typography>
-              <FormControl
-                fullWidth
-                error={formik.touched.status && Boolean(formik.errors.status)}
-              >
-                <Select
-                  name="status"
-                  value={formik.values.status}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  displayEmpty
-                  sx={{
-                    height: 40,
-                    "& .MuiSelect-select": {
-                      padding: "8px 14px",
-                    },
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Select Status</em>
-                  </MenuItem>
-                  <MenuItem value="Interested">Interested</MenuItem>
-                  <MenuItem value="Enrolled">Enrolled</MenuItem>
-                </Select>
-                {formik.touched.status && formik.errors.status && (
-                  <FormHelperText>{formik.errors.status}</FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2">
-                Channel<span style={{ color: "red" }}>*</span>
-              </Typography>
-              <FormControl
-                fullWidth
-                error={formik.touched.channel && Boolean(formik.errors.channel)}
-              >
-                <Select
-                  name="channel"
-                  value={formik.values.channel}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  displayEmpty
-                  sx={{
-                    height: 40,
-                    "& .MuiSelect-select": {
-                      padding: "8px 14px",
-                    },
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Select Channel</em>
-                  </MenuItem>
-                  <MenuItem value="Youtube">Youtube</MenuItem>
-                  <MenuItem value="Instagram">Instagram</MenuItem>
-                  <MenuItem value="Facebook">Facebook</MenuItem>
-                </Select>
-                {formik.touched.channel && formik.errors.channel && (
-                  <FormHelperText>{formik.errors.channel}</FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2">Description</Typography>
-              <TextField
-                fullWidth
+              <FormSelectField
+                label="Course"
+                name="course"
+                options={[
+                  { label: "Course 1", value: "Course1" },
+                  { label: "Course 2", value: "Course2" },
+                  { label: "Course 3", value: "Course3" },
+                ]}
+                formik={formik}
                 required
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              {/* Use FormSelectField for Status */}
+              <FormSelectField
+                label="Status"
+                name="status"
+                options={[
+                  { label: "Interested", value: "Interested" },
+                  { label: "Enrolled", value: "Enrolled" },
+                ]}
+                formik={formik}
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormSelectField
+                label="Channel"
+                name="channel"
+                options={[
+                  { label: "Youtube", value: "Youtube" },
+                  { label: "Instagram", value: "Instagram" },
+                  { label: "Facebook", value: "Facebook" },
+                ]}
+                formik={formik}
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormTextField
+                label="Description"
                 name="description"
-                value={formik.values.description}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
                 placeholder="Description of the lead"
-                error={
-                  formik.touched.description &&
-                  Boolean(formik.errors.description)
-                }
-                helperText={
-                  formik.touched.description && formik.errors.description
-                }
-                sx={{
-                  "& .MuiInputBase-root": {
-                    height: 40,
-                  },
-                }}
+                formik={formik}
               />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions style={{ justifyContent: "flex-end", paddingRight: 25 }}>
-          <Button
+          <ButtonView
             type="submit"
-            variant="contained"
-            sx={{
-              backgroundColor: "#ffffff",
-              color: "#000000",
-              width: "100px",
-            }}
+            isEditable={true}
+            style={{ marginTop: 3 }}
+            sx={{ left: -11 }}
+            onClick={() => console.log("Button clicked")}
           >
             Submit
-          </Button>
+          </ButtonView>
         </DialogActions>
       </form>
     </Dialog>
