@@ -98,49 +98,49 @@ export const getAllLeadsController = async (
         const leads = await leadModel.aggregate([
             {
                 $lookup: {
-                    from: "statusMaster", 
-                    localField: "statusId", 
+                    from: "statusMaster",
+                    localField: "statusId",
                     foreignField: "id",
-                    as: "statusDetail", 
+                    as: "statusDetail",
                 },
             },
             {
                 $lookup: {
-                    from: "products", 
+                    from: "products",
                     localField: "productId",
-                    foreignField: "id", 
+                    foreignField: "id",
                     as: "productDetail",
                 },
             },
             {
                 $lookup: {
-                    from: "users", 
-                    localField: "assignedTo", 
-                    foreignField: "id", 
-                    as: "assignedCounsellor", 
+                    from: "users",
+                    localField: "assignedTo",
+                    foreignField: "id",
+                    as: "assignedCounsellor",
                 },
             },
             {
                 $lookup: {
-                    from: "channelMaster", 
-                    localField: "channelId", 
-                    foreignField: "id", 
-                    as: "channelDetail", 
+                    from: "channelMaster",
+                    localField: "channelId",
+                    foreignField: "id",
+                    as: "channelDetail",
                 },
             },
             {
-                $unwind: "$statusDetail", 
+                $unwind: "$statusDetail",
             },
             {
-                $unwind: "$productDetail", 
+                $unwind: "$productDetail",
             },
             {
-                $unwind: "$channelDetail", 
+                $unwind: "$channelDetail",
             },
             {
                 $unwind: {
                     path: "$assignedCounsellor",
-                    preserveNullAndEmptyArrays: true, 
+                    preserveNullAndEmptyArrays: true,
                 },
             },
             {
@@ -160,13 +160,13 @@ export const getAllLeadsController = async (
                     discount: 1,
                     auditLogs: 1,
                     comments: 1,
-                    channel: "$channelDetail.name", 
-                    status: "$statusDetail.name", 
-                    product: "$productDetail.name", 
+                    channel: "$channelDetail.name",
+                    status: "$statusDetail.name",
+                    product: "$productDetail.name",
                     description: 1,
                     assignedTo: {
                         $cond: {
-                            if: { $ifNull: ["$assignedCounsellor", false] }, 
+                            if: { $ifNull: ["$assignedCounsellor", false] },
                             then: {
                                 $concat: [
                                     { $ifNull: ["$assignedCounsellor.firstName", ""] },
@@ -174,9 +174,9 @@ export const getAllLeadsController = async (
                                     { $ifNull: ["$assignedCounsellor.lastName", ""] }
                                 ]
                             },
-                            else: "Unassigned", 
+                            else: "Unassigned",
                         },
-                    }, 
+                    },
                 },
             },
             { $sort: { updatedAt: -1, createdAt: -1 } },
@@ -216,19 +216,109 @@ export const getLeadByIdController = async (
 ) => {
     try {
         const { leadId } = request.params;
-        const lead = await leadModel.findOne({ id: leadId })
-            .select("-_id id firstName lastName email contactNumber discount statusId productId description assignedTo productAmount");
+        const lead = await leadModel.aggregate([
+            {
+                $match: { id: leadId } 
+            },
+            {
+                $lookup: {
+                    from: "statusMaster",
+                    localField: "statusId",
+                    foreignField: "id",
+                    as: "statusDetail",
+                },
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "productId",
+                    foreignField: "id",
+                    as: "productDetail",
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "assignedTo",
+                    foreignField: "id",
+                    as: "assignedCounsellor",
+                },
+            },
+            {
+                $lookup: {
+                    from: "channelMaster",
+                    localField: "channelId",
+                    foreignField: "id",
+                    as: "channelDetail",
+                },
+            },
+            {
+                $unwind: "$statusDetail",
+            },
+            {
+                $unwind: "$productDetail",
+            },
+            {
+                $unwind: {
+                    path: "$channelDetail",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $unwind: {
+                    path: "$assignedCounsellor",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    fullName: {
+                        $concat: [
+                            { $ifNull: ["$firstName", ""] },
+                            " ",
+                            { $ifNull: ["$lastName", ""] }
+                        ]
+                    },
+                    email: 1,
+                    contactNumber: 1,
+                    productAmount: 1,
+                    discount: 1,
+                    description: 1,
+                    auditLogs: 1,
+                    comments: 1,
+                    status: "$statusDetail.name",
+                    product: "$productDetail.name",
+                    channel: "$channelDetail.name",
+                    assignedTo: {
+                        $cond: {
+                            if: { $ifNull: ["$assignedCounsellor", false] },
+                            then: {
+                                $concat: [
+                                    { $ifNull: ["$assignedCounsellor.firstName", ""] },
+                                    " ",
+                                    { $ifNull: ["$assignedCounsellor.lastName", ""] }
+                                ]
+                            },
+                            else: "Unassigned",
+                        },
+                    },
+                },
+            },
+        ]);
 
-        if (!lead) {
+        if (!lead || lead.length === 0) {
             return response
                 .status(StatusCodes.NOT_FOUND)
                 .json({ message: "Lead " + Messages.THIS_NOT_FOUND });
         }
+
         response
             .status(StatusCodes.OK)
-            .json({ data: lead, message: "Lead " + Messages.FETCHED_SUCCESSFULLY });
+            .json({ data: lead[0], message: "Lead " + Messages.FETCHED_SUCCESSFULLY });
     } catch (error) {
-        console.log("Error occured in getLeadById : ", error);
+        console.log("Error occurred in getLeadById : ", error);
         response
             .status(StatusCodes.INTERNAL_SERVER_ERROR)
             .json({ message: Messages.SOMETHING_WENT_WRONG });

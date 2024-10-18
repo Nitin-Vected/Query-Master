@@ -7,12 +7,12 @@ export const viewStudentListController = async (
   request: Request,
   response: Response
 ) => {
-  const page = request.query.page ? parseInt(request.query.page as string) : 1;
-  const limit = request.query.limit ? parseInt(request.query.limit as string) : null;
-  const skip = page && limit ? (page - 1) * limit : 0;
+  const page = parseInt(request.query.page as string) || 1;
+  const limit = parseInt(request.query.limit as string) || 0;
+  const skip = (page - 1) * limit;
 
   try {
-    const studentListQuery = studentModel.aggregate([
+    const studentList = await studentModel.aggregate([
       {
         $lookup: {
           from: "users",
@@ -21,35 +21,44 @@ export const viewStudentListController = async (
           as: "profileDetails",
         },
       },
+      {
+        $lookup: {
+          from: "products",
+          localField: "products",
+          foreignField: "id",
+          as: "productDetails",
+        },
+      },
       { $unwind: "$profileDetails" },
       {
         $project: {
           _id: 0,
-          "profileDetails._id": 0,
-          "profileDetails.id": 0,
-          "profileDetails.roleId": 0,
-          "profileDetails.createdAt": 0,
-          "profileDetails.updatedAt": 0,
-          "profileDetails.createrRole": 0,
-          "profileDetails.updaterRole": 0,
-          "profileDetails.createdBy": 0,
-          "profileDetails.updatedBy": 0,
-          "profileDetails.isActive": 0,
-          "createdAt": 0,
-          "updatedAt": 0,
-          "createrRole": 0,
-          "updaterRole": 0,
-          "createdBy": 0,
-          "updatedBy": 0,
+          userId: 1,
+          transactions: 1,
+          enrollmentNumber: 1,
+          enrollmentDate: 1,
+          products: {
+            $map: {
+              input: "$productDetails",
+              as: "product",
+              in: "$$product.id"
+            },
+          },
+          amount: 1,
+          firstName: "$profileDetails.firstName",
+          lastName: "$profileDetails.lastName",
+          email: "$profileDetails.email",
+          contactNumber: "$profileDetails.contactNumber",
+          profileImg: "$profileDetails.profileImg",
+          isActive: "$profileDetails.isActive"
         },
       },
+      { $sort: { updatedAt: -1, createdAt: -1 } },
+      { $skip: skip },
     ]);
-
-    if (page && limit) {
-      studentListQuery.skip(skip).limit(limit);
+    if (limit > 0) {
+      studentList.push({ $limit: limit });
     }
-
-    const studentList = await studentListQuery.exec();
 
     const totalStudents = await studentModel.countDocuments();
 
