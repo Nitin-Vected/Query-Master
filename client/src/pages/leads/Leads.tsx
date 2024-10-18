@@ -133,7 +133,7 @@ const Lead = () => {
   };
 
   const headers: TableColumn<LeadData>[] = [
-    { label: "Full Name", key: "firstName" },
+    { label: "Full Name", key: "fullName" },
     { label: "Contact Number", key: "contactNumber" },
     { label: "Email Id", key: "email" },
     {

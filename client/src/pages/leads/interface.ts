@@ -5,5 +5,5 @@ export interface LeadData {
   channelId: string;
   statusId: number;
   assignedTo: string;
-  lastName:number
+  fullName: string | any;
 }
