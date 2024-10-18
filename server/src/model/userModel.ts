@@ -1,55 +1,78 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
-export interface IUser extends Document {
-  name: string;
+export interface User extends Document {
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
   contactNumber: string;
+  roleId: string;
   profileImg: string;
-  role: 'Student' | 'SupportAdmin';
-  status: string;
+  isActive: boolean;
+  createdBy: string;
+  updatedBy: string;
+  createrRole: string;
+  updaterRole: string;
 }
 
-const UserSchema: mongoose.Schema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
+const UserSchema = new Schema<User>(
+  {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+    },
+    contactNumber: {
+      type: String,
+      default: "",
+    },
+    roleId: {
+      type: String,
+      required: true,
+      ref: "roleMaster",
+    },
+    profileImg: {
+      type: String,
+      default: "",
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    createdBy: {
+      type: String,
+      required: true,
+    },
+    updatedBy: {
+      type: String,
+      required: true,
+    },
+    createrRole: {
+      type: String,
+      required: true,
+    },
+    updaterRole: {
+      type: String,
+      required: true,
+    },
   },
-  firstName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-  },
-  contactNumber: {
-    type: String,
-    default: "",
-  },
-  profileImg: {
-    type: String,
-    required: true,
-  },
-  role: {
-    type: String,
-    enum: ['Student', 'SupportAdmin'], 
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-  },
-}, { versionKey: false, timestamps: true });
+  { versionKey: false, timestamps: true }
+);
 
-export default mongoose.model<IUser>('User', UserSchema, 'user');
+export default mongoose.model<User>("User", UserSchema, "users");

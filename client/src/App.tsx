@@ -1,37 +1,38 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Header from "./components/Header";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import NewQuery from "./pages/NewQuery";
-import PrivateRoute from "./components/PrivateRoute";
-import Queries from "./pages/Queries";
-import ManageQueries from "./pages/ManageQueries";
-import Query from "./pages/Query";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
+import { Provider } from "react-redux";
+import theme from "./theme/theme";
 import "./App.css";
-import StudentManagement from "./pages/StudentManagement";
+import HeaderView from "./template/header-view";
+import Home from "./pages/home";
+import Leads from "./pages/leads";
+import Orders from "./pages/orders";
+import Students from "./pages/students";
+import Transactions from "./pages/transactions";
+import Login from "./pages/login";
+import PrivateRoute from "./components/PrivateRoute";
+import { store } from "./redux/store";
 
 const App: React.FC = () => {
   return (
-    <div className="container">
-      <Header />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-
-        {/* Private Routes */}
-        <Route element={<PrivateRoute />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/new-query" element={<NewQuery />} />
-          <Route path="/queries" element={<Queries />} />
-          <Route path="/query/:queryId" element={<Query />} />
-          <Route path="/manage-queries" element={<ManageQueries />} />
-          <Route path="/student-management" element={<StudentManagement />} />
-        </Route>
-      </Routes>
-      <ToastContainer />
-    </div>
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <Router>
+          <HeaderView />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route element={<PrivateRoute />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/leads" element={<Leads />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/students" element={<Students />} />
+              <Route path="/transactions" element={<Transactions />} />
+            </Route>
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </Provider>
   );
 };
 

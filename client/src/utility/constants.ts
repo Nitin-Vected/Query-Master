@@ -1,4 +1,13 @@
-// src/constants.ts
-export const BASE_API_URL = "http://localhost:3001";
-export const USER_API_URL = `${BASE_API_URL}/user`;
-export const ADMIN_API_URL = `${BASE_API_URL}/admin`;
+export const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
+export const API_URL = `${BASE_API_URL}/api`;
+
+// for Support System UI 15/102024
+const BaseURL = API_URL;
+
+const constants = {
+  BaseURL: BaseURL,
+  Get_All_lead_Api: `${BaseURL}/lead`,
+  GET_All_Counsellor: `${BaseURL}/counsellor`,
+};
+
+export default constants;
