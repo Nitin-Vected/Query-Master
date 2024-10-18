@@ -15,30 +15,21 @@ interface Payload {
 }
 
 const getSecretKey = (roleName: string): string | undefined => {
-
   switch (roleName) {
-    case "Admin":
-      return ADMIN_SECRET_KEY;
-    case "Counsellor":
-      return COUNSELLOR_SECRET_KEY;
-    case "User":
-      return USER_SECRET_KEY;
-    default:
-      return undefined;
+    case "Admin": return ADMIN_SECRET_KEY;
+    case "Counsellor": return COUNSELLOR_SECRET_KEY;
+    case "Student": return USER_SECRET_KEY;
+    default: return undefined;
   }
 };
 
 export const tokenGenerator = (data: Payload) => {
   const { roleName } = data;
-
   const secretKey = getSecretKey(roleName);
-
   if (!secretKey) {
     throw new Error(`Secret key for role ${roleName} not found`);
   }
-
   const token = jwt.sign(data, secretKey, { expiresIn: "1d" });
-
   console.log("Generated Token ==> ", token);
   return token;
 };

@@ -32,13 +32,23 @@ export const validateNewProduct = [
 export const validateProductId = [
   param("productId")
     .notEmpty()
-    .withMessage("Course ID is required")
+    .withMessage("Product ID is required")
     .isString()
-    .withMessage("Course ID must be a string"),
+    .withMessage("Product ID must be a string")
+    .matches(/^PRODUCT\d{4}$/)
+    .withMessage('Product ID must follow the format "PRODUCT" followed by 4 digits, e.g., "PRODUCT0001"'),
   checkValidation,
 ];
 
 export const validateUpdateProduct = [
+  param("productId")
+    .notEmpty()
+    .withMessage("Product ID is required")
+    .isString()
+    .withMessage("Product ID must be a string")
+    .matches(/^PRODUCT\d{4}$/)
+    .withMessage('Product ID must follow the format "PRODUCT" followed by 4 digits, e.g., "PRODUCT0001"'),
+
   body("productName")
     .optional()
     .isString()
@@ -52,7 +62,9 @@ export const validateUpdateProduct = [
   body("productFees")
     .optional()
     .isNumeric()
-    .withMessage("Product Fees must be a number"),
+    .withMessage("Product Fees must be a number")
+    .isFloat({ gt: 0 })
+    .withMessage('Product fees must be a number greater than zero'),
 
   body("productDescription")
     .optional()

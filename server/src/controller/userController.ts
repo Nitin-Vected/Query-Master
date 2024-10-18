@@ -20,11 +20,9 @@ export const createUserController = async (
         .json({ message: Messages.PAYLOAD_MISSING_OR_INVALID });
     }
     const { email, roleName } = request.payload;
-    const { firstName, lastName, leadEmail, contactNumber } = request.body;
+    const { firstName, lastName, userEmail, contactNumber } = request.body;
 
-    const existingUser = await userModel.findOne({
-      $or: [{ email: leadEmail }, { contactNumber }],
-    });
+    const existingUser = await userModel.findOne({ email: userEmail });
 
     if (existingUser) {
       return response
@@ -38,7 +36,7 @@ export const createUserController = async (
       id: userId,
       firstName,
       lastName,
-      email: leadEmail,
+      email: userEmail,
       contactNumber,
       roleId: STUDENT_ROLE_ID,
       status: true,

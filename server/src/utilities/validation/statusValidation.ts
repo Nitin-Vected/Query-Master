@@ -16,7 +16,9 @@ export const validateStatusId = [
     .notEmpty()
     .withMessage("Status ID is required")
     .isString()
-    .withMessage("Status ID must be a string"),
+    .withMessage("Status ID must be a string")
+    .matches(/^STATUS\d{4}$/)
+    .withMessage('Status ID must follow the format "STATUS" followed by 4 digits, e.g., "STATUS0001"'),
   checkValidation,
 ];
 
@@ -25,7 +27,9 @@ export const validateUpdateStatus = [
     .notEmpty()
     .withMessage("Status ID is required")
     .isString()
-    .withMessage("Status ID must be a string"),
+    .withMessage("Status ID must be a string")
+    .matches(/^STATUS\d{4}$/)
+    .withMessage('Status ID must follow the format "STATUS" followed by 4 digits, e.g., "STATUS0001"'),
 
   body("statusName")
     .optional()
