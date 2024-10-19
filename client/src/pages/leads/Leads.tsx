@@ -87,6 +87,30 @@ const Lead = () => {
     setSelectedLead(event.target.value);
   };
 
+  //   const handleStatusChange = (
+  //     event: SelectChangeEvent<string>,
+  //     rowIndex: number
+  //   ) => {
+  //     // Get the selected value from the dropdown
+  //     const selectedValue = event.target.value;
+
+  //     // Open enrollment modal if the selected status is "Enrolled"
+  //     if (selectedValue === "Enrolled") {
+  //       setIsEnrollmentModalOpen(true);
+  //     }
+
+  //     // Create a new copy of the rows to avoid mutating the original state
+  //     const newRows = [...manageStatusList];
+
+  //     // Update the status of the specific row at rowIndex
+  //     newRows[rowIndex].status = selectedValue;
+  // console.log("newRows dfff",newRows);
+  //     // Update the state with the modified rows
+  //     setManageStatusList(newRows); // Update the state to reflect changes
+
+  //     // Optionally, log the updated status
+  //     console.log(`Status updated for row ${rowIndex} to ${selectedValue}`);
+  //   };
   const handleStatusChange = (
     event: SelectChangeEvent<string>,
     rowIndex: number
@@ -108,7 +132,6 @@ const Lead = () => {
     // Update the state with the modified rows
     setManageStatusList(newRows);
   };
-
   const handleAssignedToChange = (
     event: SelectChangeEvent<string>,
     rowIndex: number
@@ -139,25 +162,37 @@ const Lead = () => {
     {
       label: "Manage Status",
       key: "status",
-      render: (
-        value: string | boolean | null, // Changed 'undefined' to 'null'
-        _row: any,
-        index: number
-      ) => {
+      //   render: (value: string | boolean | null, _row: any, index: number) => {
+      //     return (
+      //       <SelectDropdown
+      //         name={`status${index}`}
+      //         disabled={value === "Enrolled"} // Disable if the status is "Enrolled"
+      //         value={value || "status"} // Display the current selected value, fallback to "status"
+      //         onChange={(e) => handleStatusChange(e, index)} // Handle the value change
+      //         options={manageStatusList.map((status) => ({
+      //           label: status.name,
+      //           value: status.name, // Use the status name as the dropdown option
+      //         }))}
+      //       />
+      //     );
+      //   },
+      // },
+      render: (value: string | boolean | null, _row: any, index: number) => {
         return (
           <SelectDropdown
             name={`status${index}`}
-            disabled={value == "Enrolled"}
-            value={value || "status"}
-            onChange={(e) => handleStatusChange(e, index)} // Call the status change handler
+            disabled={value === "Enrolled"} // Disable if the status is "Enrolled"
+            value={value || manageStatusList[index] || "status"} // Bind value to the correct state
+            onChange={(e) => handleStatusChange(e, index)} // Handle the value change
             options={manageStatusList.map((status) => ({
               label: status.name,
-              value: status.name, // Use the name from the status object as the value
+              value: status.name, // Use the status name as the dropdown option
             }))}
           />
         );
       },
     },
+
     { label: "Channel", key: "channel" },
     {
       label: "Counsellor Name",
