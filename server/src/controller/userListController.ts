@@ -41,7 +41,7 @@ export const viewStudentListController = async (
             $map: {
               input: "$productDetails",
               as: "product",
-              in: "$$product.id"
+              in: "$$product.name"
             },
           },
           amount: 1,
@@ -83,7 +83,6 @@ export const viewStudentListController = async (
   }
 };
 
-
 export const viewCounsellorListController = async (
   request: Request,
   response: Response
@@ -95,7 +94,7 @@ export const viewCounsellorListController = async (
   try {
     const counsellorList = await userModel
       .find({ roleId: COUNSELLOR_ROLE_ID })
-      .select("-_id id firstName lastName contactNumber email profileImg")
+      .select("-_id id firstName lastName contactNumber email profileImg isActive")
       .sort({ updatedAt: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit || 0);

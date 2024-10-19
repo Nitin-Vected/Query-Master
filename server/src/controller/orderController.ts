@@ -80,6 +80,7 @@ export const getOrderByIdController = async (request: Request, response: Respons
           dueAmount: 1,
           amount: 1,
           dueDate: 1,
+          isActive: 1,
           products: {
             $map: {
               input: "$productDetails",
@@ -117,12 +118,21 @@ export const getAllOrdersController = async (request: Request, response: Respons
     const orders = await orderModel.aggregate([
       {
         $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "id",
+          as: "profileDetails",
+        },
+      },
+      {
+        $lookup: {
           from: "products",
           localField: "products",
           foreignField: "id", 
           as: "productDetails", 
         },
       },
+      { $unwind: "$profileDetails" },
       {
         $project: {
           _id: 0,
@@ -131,13 +141,18 @@ export const getAllOrdersController = async (request: Request, response: Respons
           dueAmount: 1,
           amount: 1,
           dueDate: 1,
+          isActive: 1,
           products: {
             $map: {
               input: "$productDetails",
               as: "product",
-              in: "$$product.id"
+              in: "$$product.name"
             },
           },
+          firstName: "$profileDetails.firstName",
+          lastName: "$profileDetails.lastName",
+          email: "$profileDetails.email",
+          contactNumber: "$profileDetails.contactNumber",
         },
       },
       { $sort: { updatedAt: -1, createdAt: -1 } },

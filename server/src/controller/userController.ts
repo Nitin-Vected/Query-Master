@@ -102,6 +102,7 @@ export const getUserByIdController = async (
           contactNumber: 1,
           email: 1,
           profileImg: 1,
+          isActive: 1,
           role: "$roleDetails.name", // Include role name from roleDetails
         },
       },
@@ -191,6 +192,7 @@ export const viewUserListController = async (
           contactNumber: 1,
           email: 1,
           profileImg: 1,
+          isActive: 1,
           role: "$roleDetails.name", 
         },
       },
