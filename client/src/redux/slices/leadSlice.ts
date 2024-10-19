@@ -1,23 +1,23 @@
-// src/slices/ledaSlice.js
+// src/slices/leadSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
-const ledaSlice = createSlice({
-  name: "leda",
+const leadSlice = createSlice({
+  name: "lead",
   initialState: {
     data: null,
     loading: false,
     error: null,
   },
   reducers: {
-    fetchLedaDataStart(state) {
+    fetchLeadDataStart(state) {
       state.loading = true;
       state.error = null;
     },
-    fetchLedaDataSuccess(state, action) {
+    fetchLeadDataSuccess(state, action) {
       state.loading = false;
       state.data = action.payload;
     },
-    fetchLedaDataFailure(state, action) {
+    fetchLeadDataFailure(state, action) {
       state.loading = false;
       state.error = action.payload;
     },
@@ -25,9 +25,9 @@ const ledaSlice = createSlice({
 });
 
 export const {
-  fetchLedaDataStart,
-  fetchLedaDataSuccess,
-  fetchLedaDataFailure,
-} = ledaSlice.actions;
+  fetchLeadDataStart,
+  fetchLeadDataSuccess,
+  fetchLeadDataFailure,
+} = leadSlice.actions;
 
-export default ledaSlice.reducer;
+export default leadSlice.reducer;

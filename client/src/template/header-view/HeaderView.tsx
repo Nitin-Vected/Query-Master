@@ -18,7 +18,7 @@ import { Search, Menu as MenuIcon, Close } from "@mui/icons-material";
 import image from "../../assets/image";
 import { useNavigate, useLocation } from "react-router-dom";
 import theme from "../../theme/theme";
-import { clearUserData } from "../../app/authSlice";
+import { clearUserData } from "../../redux/slices/authSlice";
 import { useDispatch } from "react-redux";
 
 const HeaderView = () => {

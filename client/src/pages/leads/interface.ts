@@ -1,10 +1,44 @@
 export interface LeadData {
-    name: string;
-    contact: string;
-    email: string;
-    channel: string;
-    counsellor: string;
-    status: string;
-    action: string;
-  }
-  
+  firstName: string;
+  contactNumber: string;
+  email: string;
+  channel: string;
+  status: number;
+  assignedTo: string;
+  fullName: string;
+  index:number
+}
+
+export interface Counsellor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  contactNumber: string;
+  profileImg: string;
+  index:number
+
+}
+export interface ManageStatus {
+  id: string;
+  name: string;
+  status:string
+  index:string
+   
+}
+
+export interface AllLead {
+  id: string;
+  fullName: string;
+  lastName: string;
+  email: string;
+  contactNumber: string;
+  productAmount: number;
+  discount: number;
+  channel: string; // Added based on your JSON
+  status: string;
+  productId: string;
+  description: string;
+  assignedTo: string | null;
+  action:string
+}

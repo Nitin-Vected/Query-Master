@@ -5,8 +5,8 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { useDispatch, useSelector } from "react-redux";
 import Spinner from "../../components/Spinner";
 import image from "../../assets/image";
-import { loginWithGoogle } from "../../app/authSlice"; // Import login action
-import { AppDispatch, RootState } from "../../app/store";
+import { loginWithGoogle } from "../../redux/slices/authSlice"; // Import login action
+import { AppDispatch, RootState } from "../../redux/store";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +16,6 @@ const Login: React.FC = () => {
 
   const loginWithGoogleHandler = useGoogleLogin({
     onSuccess: ({ access_token }: { access_token: string }) => {
-      console.log("Google Access Token:", access_token);
       dispatch(loginWithGoogle({ access_token })); // This should work now
       navigate("/"); // Navigate on success
     },

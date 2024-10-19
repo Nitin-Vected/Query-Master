@@ -6,7 +6,10 @@ const BaseURL = API_URL;
 
 const constants = {
   BaseURL: BaseURL,
-  Get_All_Leda_Api: `${BaseURL}/lead`,
+  Get_All_lead_Api: `${BaseURL}/lead`,
+  GET_All_Counsellor: `${BaseURL}/counsellor`,
+  GET_All_Status: `${BaseURL}/status`,
+  
 };
 
 export default constants;

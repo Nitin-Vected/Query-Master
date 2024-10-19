@@ -12,7 +12,7 @@ import Students from "./pages/students";
 import Transactions from "./pages/transactions";
 import Login from "./pages/login";
 import PrivateRoute from "./components/PrivateRoute";
-import { store } from "./app/store";
+import { store } from "./redux/store";
 
 const App: React.FC = () => {
   return (

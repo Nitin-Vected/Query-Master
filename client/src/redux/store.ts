@@ -2,9 +2,9 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import createSagaMiddleware from "redux-saga";
-import authReducer from "./authSlice";
-import ledaSlice from "./ledaSlice";
-import rootSaga from "./sagas";
+import authReducer from "./slices/authSlice";
+import leadSlice from "./slices/leadSlice";
+import rootSaga from "./sagas/authSaga";
 
 const persistConfig = {
   key: "root",
@@ -14,8 +14,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
-  ledas: ledaSlice,
-
+  leads: leadSlice,
 });
 
 const sagaMiddleware = createSagaMiddleware();
