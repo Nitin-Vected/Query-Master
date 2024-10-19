@@ -68,25 +68,56 @@ export const createUserController = async (
       .json({ error: Messages.UNEXPECTED_ERROR });
   }
 };
-
 export const getUserByIdController = async (
   request: Request,
   response: Response
 ) => {
   const { userId } = request.params;
+
   try {
-    const role = await userModel.findOne({ id: userId })
-      .select("-_id id firstName lastName contactNumber email profileImg roleId");
-    if (!role) {
+    const user = await userModel.aggregate([
+      {
+        $match: { id: userId } // Match the user by ID
+      },
+      {
+        $lookup: {
+          from: "roleMaster", // Assuming you have a roles collection
+          localField: "roleId", // Field in userModel that holds role IDs
+          foreignField: "id", // Field in the roles collection to match with role IDs
+          as: "roleDetails", // Name for the resulting role details array
+        },
+      },
+      {
+        $unwind: {
+          path: "$roleDetails",
+          preserveNullAndEmptyArrays: true, // Keep users without a role
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: 1,
+          firstName: 1,
+          lastName: 1,
+          contactNumber: 1,
+          email: 1,
+          profileImg: 1,
+          role: "$roleDetails.name", // Include role name from roleDetails
+        },
+      },
+    ]);
+
+    if (!user || user.length === 0) {
       return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "User " + Messages.THIS_NOT_FOUND });
     }
+
     response
       .status(StatusCodes.OK)
-      .json({ data: role, message: "User " + Messages.FETCHED_SUCCESSFULLY });
+      .json({ data: user[0], message: "User " + Messages.FETCHED_SUCCESSFULLY });
   } catch (error) {
-    console.log("Error occured in getUserById : ", error);
+    console.log("Error occurred in getUserById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: Messages.SOMETHING_WENT_WRONG });
@@ -136,15 +167,40 @@ export const viewUserListController = async (
   const skip = (page - 1) * limit;
 
   try {
-    const userList = await userModel
-      .find()
-      .select("-_id id firstName lastName contactNumber email profileImg roleId")
-      .sort({ updatedAt: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(limit || 0);
-
+    const userList = await userModel.aggregate([
+      {
+        $lookup: {
+          from: "roleMaster", 
+          localField: "roleId",
+          foreignField: "id",
+          as: "roleDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$roleDetails",
+          preserveNullAndEmptyArrays: true, 
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: 1,
+          firstName: 1,
+          lastName: 1,
+          contactNumber: 1,
+          email: 1,
+          profileImg: 1,
+          role: "$roleDetails.name", 
+        },
+      },
+      { $sort: { updatedAt: -1, createdAt: -1 } },
+      { $skip: skip },
+    ]);
+    if (limit > 0) {
+      userList.push({ $limit: limit });
+  }
     const totalUsers = await userModel.countDocuments();
-
     const totalPages = limit ? Math.ceil(totalUsers / limit) : 1;
 
     if (userList && userList.length > 0) {

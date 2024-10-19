@@ -58,24 +58,55 @@ export const updateOrderWithTransactionId = async (
 
 export const getOrderByIdController = async (request: Request, response: Response) => {
   const { orderId } = request.params;
+
   try {
-    const order = await orderModel.findOne({ id: orderId })
-      .select("-_id id transactions dueAmount amount dueDate products");
-    if (!order) {
+    const order = await orderModel.aggregate([
+      {
+        $match: { id: orderId } 
+      },
+      {
+        $lookup: {
+          from: "products", 
+          localField: "products",
+          foreignField: "id", 
+          as: "productDetails",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: 1,
+          transactions: 1,
+          dueAmount: 1,
+          amount: 1,
+          dueDate: 1,
+          products: {
+            $map: {
+              input: "$productDetails",
+              as: "product",
+              in: "$$product.name", 
+            },
+          },
+        },
+      },
+    ]);
+
+    if (!order || order.length === 0) {
       return response
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Order " + Messages.THIS_NOT_FOUND });
     }
+
     return response
       .status(StatusCodes.OK)
-      .json({ data: order, message: "Order " + Messages.FETCHED_SUCCESSFULLY });
+      .json({ data: order[0], message: "Order " + Messages.FETCHED_SUCCESSFULLY });
   } catch (error) {
-    console.log("Error occured in getOrderById : ", error);
+    console.log("Error occurred in getOrderById : ", error);
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
-}
+};
 
 export const getAllOrdersController = async (request: Request, response: Response) => {
   const page = parseInt(request.query.page as string) || 1;
@@ -83,21 +114,45 @@ export const getAllOrdersController = async (request: Request, response: Respons
   const skip = (page - 1) * limit;
 
   try {
-    const orderList = await orderModel
-      .find()
-      .select("-_id id transactions dueAmount amount dueDate products")
-      .sort({ updatedAt: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(limit || 0);
-
+    const orders = await orderModel.aggregate([
+      {
+        $lookup: {
+          from: "products",
+          localField: "products",
+          foreignField: "id", 
+          as: "productDetails", 
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: 1,
+          transactions: 1,
+          dueAmount: 1,
+          amount: 1,
+          dueDate: 1,
+          products: {
+            $map: {
+              input: "$productDetails",
+              as: "product",
+              in: "$$product.id"
+            },
+          },
+        },
+      },
+      { $sort: { updatedAt: -1, createdAt: -1 } },
+      { $skip: skip },
+    ]);
+    if (limit > 0) {
+      orders.push({ $limit: limit });
+    }
     const totalOrders = await orderModel.countDocuments();
-
     const totalPages = limit ? Math.ceil(totalOrders / limit) : 1;
 
-    if (orderList && orderList.length > 0) {
+    if (orders && orders.length > 0) {
       response.status(StatusCodes.OK).json({
-        orderList: orderList,
-        totalPages: totalPages, 
+        orderList: orders,
+        totalPages: totalPages,
         message: "Orders " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {
