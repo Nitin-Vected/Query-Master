@@ -16,11 +16,14 @@ export interface Counsellor {
   email: string;
   contactNumber: string;
   profileImg: string;
+  index:number
 
 }
 export interface ManageStatus {
   id: string;
   name: string;
+  status:string
+  index:string
    
 }
 

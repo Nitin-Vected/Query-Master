@@ -20,11 +20,14 @@ import CustomPagination from "../../template/custom-pagination";
 import EnrollmentModal from "../../components/enrollment-modal";
 import { TableColumn } from "../../template/custom-table/interface";
 import theme from "../../theme/theme";
-import { getAllLeads } from "../../services/api/userApi";
+import {
+  getallCounsellor,
+  getAllLeads,
+  getAllLeadsUpdate,
+  getallManageStatusApi,
+} from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { getallCounsellor } from "../../services/api/counselloapi";
-import { getallManageStatusApi } from "../../services/manageStatusapi";
 
 const Lead = () => {
   const [open, setOpen] = useState(false);
@@ -39,7 +42,6 @@ const Lead = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
   const AllLedaData = userData.leads.data;
-  const [rows, setRows] = useState([]);
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
@@ -64,6 +66,7 @@ const Lead = () => {
   const fetchCounsellorData = async (token: string) => {
     try {
       const data = await getallCounsellor(token); // Fetch the data
+
       setCounsellorList(data.counsellorList || []); // Ensure to set the counsellorList
     } catch (error) {
       console.error("Failed to fetch counsellor data:", error);
@@ -113,32 +116,26 @@ const Lead = () => {
   //   };
   const handleStatusChange = (
     event: SelectChangeEvent<string>,
-    rowIndex: number
+    rowIndex: number,
+    selectedStatus: any
   ) => {
     // Get the selected value from the dropdown
     const selectedValue = event.target.value;
-
+    console.log("row irr", selectedStatus);
     // Open enrollment modal if the selected status is "Enrolled"
     if (selectedValue === "Enrolled") {
       setIsEnrollmentModalOpen(true);
     }
 
     // Create a new copy of rows to avoid mutating the original state
-    const newRows = [...rows];
+    const newRows = [...manageStatusList];
 
     // Update the status of the specific row at rowIndex
     newRows[rowIndex].status = selectedValue;
 
     // Update the state with the modified rows
     setManageStatusList(newRows);
-  };
-  const handleAssignedToChange = (
-    event: SelectChangeEvent<string>,
-    rowIndex: number
-  ) => {
-    const newRows = [...rows];
-    newRows[rowIndex].counsellor = event.target.value;
-    setRows(newRows);
+    getAllLeadsUpdate(userData.auth.userData.token, selectedStatus);
   };
 
   const leadDataSubmit = async (leadData: LeadData) => {
@@ -162,31 +159,65 @@ const Lead = () => {
     {
       label: "Manage Status",
       key: "status",
-      //   render: (value: string | boolean | null, _row: any, index: number) => {
-      //     return (
-      //       <SelectDropdown
-      //         name={`status${index}`}
-      //         disabled={value === "Enrolled"} // Disable if the status is "Enrolled"
-      //         value={value || "status"} // Display the current selected value, fallback to "status"
-      //         onChange={(e) => handleStatusChange(e, index)} // Handle the value change
-      //         options={manageStatusList.map((status) => ({
-      //           label: status.name,
-      //           value: status.name, // Use the status name as the dropdown option
-      //         }))}
-      //       />
-      //     );
-      //   },
+
+      // render: (value: string | boolean | null, index: number) => {
+      //   return (
+      //     <SelectDropdown
+      //       name={`status${index}`}
+      //       disabled={value === "Enrolled"} // Disable if the status is "Enrolled"
+      //       value={manageStatusList[index]?.status || value || "status"} // Show the row's status or fallback to original value or "status"
+      //       onChange={(e) => {
+      //         const selectedStatus = manageStatusList.find(
+      //           (statusd) => statusd?.name === e?.target?.value
+      //         );
+      //         handleStatusChange(e, index, selectedStatus); // Pass the selected ID to the handler
+      //       }} // Handle the value change
+      //       onChange={(e) => {
+      //         const selectedStatus = manageStatusList.find(
+      //           (status) => status.name === e.target.value
+      //         );
+      //         if (selectedStatus) {
+      //           handleStatusChange(e, index, selectedStatus.id); // Ensure selectedStatus exists
+      //         }
+      //       }} // Handle the value change
+
+      //       options={manageStatusList.map((statuws) => ({
+      //         label: statuws.name,
+      //         value: statuws.name, // Use the status name as the dropdown option
+      //         id: statuws.id, // Add the ID for later use
+      //       }))}
+      //     />
+      //   );
       // },
-      render: (value: string | boolean | null, _row: any, index: number) => {
+      render: (value: string | boolean | null, index: number) => {
+        // Ensure that manageStatusList[index] exists or create a default value
+        const currentStatus =
+          manageStatusList[index]?.status || value || "status";
+
         return (
           <SelectDropdown
             name={`status${index}`}
             disabled={value === "Enrolled"} // Disable if the status is "Enrolled"
-            value={value || manageStatusList[index] || "status"} // Bind value to the correct state
-            onChange={(e) => handleStatusChange(e, index)} // Handle the value change
-            options={manageStatusList.map((status) => ({
+            value={currentStatus} // Fallback to default "status" if currentStatus is undefined
+            onChange={(e) => {
+              const selectedStatus = manageStatusList.find(
+                (statuss) => statuss?.name === e.target.value
+              );
+              if (selectedStatus) {
+                // Make sure manageStatusList[index] exists
+                if (!manageStatusList[index]) {
+                  // Create the object if it doesn't exist
+                  manageStatusList[index] = {};
+                }
+                // Update the status of the specific index
+                manageStatusList[index].status = selectedStatus?.name;
+                handleStatusChange(e, index, selectedStatus.id); // Pass the selected ID
+              }
+            }}
+            options={manageStatusList?.map((status) => ({
               label: status.name,
               value: status.name, // Use the status name as the dropdown option
+              id: status.id, // Add the ID for later use
             }))}
           />
         );
@@ -197,13 +228,14 @@ const Lead = () => {
     {
       label: "Counsellor Name",
       key: "assignedTo",
-      render: (value: string | null, index: number | string) => {
+      render: (value: string | null, index: number | string, row: any) => {
         return (
           <SelectDropdown
             disabled={value !== "Unassigned"} // Disable if the current value is not "Unassigned"
             name={`assignedTo${index}`} // Name is based on the index
-            value={value || "Unassigned"} // Set the dropdown value to the current value or "Unassigned"
-            onChange={(e) => handleAssignedToChange(e, index)}
+            // value={value || "Unassigned"} // Set the dropdown value to the current value or "Unassigned"
+            value={counsellorList[index]?.status || value || "Unassigned"} // Show the row's status or fallback to original value or "status"
+            onChange={(e) => handleStatusChange(e, index, row)} // Pass row data along with index
             options={options} // Use the dynamic options here
           />
         );
