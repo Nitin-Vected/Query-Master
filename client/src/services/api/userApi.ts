@@ -34,28 +34,48 @@ export const getAllLeads = async (token: string) => {
   }
 };
 
-export const getAllLeadsUpdate = async (token: string, productId: string) => {
+export const getAllLeadsUpdate = async (
+  token: string,
+  leadId: string,
+  data: object
+) => {
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.put(
-      `${constants.Get_All_lead_Api}/${productId}`, // Add productId to the URL
-      {},
+      `${constants.Get_All_lead_Api}/${leadId}`, // Update URL if necessary
+      data,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     );
-    console.log("ss", response.data);
-    store.dispatch(fetchLeadDataSuccess(response.data)); // Dispatch success action
+    return response.data; // Return the data from the response
+  } catch (error) {
+    const errorMessage =
+      (error as Error).message || "An unknown error occurred";
+    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
+    throw error; // Re-throw the error for further handling
+  }
+};
+
+export const getallLeadEdit = async (token: string, leadId: string) => {
+  try {
+    const response = await axios.get(
+      `${constants.Get_All_lead_Api}/${leadId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    // console.log("data", response.data);
     return response.data; // Return the data from the response
   } catch (error) {
     console.error("Error occurred during API call:", error);
-    // Type assertion to handle the error
     const errorMessage =
       (error as Error).message || "An unknown error occurred";
 
-    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
     throw error; // Re-throw the error for further handling
   }
 };

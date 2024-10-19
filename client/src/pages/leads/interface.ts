@@ -16,7 +16,9 @@ export interface Counsellor {
   email: string;
   contactNumber: string;
   profileImg: string;
-  index:number
+  index:number,
+  status:string
+  Counsellor:string
 
 }
 export interface ManageStatus {
@@ -24,6 +26,7 @@ export interface ManageStatus {
   name: string;
   status:string
   index:string
+  Counsellor:string
    
 }
 
