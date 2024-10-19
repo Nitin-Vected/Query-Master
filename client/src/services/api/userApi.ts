@@ -7,6 +7,7 @@ import {
 } from "../../redux/slices/leadSlice";
 import { store } from "../../redux/store";
 import { fetchAllProductsFailure, fetchAllProductsStart, fetchAllProductsSuccess } from "../../redux/slices/productSlice";
+import { fetchAllStatusFailure, fetchAllStatusStart, fetchAllStatusSuccess } from "../../redux/slices/statusSlice";
 
 export const loginWithGoogleApi = async (accessToken: string) => {
   return await axios.post(`${API_URL}/login`, {
@@ -125,13 +126,34 @@ export const getAllChannels = async (token: string) => {
         Authorization: `Bearer ${token}`,
       },
     });
-     return response.data;
+    return response.data;
   } catch (error) {
     console.error("Error occurred during API call:", error);
     const errorMessage =
       (error as Error).message || "An unknown error occurred";
 
     throw error;
+  }
+};
+
+export const getAllStatus = async (token: string) => {
+  try {
+    store.dispatch(fetchAllStatusStart()); // Dispatch start action
+    const response = await axios.get(`${constants.Status_Api}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    store.dispatch(fetchAllStatusSuccess(response.data)); // Dispatch success action
+    return response.data; // Return the data from the response
+  } catch (error) {
+    console.error("Error occurred during API call:", error);
+    // Type assertion to handle the error
+    const errorMessage =
+      (error as Error).message || "An unknown error occurred";
+
+    store.dispatch(fetchAllStatusFailure(errorMessage)); // Dispatch failure action
+    throw error; // Re-throw the error for further handling
   }
 };
 export const getAllProducts = async (token: string) => {

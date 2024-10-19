@@ -2,7 +2,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const statusSlice = createSlice({
-  name: "product",
+  name: "status",
   initialState: {
     data: null,
     loading: false,

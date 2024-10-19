@@ -26,6 +26,7 @@ import {
   getAllLeadsUpdate,
   getallManageStatusApi,
   getAllProducts,
+  getAllStatus,
 } from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -82,6 +83,7 @@ const Lead = () => {
     }
   };
   useEffect(() => {
+    getAllStatus(userData.auth.userData.token);
     getAllProducts(userData.auth.userData.token);
     getAllLeads(userData.auth.userData.token);
     fetchCounsellorData(userData.auth.userData.token);
@@ -291,7 +293,7 @@ const Lead = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
+            <SearchInput placeholder={"Search Lead"} onChange={() => { }} />
           </Box>
 
           <CustomTable headers={headers} rows={AllLedaData} />

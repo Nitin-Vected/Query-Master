@@ -9,6 +9,7 @@ const constants = {
   Get_All_lead_Api: `${BaseURL}/lead`,
   GET_All_Counsellor: `${BaseURL}/counsellor`,
   GET_All_Status: `${BaseURL}/status`,
+  Status_Api: `${BaseURL}/status`,
   Product_API: `${BaseURL}/product`,
   Channel_API: `${BaseURL}/channel`,
 

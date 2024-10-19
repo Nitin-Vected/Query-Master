@@ -14,7 +14,7 @@ import FormTextField from "../../template/form-text-field";
 import FormSelectField from "../../template/form-select-field";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { getAllChannels, getallManageStatusApi } from "../../services/api/userApi";
+import { getAllChannels, getallManageStatusApi, getAllStatus } from "../../services/api/userApi";
 
 const validationSchema = Yup.object({
   fullName: Yup.string().required("Full name is required"),
@@ -35,9 +35,9 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
   onSubmit,
 }) => {
   const [allChannels, setAllChannels] = useState<Channels[]>([]);
-  const [allStatus, setAllStatus] = useState<Status[]>([]);
   const userData: any = useSelector((state: RootState) => state);
   const allProducts = userData.product.data.productList;
+  const allStatus = userData.status.data.statusList;
   const getChannels = async (token: string) => {
     try {
       const data = await getAllChannels(token);
@@ -46,17 +46,8 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
       console.error("Failed to get all Channel:", error);
     }
   };
-  const getStatus = async (token: string) => {
-    try {
-      const data = await getallManageStatusApi(token); // Fetch the data
-      setAllStatus(data.statusList); // Ensure to set the counsellorList
-    } catch (error) {
-      console.error("Failed to fetch get all Manage data:", error);
-    }
-  };
 
   useEffect(() => {
-    getStatus(userData.auth.userData.token);
     getChannels(userData.auth.userData.token);
   }, [userData.auth.userData.token])
   const formik = useFormik({
@@ -119,8 +110,8 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 label="Product"
                 name="productId"
                 options={allProducts.map((product: any) => ({
-                  label: product.name, 
-                  value: product.id, 
+                  label: product.name,
+                  value: product.id,
                 }))}
                 formik={formik}
                 required
