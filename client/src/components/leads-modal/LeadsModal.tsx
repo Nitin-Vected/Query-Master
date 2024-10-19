@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import ButtonView from "../../template/button-view";
 import ModalHeader from "../../template/modal-header";
-import { LeadFormModalProps } from "./interface";
+import { Channels, LeadFormModalProps, Status } from "./interface";
 import FormTextField from "../../template/form-text-field";
 import FormSelectField from "../../template/form-select-field";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { getAllChannels, getallManageStatusApi } from "../../services/api/userApi";
 
 const validationSchema = Yup.object({
   fullName: Yup.string().required("Full name is required"),
@@ -21,7 +24,7 @@ const validationSchema = Yup.object({
   leadEmail: Yup.string()
     .email("Invalid email address")
     .required("Email is required"),
-  course: Yup.string().required("Course is required"),
+  productId: Yup.string().required("Product is required"),
   status: Yup.string().required("Status is required"),
   channel: Yup.string().required("Channel is required"),
 });
@@ -31,14 +34,39 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const [allChannels, setAllChannels] = useState<Channels[]>([]);
+  const [allStatus, setAllStatus] = useState<Status[]>([]);
+  const userData: any = useSelector((state: RootState) => state);
+  const allProducts = userData.product.data.productList;
+  const getChannels = async (token: string) => {
+    try {
+      const data = await getAllChannels(token);
+      setAllChannels(data.chanelList);
+    } catch (error) {
+      console.error("Failed to get all Channel:", error);
+    }
+  };
+  const getStatus = async (token: string) => {
+    try {
+      const data = await getallManageStatusApi(token); // Fetch the data
+      setAllStatus(data.statusList); // Ensure to set the counsellorList
+    } catch (error) {
+      console.error("Failed to fetch get all Manage data:", error);
+    }
+  };
+
+  useEffect(() => {
+    getStatus(userData.auth.userData.token);
+    getChannels(userData.auth.userData.token);
+  }, [userData.auth.userData.token])
   const formik = useFormik({
     initialValues: {
       fullName: "",
       contactNumber: "",
       leadEmail: "",
-      course: "Course1",
-      status: "Interested",
-      channel: "Instagram",
+      productId: "PRODUCT0001",
+      statusId: "STATUS0001",
+      channelId: "CHANNEL0001",
       description: "",
     },
     validationSchema: validationSchema,
@@ -51,7 +79,7 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
       }
     },
   });
-
+  console.log(formik.values)
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <ModalHeader title={"Create Lead"} onClose={onClose} />
@@ -88,13 +116,12 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
 
             <Grid item xs={12} md={6}>
               <FormSelectField
-                label="Course"
-                name="course"
-                options={[
-                  { label: "Course 1", value: "Course1" },
-                  { label: "Course 2", value: "Course2" },
-                  { label: "Course 3", value: "Course3" },
-                ]}
+                label="Product"
+                name="productId"
+                options={allProducts.map((product: any) => ({
+                  label: product.name, 
+                  value: product.id, 
+                }))}
                 formik={formik}
                 required
               />
@@ -104,11 +131,11 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
               {/* Use FormSelectField for Status */}
               <FormSelectField
                 label="Status"
-                name="status"
-                options={[
-                  { label: "Interested", value: "Interested" },
-                  { label: "Enrolled", value: "Enrolled" },
-                ]}
+                name="statusId"
+                options={allStatus.map((status: any) => ({
+                  label: status.name,
+                  value: status.id,
+                }))}
                 formik={formik}
                 required
               />
@@ -117,12 +144,11 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
             <Grid item xs={12} md={6}>
               <FormSelectField
                 label="Channel"
-                name="channel"
-                options={[
-                  { label: "Youtube", value: "Youtube" },
-                  { label: "Instagram", value: "Instagram" },
-                  { label: "Facebook", value: "Facebook" },
-                ]}
+                name="channelId"
+                options={allChannels.map((channel: any) => ({
+                  label: channel.name,  // Product name as label
+                  value: channel.id,     // Product id as value
+                }))}
                 formik={formik}
                 required
               />

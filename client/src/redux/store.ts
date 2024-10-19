@@ -4,6 +4,7 @@ import storage from "redux-persist/lib/storage";
 import createSagaMiddleware from "redux-saga";
 import authReducer from "./slices/authSlice";
 import leadSlice from "./slices/leadSlice";
+import productReducer from "./slices/productSlice";
 import rootSaga from "./sagas/authSaga";
 
 const persistConfig = {
@@ -15,6 +16,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   auth: authReducer,
   leads: leadSlice,
+  product: productReducer,
 });
 
 const sagaMiddleware = createSagaMiddleware();

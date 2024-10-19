@@ -25,6 +25,7 @@ import {
   getAllLeads,
   getAllLeadsUpdate,
   getallManageStatusApi,
+  getAllProducts,
 } from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -81,6 +82,7 @@ const Lead = () => {
     }
   };
   useEffect(() => {
+    getAllProducts(userData.auth.userData.token);
     getAllLeads(userData.auth.userData.token);
     fetchCounsellorData(userData.auth.userData.token);
     getallManage(userData.auth.userData.token);
