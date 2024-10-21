@@ -27,6 +27,7 @@ import {
   getallManageStatusApi,
   getAllProducts,
   getAllStatus,
+  getLeadById,
 } from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -34,7 +35,7 @@ import { RootState } from "../../redux/store";
 const Lead = () => {
   const [open, setOpen] = useState(false);
   const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
-  const [leadData, setLeadData] = useState<LeadData | null>(null);
+  const [leadData, setLeadData] = useState<LeadData | []>([]);
   const [page, setPage] = useState<number>(1);
   const [selectedLead, setSelectedLead] = useState("All Leads");
   const [counsellorList, setCounsellorList] = useState<Counsellor[]>([]);
@@ -59,10 +60,20 @@ const Lead = () => {
     const file: File | null = event.target.files?.[0] || null;
   };
 
+  const getEditData = async (id: string) => {
+    try {
+      const data = await getLeadById(userData.auth.userData.token, id);
+      setLeadData(data.data);
+    } catch (error) {
+      console.error("Failed to fetch get all Manage data:", error);
+    }
+  };
+
   const handleEdit = (row: LeadData, type: boolean) => {
-    setOpen(true);
-    setLeadData(row);
-    setIsEdit(type);
+    getEditData(row.id).then(() => {
+      setIsEdit(type);
+      setOpen(true);
+    });
   };
 
   const fetchCounsellorData = async (token: string) => {
@@ -293,7 +304,7 @@ const Lead = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder={"Search Lead"} onChange={() => { }} />
+            <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
           </Box>
 
           <CustomTable headers={headers} rows={AllLedaData} />

@@ -31,6 +31,11 @@ import ButtonView from "../../template/button-view";
 import ModalHeader from "../../template/modal-header";
 import editIcon from "../../assets/image/editIcon.png";
 import FormTextField from "../../template/form-text-field";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { Counsellor } from "../../pages/leads/interface";
+import { getallCounsellor } from "../../services/api/userApi";
+import moment from "moment";
 
 const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   open = true,
@@ -38,14 +43,21 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   data,
   isEdit,
 }) => {
+  useEffect(() => {
+    console.log("data = 1333", data.auditLogs);
+  }, [data]);
   const [isEditable, setIsEditable] = useState(false);
   const [reminder, setReminder] = useState(false);
   const [history, setHistory] = useState(false);
+  const userData: any = useSelector((state: RootState) => state);
+  const allProducts = userData.product.data.productList;
+  const [counsellorList, setCounsellorList] = useState<Counsellor[]>([]);
+
   useEffect(() => {
     if (isEdit) {
       setIsEditable(true);
       console.log(isEditable);
-     } else {
+    } else {
       setIsEditable(false);
     }
   }, [isEdit]);
@@ -73,7 +85,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
         "Email must be a valid Gmail, Yahoo, Outlook, or Hotmail address"
       )
       .required("Email is required"),
-    channel: Yup.string().required("Channel  is required"),
+    // channel: Yup.string().required("Channel  is required"),
     description: Yup.string().required("Description  is required"),
     contactNumber: Yup.string()
       .matches(
@@ -83,6 +95,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
       .required("Contact Number is required"),
     status: Yup.string().required("Status is required"),
   });
+  const allStatus = userData.status.data.statusList;
 
   const lableTitle: CSSProperties = {
     color: theme.palette.secondary.main,
@@ -97,14 +110,14 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
 
   const formik = useFormik({
     initialValues: {
-      name: "Ram",
-      courseName: "",
-      counsellorName: "",
-      email: "Ram@gmail.com",
-      status: "",
-      description: "Interested in react course",
-      contactNumber: "6844455454",
-      channel: "",
+      name: data.fullName,
+      courseName: data.product,
+      counsellorName: data.assignedTo,
+      email: data.email,
+      status: data.status,
+      description: data.description,
+      contactNumber: data.contactNumber,
+      channel: data.channel,
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
@@ -112,6 +125,24 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
       handleClose();
     },
   });
+  const fetchCounsellorData = async (token: string) => {
+    try {
+      const data = await getallCounsellor(token); // Fetch the data
+
+      setCounsellorList(data.counsellorList); // Ensure to set the counsellorList
+    } catch (error) {
+      console.error("Failed to fetch counsellor data:", error);
+    }
+  };
+  const options = counsellorList.map((user) => ({
+    label: `${user.firstName} ${user.lastName}`, // Concatenate first and last names
+    value: `${user.firstName} ${user.lastName}`,
+  }));
+  useEffect(() => {
+    fetchCounsellorData(userData.auth.userData.token);
+  }, [userData.auth.userData.token]);
+
+  options.push({ label: "Unassigned", value: "Unassigned" });
   return (
     <Dialog
       sx={{
@@ -210,21 +241,21 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                   </Grid>
                   <Grid item xs={12} md={4}>
                     <Typography sx={{ ...lableTitle }}>
-                      Course Name *
+                      Product Name *
                     </Typography>
                     {isEditable ? (
                       <Typography style={subTitle}>
-                        {formik.values.courseName || "React"}
+                        {formik.values.courseName || "CourseName"}
                       </Typography>
                     ) : (
                       <SelectDropdown
                         name="courseName"
-                        value={formik.values.courseName || "React"}
+                        value={formik.values.courseName || data.product}
                         onChange={formik.handleChange}
-                        options={[
-                          { label: "React", value: "React" },
-                          { label: "Node", value: "Node" },
-                        ]}
+                        options={allProducts.map((product: any) => ({
+                          label: product.name,
+                          value: product.name,
+                        }))}
                         disabled={isEditable}
                         fullWidth={true}
                       />
@@ -243,14 +274,14 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                     </Typography>
                     {isEditable ? (
                       <Typography style={subTitle}>
-                        {formik.values.counsellorName || "Mohan"}
+                        {formik.values.counsellorName}
                       </Typography>
                     ) : (
                       <SelectDropdown
-                        value={formik.values.counsellorName || "Mohan"}
+                        value={formik.values.counsellorName}
                         name="counsellorName"
                         onChange={formik.handleChange}
-                        options={[{ label: "Mohan", value: "Mohan" }]}
+                        options={options}
                         fullWidth={true}
                       />
                     )}
@@ -269,9 +300,11 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                   <Grid item xs={12} md={4}>
                     <FormTextField
                       disabled={isEditable}
-                      label=" Email Id *"
+                      label="Email Id *"
                       name="email"
                       placeholder="Enter your email"
+                      value={formik.values.email} // Ensure it's binding correctly
+                      onChange={formik.handleChange} // Handle input changes
                       formik={formik}
                       InputProps={{
                         sx: {
@@ -289,17 +322,21 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                     <Typography sx={{ ...lableTitle }}>Status * </Typography>
                     {isEditable ? (
                       <Typography style={subTitle}>
-                        {formik.values.status || "Not Enrolled"}
+                        {formik.values.status || data.status}
                       </Typography>
                     ) : (
                       <SelectDropdown
-                        value={formik.values.status || "Not Enrolled"}
                         name="status"
-                        onChange={formik.handleChange}
-                        options={[
-                          { label: "Enrolled", value: "Enrolled" },
-                          { label: "Not Enrolled", value: "Not Enrolled" },
-                        ]}
+                        value={formik.values.status || data.status || ""}
+                        onChange={(event) => {
+                          const selectedStatusId = event.target.value;
+                          formik.setFieldValue("status", selectedStatusId);
+                        }}
+                        options={allStatus.map((status: any) => ({
+                          label: status.name, // Display the status name in the dropdown
+                          value: status.name, // Use status.id as the value for each option
+                          id: status.id, // Add the ID for later use
+                        }))}
                         fullWidth={true}
                       />
                     )}
@@ -354,28 +391,30 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                   </Grid>
 
                   <Grid item xs={12} md={4}>
-                    <Typography sx={{ ...lableTitle }}>Channel *</Typography>
-                    {isEditable ? (
-                      <Typography style={subTitle}>
-                        {formik.values.channel || "Youtube"}
-                      </Typography>
-                    ) : (
-                      <SelectDropdown
-                        name="channel"
-                        value={formik.values.channel || "Youtube"}
-                        onChange={formik.handleChange}
-                        options={[{ label: "Youtube", value: "Youtube" }]}
-                        fullWidth={true}
-                      />
-                    )}
-                    {formik.touched.channel && formik.errors.channel && (
-                      <FormHelperText error>
-                        {formik.errors.channel}
-                      </FormHelperText>
-                    )}
+                    <FormTextField
+                      disabled={true}
+                      label="Channel *"
+                      name="channel"
+                      formik={formik}
+                      InputProps={{
+                        sx: {
+                          marginLeft: isEditable ? -1.5 : 0,
+                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderWidth: 0,
+                          },
+                        },
+                      }}
+                    />
                   </Grid>
 
-                  <Grid item xs={12} md={4} display={'flex'} justifyContent={"flex-end"}>
+                  <Grid
+                    item
+                    xs={12}
+                    md={4}
+                    display={"flex"}
+                    justifyContent={"flex-end"}
+                  >
                     {isEditable ? (
                       <></>
                     ) : (
@@ -434,7 +473,6 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                 InputProps={{
                   disableUnderline: true,
                 }}
-                
               />
 
               <Box
@@ -650,108 +688,142 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails>
-                    <Box
-                      sx={{
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "8px",
-                        padding: "10px",
-                        backgroundColor: "#fafafa",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Avatar
-                          sx={{
-                            backgroundColor: theme.palette.primary.light,
-                            marginRight: "8px",
-                            height: 35,
-                            width: 35,
-                          }}
-                        ></Avatar>
-                        <Box
-                          flexDirection={"row"}
-                          display={"flex"}
-                          alignItems={"center"}
-                        >
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontWeight: "500",
-                              color: theme.palette.secondary.main,
-                              fontSize: 17,
-                            }}
-                          >
-                            Martha{" "}
-                            <span
-                              style={{
-                                color: "#808080",
-                                marginLeft: "3px",
-                                fontWeight: "500",
-                                fontSize: 17,
+                    {data?.auditLogs?.length > 0 ? (
+                      data.auditLogs.map(
+                        ({
+                          field,
+                          oldValue,
+                          newValue,
+                          editedBy,
+                          createdAt,
+                        }: any) => {
+                          const formattedDate = moment(createdAt).format(
+                            "MMMM D, YYYY h:mm A"
+                          );
+
+                          return (
+                            <Box
+                              sx={{
+                                border: "1px solid #e0e0e0",
+                                borderRadius: "8px",
+                                padding: "10px",
+                                backgroundColor: "#fafafa",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: 1.5,
                               }}
                             >
-                              changed the name
-                            </span>
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              fontWeight: "500",
-                              color: theme.palette.secondary.main,
-                              fontSize: 17,
-                            }}
-                            marginLeft={5}
-                          >
-                            August 02, 2024 at 8:03PM
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          marginLeft: "45px",
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
-                          color="textSecondary"
-                          sx={{
-                            marginRight: "8px",
-                            fontWeight: "500",
-                            color: theme.palette.secondary.main,
-                            fontSize: 17,
-                          }}
-                        >
-                          Sarah
-                        </Typography>
-                        <Typography
-                          sx={{
-                            marginRight: "8px",
-                            fontWeight: "500",
-                            color: theme.palette.secondary.main,
-                            fontSize: 35,
-                          }}
-                          variant="body1"
-                        >
-                          ➡
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="textSecondary"
-                          sx={{
-                            marginLeft: "5px",
-                            fontWeight: "500",
-                            color: theme.palette.secondary.main,
-                            fontSize: 17,
-                          }}
-                        >
-                          John Doe
-                        </Typography>
-                      </Box>
-                    </Box>
+                              <Box
+                                sx={{ display: "flex", alignItems: "center" }}
+                              >
+                                <Avatar
+                                  sx={{
+                                    backgroundColor:
+                                      theme.palette.primary.light,
+                                    marginRight: "8px",
+                                    height: 35,
+                                    width: 35,
+                                  }}
+                                ></Avatar>
+                                <Box
+                                  flexDirection={"row"}
+                                  display={"flex"}
+                                  alignItems={"center"}
+                                >
+                                  <Typography
+                                    variant="body1"
+                                    sx={{
+                                      fontWeight: "500",
+                                      color: theme.palette.secondary.main,
+                                      fontSize: 17,
+                                    }}
+                                  >
+                                    {editedBy}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  marginLeft: "45px",
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="textSecondary"
+                                  sx={{
+                                    marginRight: "8px",
+                                    fontWeight: "500",
+                                    color: theme.palette.secondary.main,
+                                    fontSize: 17,
+                                  }}
+                                >
+                                  Changed the {field} At
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  color="textSecondary"
+                                  sx={{
+                                    fontWeight: "500",
+                                    color: theme.palette.secondary.main,
+                                    fontSize: 17,
+                                  }}
+                                >
+                                  {formattedDate}
+                                </Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  marginLeft: "45px",
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="textSecondary"
+                                  sx={{
+                                    marginRight: "8px",
+                                    fontWeight: "500",
+                                    color: theme.palette.secondary.main,
+                                    fontSize: 17,
+                                  }}
+                                >
+                                  {oldValue}
+                                </Typography>
+                                <Typography
+                                  sx={{
+                                    marginRight: "8px",
+                                    fontWeight: "500",
+                                    color: theme.palette.secondary.main,
+                                    fontSize: 35,
+                                  }}
+                                  variant="body1"
+                                >
+                                  ➡
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  color="textSecondary"
+                                  sx={{
+                                    marginLeft: "5px",
+                                    fontWeight: "500",
+                                    color: theme.palette.secondary.main,
+                                    fontSize: 17,
+                                  }}
+                                >
+                                  {newValue}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          );
+                        }
+                      )
+                    ) : (
+                      <Typography>No audit logs available.</Typography>
+                    )}
                   </AccordionDetails>
                 </Accordion>
               </Box>
