@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import ButtonView from "../../template/button-view";
 import ModalHeader from "../../template/modal-header";
-import { LeadFormModalProps } from "./interface";
+import { Channels, LeadFormModalProps, Status } from "./interface";
 import FormTextField from "../../template/form-text-field";
 import FormSelectField from "../../template/form-select-field";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { getAllChannels, getallManageStatusApi, getAllStatus } from "../../services/api/userApi";
 
 const validationSchema = Yup.object({
   fullName: Yup.string().required("Full name is required"),
@@ -21,9 +24,11 @@ const validationSchema = Yup.object({
   leadEmail: Yup.string()
     .email("Invalid email address")
     .required("Email is required"),
-  course: Yup.string().required("Course is required"),
-  status: Yup.string().required("Status is required"),
-  channel: Yup.string().required("Channel is required"),
+  productId: Yup.string().required("Product is required"),
+  statusId: Yup.string().required("Status is required"),
+  channelId: Yup.string().required("Channel is required"),
+  productAmount: Yup.string().required("Product Amount is required"),
+  // discount: Yup.string().required("Discount is required"),
 });
 
 const LeadFormModal: React.FC<LeadFormModalProps> = ({
@@ -31,27 +36,44 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const [allChannels, setAllChannels] = useState<Channels[]>([]);
+  const userData: any = useSelector((state: RootState) => state);
+  const allProducts = userData.product.data.productList;
+  const allStatus = userData.status.data.statusList;
+  const getChannels = async (token: string) => {
+    try {
+      const data = await getAllChannels(token);
+      setAllChannels(data.chanelList);
+    } catch (error) {
+      console.error("Failed to get all Channel:", error);
+    }
+  };
+
+  useEffect(() => {
+    getChannels(userData.auth.userData.token);
+  }, [userData.auth.userData.token])
+
   const formik = useFormik({
     initialValues: {
       fullName: "",
       contactNumber: "",
       leadEmail: "",
-      course: "Course1",
-      status: "Interested",
-      channel: "Instagram",
+      productId: "PRODUCT0001",
+      statusId: "STATUS0001",
+      channelId: "CHANNEL0001",
+      productAmount: "",
+      discount: "",
       description: "",
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
       if (onSubmit) {
+        // console.log("create Lead called")
         onSubmit(values);
-      }
-      if (onClose) {
         onClose();
       }
     },
   });
-
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <ModalHeader title={"Create Lead"} onClose={onClose} />
@@ -88,27 +110,43 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
 
             <Grid item xs={12} md={6}>
               <FormSelectField
-                label="Course"
-                name="course"
-                options={[
-                  { label: "Course 1", value: "Course1" },
-                  { label: "Course 2", value: "Course2" },
-                  { label: "Course 3", value: "Course3" },
-                ]}
+                label="Product"
+                name="productId"
+                options={allProducts.map((product: any) => ({
+                  label: product.name,
+                  value: product.id,
+                }))}
                 formik={formik}
                 required
               />
             </Grid>
-
+            <Grid item xs={12} md={6} >
+              <FormTextField
+                label="Product Amount"
+                name="productAmount"
+                placeholder="Rs"
+                formik={formik}
+                type="number"
+              />
+            </Grid>
+            <Grid item xs={12} md={6} >
+              <FormTextField
+                label="Discount"
+                name="discount"
+                placeholder="Rs"
+                formik={formik}
+                type="number"
+              />
+            </Grid>
             <Grid item xs={12} md={6}>
               {/* Use FormSelectField for Status */}
               <FormSelectField
                 label="Status"
-                name="status"
-                options={[
-                  { label: "Interested", value: "Interested" },
-                  { label: "Enrolled", value: "Enrolled" },
-                ]}
+                name="statusId"
+                options={allStatus.map((status: any) => ({
+                  label: status.name,
+                  value: status.id,
+                }))}
                 formik={formik}
                 required
               />
@@ -117,12 +155,11 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
             <Grid item xs={12} md={6}>
               <FormSelectField
                 label="Channel"
-                name="channel"
-                options={[
-                  { label: "Youtube", value: "Youtube" },
-                  { label: "Instagram", value: "Instagram" },
-                  { label: "Facebook", value: "Facebook" },
-                ]}
+                name="channelId"
+                options={allChannels.map((channel: any) => ({
+                  label: channel.name,  // Product name as label
+                  value: channel.id,     // Product id as value
+                }))}
                 formik={formik}
                 required
               />
@@ -144,7 +181,6 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
             isEditable={true}
             style={{ marginTop: 3 }}
             sx={{ left: -11 }}
-            onClick={() => console.log("Button clicked")}
           >
             Submit
           </ButtonView>

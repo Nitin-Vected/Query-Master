@@ -1,7 +1,11 @@
 export type TableColumn<T> = {
   label: string;
   key?: keyof Lead; // Constraining to keys of Lead
-  render?: (value: Lead[keyof Lead], row: Lead, index: number) => React.ReactNode; // Use Lead directly
+  render?: (
+    value: Lead[keyof Lead],
+    row: Lead,
+    index: number
+  ) => React.ReactNode; // Use Lead directly
 };
 
 export interface CustomTableProps {
@@ -11,19 +15,17 @@ export interface CustomTableProps {
   };
 }
 
-
 export interface Lead {
   id: string;
-  firstName: string;
+  fullName: string;
   lastName: string;
   email: string;
   contactNumber: string;
   productAmount: number;
   discount: number;
-  channelId: string; // Added based on your JSON
-  statusId: string;
+  channel: string; // Added based on your JSON
+  status: string;
   productId: string;
   description: string;
   assignedTo: string | null;
 }
- 
