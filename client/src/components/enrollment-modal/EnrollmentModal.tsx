@@ -256,26 +256,6 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                                 formik={formik}
                                 required
                             />
-                            {/* <Typography variant="subtitle2" sx={{ ...enrollmentTitle }}>
-                                Total Amount<span style={{ color: "red" }}>*</span>
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                required
-                                name="amount"
-                                value={formik.values.amount}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                placeholder="Rs"
-                                error={formik.touched.amount && Boolean(formik.errors.amount)}
-                                helperText={formik.touched.amount && formik.errors.amount}
-                                sx={{
-                                    "& .MuiInputBase-root": {
-                                        height: 40,
-                                        borderRadius: "8px",
-                                    },
-                                }}
-                            /> */}
                         </Grid>
                         <Grid item xs={12} sm={6} md={4} >
                             <FormTextField
@@ -285,26 +265,6 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                                 formik={formik}
                                 required
                             />
-                            {/* <Typography variant="subtitle2" sx={{ ...enrollmentTitle }}>
-                                Discount<span style={{ color: "red" }}>*</span>
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                required
-                                name="discount"
-                                value={formik.values.discount}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                placeholder="Rs"
-                                error={formik.touched.discount && Boolean(formik.errors.discount)}
-                                helperText={formik.touched.discount && formik.errors.discount}
-                                sx={{
-                                    "& .MuiInputBase-root": {
-                                        height: 40,
-                                        borderRadius: "8px",
-                                    },
-                                }}
-                            /> */}
                         </Grid>
                         <Grid item xs={12} sm={6} md={4} >
                             <FormTextField
@@ -314,26 +274,6 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                                 formik={formik}
                                 required
                             />
-                            {/* <Typography variant="subtitle2" sx={{ ...enrollmentTitle }}>
-                                Final Amount<span style={{ color: "red" }}>*</span>
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                required
-                                name="finalAmount"
-                                value={formik.values.finalAmount}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                placeholder="Rs"
-                                error={formik.touched.finalAmount && Boolean(formik.errors.finalAmount)}
-                                helperText={formik.touched.finalAmount && formik.errors.finalAmount}
-                                sx={{
-                                    "& .MuiInputBase-root": {
-                                        height: 40,
-                                        borderRadius: "8px",
-                                    },
-                                }}
-                            /> */}
                         </Grid>
                     </Grid>
                     <Typography

@@ -15,6 +15,32 @@ export const loginWithGoogleApi = async (accessToken: string) => {
   });
 };
 
+export const createLead = async (token: string, data: object) => {
+  try {
+    const response = await axios.post(`${constants.Get_All_lead_Api}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
+    throw error;
+  }
+};
+
 export const getAllLeads = async (token: string) => {
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action

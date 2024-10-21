@@ -31,8 +31,7 @@ export const addNewLeadController = async (
     const result = [];
     for (const leadData of leads) {
       const {
-        firstName,
-        lastName,
+        fullName,
         leadEmail,
         contactNumber,
         productAmount,
@@ -42,7 +41,7 @@ export const addNewLeadController = async (
         productId,
         description,
       } = leadData;
-
+      const [firstName, lastName] = fullName.split(" ")
       let existingLead = await leadModel.findOne({ email: leadEmail });
 
       if (existingLead) {

@@ -21,18 +21,6 @@ const leadSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    createLeadStart(state) {
-      state.loading = true;
-      state.error = null;
-    },
-    createLeadSuccess(state, action) {
-      state.loading = false;
-      state.data = action.payload;
-    },
-    createLeadFailure(state, action) {
-      state.loading = false;
-      state.error = action.payload;
-    },
   },
 });
 
@@ -40,9 +28,6 @@ export const {
   fetchLeadDataStart,
   fetchLeadDataSuccess,
   fetchLeadDataFailure,
-  createLeadStart,
-  createLeadSuccess,
-  createLeadFailure,
 } = leadSlice.actions;
 
 export default leadSlice.reducer;

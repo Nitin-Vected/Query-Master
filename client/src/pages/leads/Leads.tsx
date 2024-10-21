@@ -11,7 +11,7 @@ import LeadsModal from "../../components/leads-modal";
 import { RemoveRedEyeOutlined } from "@mui/icons-material";
 import editIcon from "../../assets/image/editIcon.png";
 import SelectDropdown from "../../template/select-dropdown";
-import { Counsellor, LeadData, ManageStatus } from "./interface";
+import { Counsellor, LeadData, LeadDataSubmit, ManageStatus } from "./interface";
 import FileImportButton from "../../template/file-import-button";
 import SearchInput from "../../template/search-input";
 import ComponentHeading from "../../template/component-heading";
@@ -21,6 +21,7 @@ import EnrollmentModal from "../../components/enrollment-modal";
 import { TableColumn } from "../../template/custom-table/interface";
 import theme from "../../theme/theme";
 import {
+  createLead,
   getallCounsellor,
   getAllLeads,
   getAllLeadsUpdate,
@@ -117,9 +118,14 @@ const Lead = () => {
     }
   };
 
-  const leadDataSubmit = async (leadData: LeadData) => {
+  const leadDataSubmit = async (leadData: LeadDataSubmit) => {
     try {
-      console.log("leadData", leadData);
+      console.log("Lead Data -->", leadData);
+      const data = await createLead(userData.auth.userData.token, leadData);
+      console.log(data)
+      if (data) {
+        getAllLeads(userData.auth.userData.token);
+      }
     } catch (error) {
       console.error("Error occurred during lead creation:", error);
     }

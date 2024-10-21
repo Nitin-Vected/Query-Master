@@ -25,8 +25,10 @@ const validationSchema = Yup.object({
     .email("Invalid email address")
     .required("Email is required"),
   productId: Yup.string().required("Product is required"),
-  status: Yup.string().required("Status is required"),
-  channel: Yup.string().required("Channel is required"),
+  statusId: Yup.string().required("Status is required"),
+  channelId: Yup.string().required("Channel is required"),
+  productAmount: Yup.string().required("Product Amount is required"),
+  // discount: Yup.string().required("Discount is required"),
 });
 
 const LeadFormModal: React.FC<LeadFormModalProps> = ({
@@ -50,6 +52,7 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
   useEffect(() => {
     getChannels(userData.auth.userData.token);
   }, [userData.auth.userData.token])
+
   const formik = useFormik({
     initialValues: {
       fullName: "",
@@ -58,19 +61,19 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
       productId: "PRODUCT0001",
       statusId: "STATUS0001",
       channelId: "CHANNEL0001",
+      productAmount: "",
+      discount: "",
       description: "",
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
       if (onSubmit) {
+        // console.log("create Lead called")
         onSubmit(values);
-      }
-      if (onClose) {
         onClose();
       }
     },
   });
-  console.log(formik.values)
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <ModalHeader title={"Create Lead"} onClose={onClose} />
@@ -117,7 +120,24 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 required
               />
             </Grid>
-
+            <Grid item xs={12} md={6} >
+              <FormTextField
+                label="Product Amount"
+                name="productAmount"
+                placeholder="Rs"
+                formik={formik}
+                type="number"
+              />
+            </Grid>
+            <Grid item xs={12} md={6} >
+              <FormTextField
+                label="Discount"
+                name="discount"
+                placeholder="Rs"
+                formik={formik}
+                type="number"
+              />
+            </Grid>
             <Grid item xs={12} md={6}>
               {/* Use FormSelectField for Status */}
               <FormSelectField
@@ -161,7 +181,6 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
             isEditable={true}
             style={{ marginTop: 3 }}
             sx={{ left: -11 }}
-            onClick={() => console.log("Button clicked")}
           >
             Submit
           </ButtonView>
