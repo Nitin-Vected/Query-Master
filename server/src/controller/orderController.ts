@@ -62,13 +62,13 @@ export const getOrderByIdController = async (request: Request, response: Respons
   try {
     const order = await orderModel.aggregate([
       {
-        $match: { id: orderId } 
+        $match: { id: orderId }
       },
       {
         $lookup: {
-          from: "products", 
+          from: "products",
           localField: "products",
-          foreignField: "id", 
+          foreignField: "id",
           as: "productDetails",
         },
       },
@@ -85,7 +85,7 @@ export const getOrderByIdController = async (request: Request, response: Respons
             $map: {
               input: "$productDetails",
               as: "product",
-              in: "$$product.name", 
+              in: "$$product.name",
             },
           },
         },
@@ -115,7 +115,7 @@ export const getAllOrdersController = async (request: Request, response: Respons
   const skip = (page - 1) * limit;
 
   try {
-    const orders = await orderModel.aggregate([
+    const ordersAggregation: any[] = [
       {
         $lookup: {
           from: "users",
@@ -128,8 +128,8 @@ export const getAllOrdersController = async (request: Request, response: Respons
         $lookup: {
           from: "products",
           localField: "products",
-          foreignField: "id", 
-          as: "productDetails", 
+          foreignField: "id",
+          as: "productDetails",
         },
       },
       { $unwind: "$profileDetails" },
@@ -149,18 +149,25 @@ export const getAllOrdersController = async (request: Request, response: Respons
               in: "$$product.name"
             },
           },
-          firstName: "$profileDetails.firstName",
-          lastName: "$profileDetails.lastName",
+          userName: {
+            $concat: [
+              { $ifNull: ["$profileDetails.firstName", ""] },
+              " ",
+              { $ifNull: ["$profileDetails.lastName", ""] }
+            ]
+          },
           email: "$profileDetails.email",
           contactNumber: "$profileDetails.contactNumber",
         },
       },
       { $sort: { updatedAt: -1, createdAt: -1 } },
       { $skip: skip },
-    ]);
+    ];
+
     if (limit > 0) {
-      orders.push({ $limit: limit });
+      ordersAggregation.push({ $limit: limit })
     }
+    const orders = await orderModel.aggregate(ordersAggregation);
     const totalOrders = await orderModel.countDocuments();
     const totalPages = limit ? Math.ceil(totalOrders / limit) : 1;
 

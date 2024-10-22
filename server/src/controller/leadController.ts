@@ -91,10 +91,10 @@ export const getAllLeadsController = async (
 ) => {
   const page = parseInt(request.query.page as string) || 1;
   const limit = parseInt(request.query.limit as string) || 0;
-  const skip = (page - 1) * limit;
+  const skip = (page - 1) * limit
 
   try {
-    const leads = await leadModel.aggregate([
+    const leadAggregation: any[] = [
       {
         $lookup: {
           from: "statusMaster",
@@ -180,12 +180,11 @@ export const getAllLeadsController = async (
       },
       { $sort: { updatedAt: -1, createdAt: -1 } },
       { $skip: skip },
-    ]);
-
+    ];
     if (limit > 0) {
-      leads.push({ $limit: limit });
+      leadAggregation.push({ $limit: limit });
     }
-
+    const leads = await leadModel.aggregate(leadAggregation);
     const totalLeads = await leadModel.countDocuments();
 
     const totalPages = limit ? Math.ceil(totalLeads / limit) : 1;
@@ -342,8 +341,7 @@ export const updateLeadController = async (
     }
 
     const {
-      firstName,
-      lastName,
+      fullName,
       contactNumber,
       productAmount,
       discount,
@@ -356,6 +354,7 @@ export const updateLeadController = async (
       isActive,
     } = request.body;
     console.log("request.body", request.body);
+    const [firstName, lastName] = fullName.split(" ")
 
     const existingLead = await leadModel.findOne({ id: leadId });
 

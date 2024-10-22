@@ -6,6 +6,9 @@ import authReducer from "./slices/authSlice";
 import leadSlice from "./slices/leadSlice";
 import productReducer from "./slices/productSlice";
 import statusReducer from "./slices/statusSlice";
+import studentReducer from "./slices/studentSlice";
+import transactionReducer from "./slices/transactionSlice";
+import orderReducer from "./slices/orderSlice";
 import rootSaga from "./sagas/authSaga";
 
 const persistConfig = {
@@ -19,6 +22,9 @@ const rootReducer = combineReducers({
   leads: leadSlice,
   product: productReducer,
   status: statusReducer,
+  order: orderReducer,
+  student: studentReducer,
+  transaction: transactionReducer,
 });
 
 const sagaMiddleware = createSagaMiddleware();

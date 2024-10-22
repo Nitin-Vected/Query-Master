@@ -4,9 +4,11 @@ export interface LeadData {
   email: string;
   channel: string;
   status: number;
+  product: number;
   assignedTo: string;
   fullName: string;
   index: number
+  action: string;
 }
 export interface LeadDataSubmit {
   fullName: string;

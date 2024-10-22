@@ -154,17 +154,17 @@ export const getTransactionByIdController = async (request: Request, response: R
 }
 
 export const getAllTransactionsController = async (request: Request, response: Response) => {
-  const page = parseInt(request.query.page as string, 1);
-  const limit = parseInt(request.query.limit as string, 10);
-  const skip = page && limit ? (page - 1) * limit : 0;
+  const page = parseInt(request.query.page as string) || 1;
+  const limit = parseInt(request.query.limit as string) || 0;
+  const skip = (page - 1) * limit
 
   try {
     const transactionList = await transactionModel
       .find()
-      .select("-_id id orderId amount date proof")
+      .select("-_id id orderId amount date proof mode")
       .sort({ updatedAt: -1, createdAt: -1 })
       .skip(skip)
-      .limit(limit || 0);
+      .limit(limit);
 
     const totalTransactions = await transactionModel.countDocuments();
 
