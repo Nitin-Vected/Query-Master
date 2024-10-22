@@ -35,14 +35,14 @@ import { RootState } from "../../redux/store";
 const Lead = () => {
   const [open, setOpen] = useState(false);
   const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
-  const [leadData, setLeadData] = useState<LeadData | []>([]);
+  const [leadData, setLeadData] = useState<LeadData[]>([]);
   const [page, setPage] = useState<number>(1);
   const [selectedLead, setSelectedLead] = useState("All Leads");
   const [counsellorList, setCounsellorList] = useState<Counsellor[]>([]);
   const [manageStatusList, setManageStatusList] = useState<ManageStatus[]>([]);
   const [isEdit, setIsEdit] = useState(false);
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const userData: any = useSelector((state: RootState) => state);
   const AllLedaData = userData.leads.data;
   const handlePageChange = (
@@ -51,6 +51,7 @@ const Lead = () => {
   ) => {
     setPage(value);
   };
+  const allStatus = userData.status.data.statusList;
 
   const handleClose = () => {
     setOpen(false);
@@ -60,20 +61,10 @@ const Lead = () => {
     const file: File | null = event.target.files?.[0] || null;
   };
 
-  const getEditData = async (id: string) => {
-    try {
-      const data = await getLeadById(userData.auth.userData.token, id);
-      setLeadData(data.data);
-    } catch (error) {
-      console.error("Failed to fetch get all Manage data:", error);
-    }
-  };
-
   const handleEdit = (row: LeadData, type: boolean) => {
-    getEditData(row.id).then(() => {
-      setIsEdit(type);
-      setOpen(true);
-    });
+    setLeadData(row);
+    setIsEdit(type);
+    setOpen(true);
   };
 
   const fetchCounsellorData = async (token: string) => {
@@ -93,6 +84,7 @@ const Lead = () => {
       console.error("Failed to fetch get all Manage data:", error);
     }
   };
+
   useEffect(() => {
     getAllStatus(userData.auth.userData.token);
     getAllProducts(userData.auth.userData.token);
@@ -141,14 +133,27 @@ const Lead = () => {
   }));
 
   options.push({ label: "Unassigned", value: "Unassigned" });
-  const handleCounsellorChange = (
-    event: SelectChangeEvent<string>,
-    rowIndex: number
+
+  const handleCounsellorChange = async (
+    counsellorId: string,
+    row: LeadData
   ) => {
-    const selectedValue = event.target.value;
-    const newRows = [...counsellorList];
-    newRows[rowIndex].status = selectedValue; // Ensure this property exists in your data structure
-    setCounsellorList(newRows); // Update state with new rows
+    let data = {
+      assignedTo: counsellorId,
+    };
+
+    try {
+      await getAllLeadsUpdate(userData.auth.userData.token, row.id, data);
+
+      const updatedData = AllLedaData.map((lead: LeadData) =>
+        lead.id === row.id ? { ...lead, assignedTo: counsellorId } : lead
+      );
+
+      // Assuming you are updating the state holding all leads
+      setLeadData(updatedData);
+    } catch (error) {
+      console.error("Error updating counsellor:", error);
+    }
   };
 
   const headers: TableColumn<LeadData>[] = [
@@ -192,14 +197,34 @@ const Lead = () => {
     {
       label: "Counsellor Name",
       key: "assignedTo",
-      render: (value: string, index: number | any, row: any) => {
+      render: (value: string, row: any, index: number) => {
         return (
           <SelectDropdown
-            disabled={value !== "Unassigned"} // Disable if the current value is not "Unassigned"
+            disabled={value !== "Unassigned"} // Disable if the status is "Enrolled"
             name={`assignedTo${index}`} // Name is based on the index
-            value={counsellorList[index] || value} // Set value directly to status or fallback to "Unassigned"
-            onChange={(e) => handleCounsellorChange(e, index)} // Pass index
-            options={options} // Dynamic options
+            value={value} // Set value directly to status or fallback to "Unassigned"
+            onChange={(e) => {
+              const selectedCounsellor = counsellorList.find(
+                (counsellor) =>
+                  counsellor?.firstName + " " + counsellor?.lastName ===
+                  e.target.value
+              );
+              if (selectedCounsellor) {
+                if (!counsellorList[index]) {
+                  counsellorList[index];
+                }
+                const counsellorId = selectedCounsellor.id;
+                handleCounsellorChange(counsellorId, row); // Pass the selected ID
+              }
+            }}
+            options={[
+              ...counsellorList.map((counsellor) => ({
+                label: `${counsellor.firstName} ${counsellor.lastName}`,
+                value: `${counsellor.firstName} ${counsellor.lastName}`,
+                id: counsellor.id, // Add the ID for later use
+              })),
+              { label: "Unassigned", value: "Unassigned" },
+            ]}
           />
         );
       },

@@ -6,7 +6,7 @@ export interface LeadData {
   status: number;
   assignedTo: string;
   fullName: string;
-  index:number
+  index: number;
 }
 
 export interface Counsellor {
@@ -16,18 +16,16 @@ export interface Counsellor {
   email: string;
   contactNumber: string;
   profileImg: string;
-  index:number,
-  status:string
-  Counsellor:string
-
+  index: number;
+  status: string;
+  Counsellor: string;
 }
 export interface ManageStatus {
   id: string;
   name: string;
-  status:string
-  index:string
-  Counsellor:string
-   
+  status: string;
+  index: string;
+  Counsellor: string;
 }
 
 export interface AllLead {
@@ -43,5 +41,10 @@ export interface AllLead {
   productId: string;
   description: string;
   assignedTo: string | null;
-  action:string
+  action: string;
+}
+
+export interface ChanelList {
+  id: string;
+  name: string;
 }

@@ -6,8 +6,16 @@ import {
   fetchLeadDataSuccess,
 } from "../../redux/slices/leadSlice";
 import { store } from "../../redux/store";
-import { fetchAllProductsFailure, fetchAllProductsStart, fetchAllProductsSuccess } from "../../redux/slices/productSlice";
-import { fetchAllStatusFailure, fetchAllStatusStart, fetchAllStatusSuccess } from "../../redux/slices/statusSlice";
+import {
+  fetchAllProductsFailure,
+  fetchAllProductsStart,
+  fetchAllProductsSuccess,
+} from "../../redux/slices/productSlice";
+import {
+  fetchAllStatusFailure,
+  fetchAllStatusStart,
+  fetchAllStatusSuccess,
+} from "../../redux/slices/statusSlice";
 
 export const loginWithGoogleApi = async (accessToken: string) => {
   return await axios.post(`${API_URL}/login`, {
@@ -18,7 +26,7 @@ export const loginWithGoogleApi = async (accessToken: string) => {
 export const getAllLeads = async (token: string) => {
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
-    const response = await axios.get(`${constants.Get_All_lead_Api}`, {
+    const response = await axios.get(`${constants.Lead_Api}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -44,8 +52,90 @@ export const getAllLeadsUpdate = async (
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.put(
-      `${constants.Get_All_lead_Api}/${leadId}`, // Update URL if necessary
+      `${constants.Lead_Api}/${leadId}`, // Update URL if necessary
       data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data; // Return the data from the response
+  } catch (error) {
+    const errorMessage =
+      (error as Error).message || "An unknown error occurred";
+    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
+    throw error; // Re-throw the error for further handling
+  }
+};
+
+export const getCounsellorListLeadsUpdate = async (
+  token: string,
+  leadId: string,
+  data: object
+) => {
+  try {
+    store.dispatch(fetchLeadDataStart()); // Dispatch start action
+    const response = await axios.put(
+      `${constants.Lead_Api}/${leadId}`, // Update URL if necessary
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+     return response.data; // Return the data from the response
+  } catch (error) {
+    const errorMessage =
+      (error as Error).message || "An unknown error occurred";
+    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
+    throw error; // Re-throw the error for further handling
+  }
+};
+
+export const updateLead = async (
+  token: string,
+  data: object,
+  leadId: string
+) => {
+  try {
+    store.dispatch(fetchLeadDataStart()); // Dispatch start action
+    const response = await axios.put(
+      `${constants.Lead_Api}/${leadId}`, // Update URL if necessary
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    getAllLeads(token);
+    return response.data; // Return the data from the response
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
+    const errorMessage =
+      (error as Error).message || "An unknown error occurred";
+    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
+    throw error; // Re-throw the error for further handling
+  }
+};
+
+export const getLeadById = async (token: string, leadId: string) => {
+  try {
+    store.dispatch(fetchLeadDataStart()); // Dispatch start action
+    const response = await axios.get(
+      `${constants.Lead_Api}/${leadId}`, // Update URL if necessary
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -63,14 +153,11 @@ export const getAllLeadsUpdate = async (
 
 export const getallLeadEdit = async (token: string, leadId: string) => {
   try {
-    const response = await axios.get(
-      `${constants.Get_All_lead_Api}/${leadId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await axios.get(`${constants.Lead_Api}/${leadId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     // console.log("data", response.data);
     return response.data; // Return the data from the response
   } catch (error) {
@@ -84,7 +171,7 @@ export const getallLeadEdit = async (token: string, leadId: string) => {
 
 export const getallCounsellor = async (token: string) => {
   try {
-    const response = await axios.get(`${constants.GET_All_Counsellor}`, {
+    const response = await axios.get(`${constants.Counsellor_Api}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -102,12 +189,12 @@ export const getallCounsellor = async (token: string) => {
 
 export const getallManageStatusApi = async (token: string) => {
   try {
-    const response = await axios.get(`${constants.GET_All_Status}`, {
+    const response = await axios.get(`${constants.Status_Api}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    // console.log("data", response.data);
+    console.log("@TEST data", response.data);
     return response.data; // Return the data from the response
   } catch (error) {
     console.error("Error occurred during API call:", error);
@@ -121,7 +208,7 @@ export const getallManageStatusApi = async (token: string) => {
 
 export const getAllChannels = async (token: string) => {
   try {
-    const response = await axios.get(`${constants.Channel_API}`, {
+    const response = await axios.get(`${constants.Channel_Api}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -159,7 +246,7 @@ export const getAllStatus = async (token: string) => {
 export const getAllProducts = async (token: string) => {
   try {
     store.dispatch(fetchAllProductsStart()); // Dispatch start action
-    const response = await axios.get(`${constants.Product_API}`, {
+    const response = await axios.get(`${constants.Product_Api}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
