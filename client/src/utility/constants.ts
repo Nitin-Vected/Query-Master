@@ -11,6 +11,8 @@ const constants = {
   Status_Api: `${BaseURL}/status`,
   Product_Api: `${BaseURL}/product`,
   Channel_Api: `${BaseURL}/channel`,
+  EnrollLead_Api: `${BaseURL}/enrollLead`,
+
 };
 
 export default constants;

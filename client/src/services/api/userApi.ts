@@ -1,3 +1,4 @@
+import { enrollStudent } from "./../../../../server/src/controller/studentController";
 import axios from "axios";
 import constants, { API_URL } from "../../utility/constants";
 import {
@@ -49,6 +50,7 @@ export const getAllLeadsUpdate = async (
   leadId: string,
   data: object
 ) => {
+  console.log("t,oken",leadId,data)
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.put(
@@ -60,6 +62,28 @@ export const getAllLeadsUpdate = async (
         },
       }
     );
+    return response.data; // Return the data from the response
+  } catch (error) {
+    const errorMessage =
+      (error as Error).message || "An unknown error occurred";
+    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
+    throw error; // Re-throw the error for further handling
+  }
+};
+
+export const enrollLead = async (token: string, data: object) => {
+  try {
+    store.dispatch(fetchLeadDataStart()); // Dispatch start action
+    const response = await axios.post(
+      `${constants.EnrollLead_Api}`, // Update URL if necessary
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("enrollLead - api call", response);
     return response.data; // Return the data from the response
   } catch (error) {
     const errorMessage =
@@ -85,7 +109,7 @@ export const getCounsellorListLeadsUpdate = async (
         },
       }
     );
-     return response.data; // Return the data from the response
+    return response.data; // Return the data from the response
   } catch (error) {
     const errorMessage =
       (error as Error).message || "An unknown error occurred";
@@ -99,6 +123,7 @@ export const updateLead = async (
   data: object,
   leadId: string
 ) => {
+  console.log("send data 1234", data);
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.put(
@@ -235,7 +260,6 @@ export const getAllStatus = async (token: string) => {
     return response.data; // Return the data from the response
   } catch (error) {
     console.error("Error occurred during API call:", error);
-    // Type assertion to handle the error
     const errorMessage =
       (error as Error).message || "An unknown error occurred";
 

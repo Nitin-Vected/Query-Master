@@ -7,6 +7,7 @@ export interface LeadData {
   assignedTo: string;
   fullName: string;
   index: number;
+  id: number;
 }
 
 export interface Counsellor {
