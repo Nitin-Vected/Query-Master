@@ -12,7 +12,7 @@ export const viewStudentListController = async (
   const skip = (page - 1) * limit;
 
   try {
-    const studentList = await studentModel.aggregate([
+    const studentAggregation: any[] = [
       {
         $lookup: {
           from: "users",
@@ -45,8 +45,13 @@ export const viewStudentListController = async (
             },
           },
           amount: 1,
-          firstName: "$profileDetails.firstName",
-          lastName: "$profileDetails.lastName",
+          fullName: {
+            $concat: [
+              { $ifNull: ["$profileDetails.firstName", ""] },
+              " ",
+              { $ifNull: ["$profileDetails.lastName", ""] }
+            ]
+          },
           email: "$profileDetails.email",
           contactNumber: "$profileDetails.contactNumber",
           profileImg: "$profileDetails.profileImg",
@@ -55,11 +60,11 @@ export const viewStudentListController = async (
       },
       { $sort: { updatedAt: -1, createdAt: -1 } },
       { $skip: skip },
-    ]);
+    ];
     if (limit > 0) {
-      studentList.push({ $limit: limit });
+      studentAggregation.push({ $limit: limit });
     }
-
+    const studentList = await studentModel.aggregate(studentAggregation)
     const totalStudents = await studentModel.countDocuments();
 
     const totalPages = limit ? Math.ceil(totalStudents / limit) : 1;

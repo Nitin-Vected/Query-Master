@@ -28,6 +28,7 @@ import {
   getallManageStatusApi,
   getAllProducts,
   getAllStatus,
+  getLeadById,
 } from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -36,7 +37,9 @@ const Lead = () => {
   const [open, setOpen] = useState(false);
   const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
   const [leadData, setLeadData] = useState<LeadData | null>(null);
-  const [page, setPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(1); // Start with page 1
+  const [limit, setLimit] = useState<number>(5);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const [selectedLead, setSelectedLead] = useState("All Leads");
   const [counsellorList, setCounsellorList] = useState<Counsellor[]>([]);
   const [manageStatusList, setManageStatusList] = useState<ManageStatus[]>([]);
@@ -44,13 +47,15 @@ const Lead = () => {
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
-  const AllLedaData = userData.leads.data;
+  const AllLedaData = userData.leads.data.leads;
+
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
   ) => {
     setPage(value);
   };
+  // const allStatus = userData.status.data.statusList;
 
   const handleClose = () => {
     setOpen(false);
@@ -83,13 +88,15 @@ const Lead = () => {
       console.error("Failed to fetch get all Manage data:", error);
     }
   };
+
   useEffect(() => {
     getAllStatus(userData.auth.userData.token);
     getAllProducts(userData.auth.userData.token);
-    getAllLeads(userData.auth.userData.token);
+    getAllLeads(userData.auth.userData.token, page, limit);
     fetchCounsellorData(userData.auth.userData.token);
     getallManage(userData.auth.userData.token);
-  }, [userData.auth.userData.token]);
+    setTotalPages(userData.leads.data.totalPages)
+  }, [userData.auth.userData.token, page, limit]);
 
   const handleLeadChange = (event: SelectChangeEvent<string>) => {
     setSelectedLead(event.target.value);
@@ -114,6 +121,7 @@ const Lead = () => {
     if (selectedValue === "Enrolled") {
       setIsEnrollmentModalOpen(true);
     } else {
+      console.log("first")
       getAllLeadsUpdate(userData.auth.userData.token, row.id, data);
     }
   };
@@ -124,7 +132,7 @@ const Lead = () => {
       const data = await createLead(userData.auth.userData.token, leadData);
       console.log(data)
       if (data) {
-        getAllLeads(userData.auth.userData.token);
+        // getAllLeads(userData.auth.userData.token);
       }
     } catch (error) {
       console.error("Error occurred during lead creation:", error);
@@ -136,17 +144,29 @@ const Lead = () => {
   }));
 
   options.push({ label: "Unassigned", value: "Unassigned" });
-  const handleCounsellorChange = (
-    event: SelectChangeEvent<string>,
-    rowIndex: number
-  ) => {
-    const selectedValue = event.target.value;
-    const newRows = [...counsellorList];
-    newRows[rowIndex].status = selectedValue; // Ensure this property exists in your data structure
-    setCounsellorList(newRows); // Update state with new rows
-  };
 
-  const headers: TableColumn<LeadData>[] = [
+  const handleCounsellorChange = async (
+    counsellorId: string,
+    row: LeadData
+  ) => {
+    let data = {
+      assignedTo: counsellorId,
+    };
+
+    try {
+      await getAllLeadsUpdate(userData.auth.userData.token, row.id, data);
+
+      const updatedData = AllLedaData.map((lead: LeadData) =>
+        lead.id === row.id ? { ...lead, assignedTo: counsellorId } : lead
+      );
+
+      // Assuming you are updating the state holding all leads
+      setLeadData(updatedData);
+    } catch (error) {
+      console.error("Error updating counsellor:", error);
+    }
+  };
+const headers: TableColumn<LeadData>[] = [
     { label: "Full Name", key: "fullName" },
     { label: "Contact Number", key: "contactNumber" },
     { label: "Email Id", key: "email" },
@@ -187,14 +207,34 @@ const Lead = () => {
     {
       label: "Counsellor Name",
       key: "assignedTo",
-      render: (value: string, index: number | any, row: any) => {
+      render: (value: string, row: any, index: number) => {
         return (
           <SelectDropdown
-            disabled={value !== "Unassigned"} // Disable if the current value is not "Unassigned"
+            disabled={value !== "Unassigned"} // Disable if the status is "Enrolled"
             name={`assignedTo${index}`} // Name is based on the index
-            value={counsellorList[index] || value} // Set value directly to status or fallback to "Unassigned"
-            onChange={(e) => handleCounsellorChange(e, index)} // Pass index
-            options={options} // Dynamic options
+            value={value} // Set value directly to status or fallback to "Unassigned"
+            onChange={(e) => {
+              const selectedCounsellor = counsellorList.find(
+                (counsellor) =>
+                  counsellor?.firstName + " " + counsellor?.lastName ===
+                  e.target.value
+              );
+              if (selectedCounsellor) {
+                if (!counsellorList[index]) {
+                  counsellorList[index];
+                }
+                const counsellorId = selectedCounsellor.id;
+                handleCounsellorChange(counsellorId, row); // Pass the selected ID
+              }
+            }}
+            options={[
+              ...counsellorList.map((counsellor) => ({
+                label: `${counsellor.firstName} ${counsellor.lastName}`,
+                value: `${counsellor.firstName} ${counsellor.lastName}`,
+                id: counsellor.id, // Add the ID for later use
+              })),
+              { label: "Unassigned", value: "Unassigned" },
+            ]}
           />
         );
       },
@@ -290,7 +330,7 @@ const Lead = () => {
                 fileInputRef={fileInputRef}
               />
             </Grid>
-          </Grid>
+          </Grid >
 
           <Box
             sx={{
@@ -304,7 +344,7 @@ const Lead = () => {
 
           <CustomTable headers={headers} rows={AllLedaData} />
 
-          <CustomPagination count={3} page={page} onChange={handlePageChange} />
+          <CustomPagination count={totalPages} page={page} onChange={handlePageChange} />
         </Box>
 
         {isLeadsModalOpen && (
@@ -317,14 +357,16 @@ const Lead = () => {
           />
         )}
 
-        {open && (
-          <LeadPreviewModal
-            open={open}
-            handleClose={handleClose}
-            data={leadData}
-            isEdit={isEdit}
-          />
-        )}
+        {
+          open && (
+            <LeadPreviewModal
+              open={open}
+              handleClose={handleClose}
+              data={leadData}
+              isEdit={isEdit}
+            />
+          )
+        }
 
         <EnrollmentModal
           openEnrollment={isEnrollmentModalOpen}
@@ -332,7 +374,7 @@ const Lead = () => {
             setIsEnrollmentModalOpen(false);
           }}
         />
-      </Box>
+      </Box >
     </>
   );
 };

@@ -4,8 +4,11 @@ import {
   IconButton,
   Grid,
   SelectChangeEvent,
+  Button,
+  Menu,
+  MenuItem,
 } from "@mui/material";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RemoveRedEyeOutlined, ReceiptLong } from "@mui/icons-material";
 import SelectDropdown from "../../template/select-dropdown";
 import ComponentHeading from "../../template/component-heading";
@@ -16,12 +19,21 @@ import SearchInput from "../../template/search-input";
 import { TableColumn } from "../../template/custom-table/interface";
 import theme from "../../theme/theme";
 import { Student } from "./interface";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { getAllStudents } from "../../services/api/userApi";
 
 
 const Students = () => {
   const [selectedOrder, setSelectedOrder] = useState("All Students");
-  const [page, setPage] = useState<number>(1);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [page, setPage] = useState<number>(1); // Start with page 1
+  const [limit, setLimit] = useState<number>(5);
+  const [totalPages, setTotalPages] = useState<number>(1); const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const userData: any = useSelector((state: RootState) => state);
+  const [products, setProducts] = useState<string[]>([]);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const allStudents = userData.student.data.data;
 
   const students = [
     {
@@ -73,36 +85,49 @@ const Students = () => {
   ) => {
     setPage(value);
   };
-
+  const handleViewProducts = (
+    event: React.MouseEvent<HTMLElement>,
+    productsList: string[]
+  ) => {
+    console.log("productsList:", productsList);
+    setAnchorEl(event.currentTarget);
+    setProducts(productsList); // No changes needed here, just confirm the type
+  };
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
   const handleViewClick = (type: string, student: Student) => {
     console.log(`${type} for student:`, student);
   };
-
+  useEffect(() => {
+    getAllStudents(userData.auth.userData.token, page, limit);
+    setTotalPages(userData.student.data.totalPages)
+  }, [userData.auth.userData.token, page, limit]);
   const tableHeaders: TableColumn<Student>[] = [
     { label: "Enrollment Number", key: "enrollmentNumber" },
-    { label: "Name", key: "name" },
+    { label: "Name", key: "fullName" },
     { label: "Email", key: "email" },
     { label: "Contact Number", key: "contactNumber" },
     {
-      label: "Products",
+      label: "Product Name",
       key: "products",
-      render: (_value: string | string[], row: Student, _index: number) => (
-        <IconButton
-          sx={{ color: theme.palette.secondary.main, fontWeight: "bold" }}
-          onClick={() => handleViewClick("Products", row)}
+      render: (
+        _value: string | string[],
+        row: Student,
+        _index: number
+      ) => (
+        <Button
+          variant="outlined"
+          onClick={(e) => handleViewProducts(e, row.products)}
+          sx={{
+            textTransform: "none",
+            color: theme.palette.secondary.main,
+            fontWeight: "bold",
+            borderColor: theme.palette.secondary.main,
+          }}
         >
-          <RemoveRedEyeOutlined />
-          <Typography
-            variant="body2"
-            sx={{
-              ml: 1,
-              color: theme.palette.secondary.main,
-              fontWeight: "bold",
-            }}
-          >
-            View
-          </Typography>
-        </IconButton>
+          View
+        </Button>
       ),
     },
     {
@@ -195,14 +220,37 @@ const Students = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
+            <SearchInput placeholder={"Search Lead"} onChange={() => { }} />
           </Box>
 
-          <CustomTable<Student> headers={tableHeaders} rows={students} />
+          <CustomTable headers={tableHeaders} rows={allStudents} />
 
-          <CustomPagination count={3} page={page} onChange={handlePageChange} />
+          <CustomPagination count={totalPages} page={page} onChange={handlePageChange} />
         </Box>
       </Box>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseMenu}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+      >
+        {products.length > 0 ? (
+          products.map((product, index) => (
+            <MenuItem key={index} onClick={handleCloseMenu}>
+              {product} {/* Directly render the string value */}
+            </MenuItem>
+          ))
+        ) : (
+          <MenuItem disabled>No products available</MenuItem>
+        )}
+      </Menu>
     </>
   );
 };

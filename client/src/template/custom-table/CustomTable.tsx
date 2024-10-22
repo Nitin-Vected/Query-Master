@@ -8,7 +8,7 @@ import {
   Paper,
   styled,
 } from "@mui/material";
-import { CustomTableProps, Lead } from "./interface";
+import { CustomTableProps } from "./interface";
 import theme from "../../theme/theme";
 
 const CustomTableCell = styled(TableCell)(() => ({
@@ -18,7 +18,7 @@ const CustomTableCell = styled(TableCell)(() => ({
   whiteSpace: "nowrap",
 }));
 
-const CustomTable = ({ headers, rows }: CustomTableProps) => {
+const CustomTable = <T,>({ headers, rows }: CustomTableProps<T>) => {
   return (
     <TableContainer
       component={Paper}
@@ -44,21 +44,19 @@ const CustomTable = ({ headers, rows }: CustomTableProps) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows?.leads?.map((row: Lead, rowIndex: number) => {
-            return (
-              <TableRow key={rowIndex}  >
-                {headers.map((header, colIndex) => (
-                  <CustomTableCell key={colIndex}>
-                    {header.render && header.key
-                      ? header.render(row[header.key], row, rowIndex)
-                      : header.key
-                      ? String(row[header.key]) // Converts the value to a string for display
+          {rows.map((row, rowIndex) => (
+            <TableRow key={rowIndex}>
+              {headers.map((header, colIndex) => (
+                <CustomTableCell key={colIndex}>
+                  {header.render && header.key
+                    ? header.render(row[header.key], row, rowIndex)
+                    : header.key
+                      ? String(row[header.key])
                       : null}
-                  </CustomTableCell>
-                ))}
-              </TableRow>
-            );
-          })}
+                </CustomTableCell>
+              ))}
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </TableContainer>

@@ -1,9 +1,9 @@
 export interface Order {
-  orderId: string;
+  id: string;
   userName: string;
   dueDate: string;
-  totalAmount: string;
+  amount: string;
   dueAmount: string;
   action: string;
-  products: { name: string }[];
+  products: string[];
 }

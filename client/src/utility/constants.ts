@@ -6,13 +6,15 @@ const BaseURL = API_URL;
 
 const constants = {
   BaseURL: BaseURL,
-  Get_All_lead_Api: `${BaseURL}/lead`,
-  GET_All_Counsellor: `${BaseURL}/counsellor`,
+  Lead_Api: `${BaseURL}/lead`,
+  Counsellor_Api: `${BaseURL}/counsellor`,
   GET_All_Status: `${BaseURL}/status`,
   Status_Api: `${BaseURL}/status`,
-  Product_API: `${BaseURL}/product`,
-  Channel_API: `${BaseURL}/channel`,
-
+  Product_Api: `${BaseURL}/product`,
+  Channel_Api: `${BaseURL}/channel`,
+  Order_Api: `${BaseURL}/order`,
+  Student_Api: `${BaseURL}/student`,
+  Transaction_Api: `${BaseURL}/transaction`,
 };
 
 export default constants;
