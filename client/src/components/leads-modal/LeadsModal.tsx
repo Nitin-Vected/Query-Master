@@ -9,12 +9,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import ButtonView from "../../template/button-view";
 import ModalHeader from "../../template/modal-header";
-import { Channels, LeadFormModalProps, Status } from "./interface";
+import { Channels, LeadFormModalProps } from "./interface";
 import FormTextField from "../../template/form-text-field";
 import FormSelectField from "../../template/form-select-field";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { getAllChannels, getallManageStatusApi, getAllStatus } from "../../services/api/userApi";
+import { getAllChannels } from "../../services/api/userApi";
 
 const validationSchema = Yup.object({
   fullName: Yup.string().required("Full name is required"),
@@ -28,7 +28,10 @@ const validationSchema = Yup.object({
   statusId: Yup.string().required("Status is required"),
   channelId: Yup.string().required("Channel is required"),
   productAmount: Yup.string().required("Product Amount is required"),
-  // discount: Yup.string().required("Discount is required"),
+  discount: Yup.number()
+    .typeError("Discount must be a number")
+    .nullable() // Allow it to be null or undefined
+    .max(3000, "Discount cannot be more than 3000"),
 });
 
 const LeadFormModal: React.FC<LeadFormModalProps> = ({

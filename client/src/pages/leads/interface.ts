@@ -1,4 +1,5 @@
 export interface LeadData {
+  id: string;
   firstName: string;
   contactNumber: string;
   email: string;

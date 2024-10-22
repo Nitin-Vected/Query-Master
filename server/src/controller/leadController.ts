@@ -354,7 +354,6 @@ export const updateLeadController = async (
       isActive,
     } = request.body;
     console.log("request.body", request.body);
-    const [firstName, lastName] = fullName.split(" ")
 
     const existingLead = await leadModel.findOne({ id: leadId });
 
@@ -376,14 +375,18 @@ export const updateLeadController = async (
       } as Audit);
     };
 
-    if (firstName && firstName !== existingLead.firstName) {
-      addAuditLog("firstName", existingLead.firstName, firstName);
-      existingLead.firstName = firstName;
-    }
+    if (fullName) {
+      const [firstName, lastName] = fullName.split(" ");
 
-    if (lastName && lastName !== existingLead.lastName) {
-      addAuditLog("lastName", existingLead.lastName, lastName);
-      existingLead.lastName = lastName;
+      if (firstName && firstName !== existingLead.firstName) {
+        addAuditLog("firstName", existingLead.firstName, firstName);
+        existingLead.firstName = firstName;
+      }
+
+      if (lastName && lastName !== existingLead.lastName) {
+        addAuditLog("lastName", existingLead.lastName, lastName);
+        existingLead.lastName = lastName;
+      }
     }
 
     if (contactNumber && contactNumber !== existingLead.contactNumber) {
