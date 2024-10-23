@@ -12,6 +12,7 @@ import {
   Button,
   Dialog,
   DialogContent,
+  CircularProgress,
 } from "@mui/material";
 import image from "../../assets/image";
 import { useFormik } from "formik";
@@ -41,6 +42,7 @@ import {
   updateLead,
 } from "../../services/api/userApi";
 import moment from "moment";
+import EnrollmentModal from "../enrollment-modal";
 
 const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   open = true,
@@ -57,7 +59,8 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   const [channelList, setChannelList] = useState<ChanelList[]>([]);
   const allStatus = userData.status.data.statusList;
   const [updatedValues, setUpdatedValues] = useState<Partial<FormValues>>({});
-  console.log("data ---", data);
+  const [loading, setLoading] = useState(false); // Loader state
+  const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
   useEffect(() => {
     if (isEdit) {
       setIsEditable(true);
@@ -85,17 +88,17 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
     productId: Yup.string().required("Course Category is required"),
     email: Yup.string()
       .email("Invalid email address")
-      // .matches(
-      //   /^[a-zA-Z0-9._]+@(gmail\.com|yahoo\.com|outlook\.com|hotmail\.com)$/,
-      //   "Email must be a valid Gmail, Yahoo, Outlook, or Hotmail address"
-      // )
+      .matches(
+        /^[a-zA-Z0-9._]+@(gmail\.com|yahoo\.com|outlook\.com|hotmail\.com)$/,
+        "Email must be a valid Gmail, Yahoo, Outlook, or Hotmail address"
+      )
       .required("Email is required"),
     // comment: Yup.string().required("comment  is required"),
     description: Yup.string().required("description  is required"),
     contactNumber: Yup.string()
       .matches(
         /^(?:\+91|91)?[6789]\d{9}$/,
-        "Contact Number must be a valid  mobile number"
+        "Contact Number must be a valid Indian mobile number (10 digits, starting with 6, 7, 8, or 9)"
       )
       .required("Contact Number is required"),
     statusId: Yup.string().required("Status is required"),
@@ -134,7 +137,6 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   const initialChannelId =
     channelList.find((product: ChanelList) => product.name === data.channel)
       ?.id || "";
-  console.log("data.description", data.description);
   const formik = useFormik<FormValues>({
     initialValues: {
       fullName: data.fullName,
@@ -150,12 +152,25 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
     },
     validationSchema: validationSchema,
 
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       if (Object.keys(updatedValues).length > 0) {
-        updateLead(userData.auth.userData.token, updatedValues, data.id);
-        // getAllLeads(userData.auth.userData.token, page, limit);
+        try {
+          setLoading(true); // Show loader
+          await updateLead(
+            userData.auth.userData.token,
+            updatedValues,
+            data.id
+          );
+          await getAllLeads(userData.auth.userData.token, 1, 5);
+        } catch (error) {
+          console.error("Error updating lead:", error);
+        } finally {
+          setLoading(false); // Hide loader
+          handleClose(); // Close modal
+        }
+      } else {
+        handleClose(); // Close modal when no updated values
       }
-      handleClose();
     },
   });
 
@@ -356,12 +371,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                           );
 
                           if (selectedCounsellor) {
-                            console.log(
-                              "Selected Counsellor:",
-                              selectedCounsellor
-                            );
                           } else if (selectedCounsellorId === "Unassigned") {
-                            console.log("Unassigned selected.");
                           } else {
                             console.log(
                               "No counsellor found for the selected ID."
@@ -427,6 +437,11 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                         }
                         onChange={(event) => {
                           const selectedId = event.target.value; // Get selected ID
+                          if (selectedId == "STATUS0002") {
+                            setIsEnrollmentModalOpen(true);
+                          }
+                          console.log("selectedId 120", selectedId);
+
                           formik.setFieldValue("statusId", selectedId); // Set the ID in Formik state
                         }}
                         options={allStatus.map((status: any) => ({
@@ -476,6 +491,15 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       name="contactNumber"
                       placeholder="Enter your contactNumber"
                       formik={formik}
+                      handleChange={(
+                        e: React.ChangeEvent<HTMLInputElement>
+                      ) => {
+                        let value = e.target.value.replace(/\D/g, "");
+                        formik.setFieldValue("contactNumber", value);
+                      }}
+                      inputProps={{
+                        maxLength: 10,
+                      }}
                       InputProps={{
                         sx: {
                           maxLength: 10, // Set your desired max length here
@@ -519,50 +543,6 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                         disabled={isEditable}
                         fullWidth
                       />
-
-                      // <SelectDropdown
-                      //   name="channelId"
-                      //   value={
-                      //     formik.values.channelId || // Check if channelId is set in Formik
-                      //     channelList.find(
-                      //       (channel: any) => channel.name === data.channel
-                      //     )?.id || // Fallback to find ID by channel name
-                      //     "" // Fallback to empty string if not found
-                      //   }
-                      //   onChange={(event) => {
-                      //     const selectedId = event.target.value; // Get selected ID
-                      //     console.log("selectedId", selectedId);
-
-                      //     formik.setFieldValue("channelId", selectedId); // Set the ID in Formik state
-                      //   }}
-                      //   options={channelList.map((channel: any) => ({
-                      //     label: channel.name, // Display the channel name in the dropdown
-                      //     value: channel.id.toString(), // Ensure the value is a string
-                      //   }))}
-                      //   disabled={isEditable}
-                      //   fullWidth
-                      // />
-
-                      // <SelectDropdown
-                      //   name="channelId"
-                      //   value={
-                      //     formik.values.channelId ||
-                      //     channelList.find(
-                      //       (status: any) => status.name === data.channel
-                      //     )?.id ||
-                      //     "" // Map status name to ID
-                      //   }
-                      //   onChange={(event) => {
-                      //     const selectedId = event.target.value; // Get selected ID
-                      //     formik.setFieldValue("channelId", selectedId); // Set the ID in Formik state
-                      //   }}
-                      //   options={channelList.map((status: any) => ({
-                      //     label: status.name, // Display the status name in the dropdown
-                      //     value: status.id, // Use status.id as the value for each option
-                      //   }))}
-                      //   disabled={isEditable}
-                      //   fullWidth
-                      // />
                     )}
 
                     {formik.touched.channelId && formik.errors.channelId && (
@@ -612,7 +592,11 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                         }}
                         onClick={() => console.log("Button clicked")}
                       >
-                        Submit
+                        {loading ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : (
+                          "Submit"
+                        )}
                       </ButtonView>
                     )}
                   </Grid>
@@ -1014,6 +998,15 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
           </form>
         </Box>
       </DialogContent>
+      {isEnrollmentModalOpen && (
+        <EnrollmentModal
+          openEnrollment={isEnrollmentModalOpen}
+          closeModal={() => {
+            setIsEnrollmentModalOpen(false);
+          }}
+          data={data}
+        />
+      )}
     </Dialog>
   );
 };

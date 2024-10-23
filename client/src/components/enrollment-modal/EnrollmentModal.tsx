@@ -14,6 +14,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  CircularProgress,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -30,16 +31,17 @@ import { EnrollmentModalProps } from "./interface";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { enrollLead } from "../../services/api/userApi";
+import { ToastContainer } from "react-toastify";
 
 const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
   openEnrollment,
   closeModal,
   data,
 }) => {
-  console.log("data", data);
   const userData: any = useSelector((state: RootState) => state);
   const allProducts = userData.product.data.productList;
   const [selectProducts, setSelectProducts] = useState<string[]>([""]);
+  const [isLoading, setIsLoading] = useState(false); // To manage loading state
 
   const addRow = () => {
     setSelectProducts([...selectProducts, ""]);
@@ -55,14 +57,16 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
   };
   const validationSchema = Yup.object({
     // transactionProof: Yup.string().required("Transaction proof is required"),
-    // discount: Yup.string().required("Discount is required"),
-    // product: Yup.string().required("Product is required"),
-    // transactionAmount: Yup.string().required("Transaction Amount is required"),
-    // finalAmount: Yup.string().required("Final Amount is required"),
-    // amount: Yup.string().required("Amount is required"),
-    // transactionMode: Yup.string().required("Transaction Mode is required"),
-    // transactionDate: Yup.string().required("Transaction Date is required"),
-    // enrollmentDate: Yup.string().required("Enrollment Date is required"),
+    discount: Yup.string().required("Discount is required"),
+    // products: Yup.array()
+    //   .of(Yup.string().required("Each product is required")) // Each product must be a string and is required
+    //   .min(1, "At least one product is required"), // At least one product must be present    transactionAmount: Yup.string().required("Transaction Amount is required"),
+    finalAmount: Yup.string().required("Final Amount is required"),
+    amount: Yup.string().required("Amount is required"),
+    transactionMode: Yup.string().required("Transaction Mode is required"),
+    transactionDate: Yup.string().required("Transaction Date is required"),
+    enrollmentDate: Yup.string().required("Enrollment Date is required"),
+    dueAmount: Yup.string().required(" DueAmount is required"),
   });
   const tableHead: CSSProperties = {
     border: `1px solid ${theme.palette.info.dark}`,
@@ -84,25 +88,40 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
     textAlign: "center",
   };
 
+  const onSubmitApi = async (newData: any) => {
+    try {
+      setIsLoading(true); // Set loading state to true when API call starts
+      await enrollLead(userData.auth.userData.token, newData); // Wait for the API call
+      setIsLoading(false); // Set loading state to false after success
+      closeModal(); // Close the modal after successful API call
+    } catch (error) {
+      setIsLoading(false); // Ensure loading state is reset in case of error
+      console.error("Failed to enroll lead:", error);
+    }
+  };
+
+  console.log("data.fullName", data.fullName);
   const formik = useFormik({
     initialValues: {
       transactionProof: "",
       amount: "",
-      products: selectProducts,
+      products: selectProducts || "",
       discount: "",
       finalAmount: "",
       transactionMode: "Online",
       transactionAmount: "",
       transactionDate: "",
       enrollmentDate: "",
-      dueAmount: "120",
+      dueAmount: "",
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
+      let [firstName, lastName] = data.fullName.split(" ");
+
       let newData = {
         leadEmail: data.email,
-        firstName: data.fullName,
-        lastName: "Gi",
+        firstName: firstName,
+        lastName: lastName,
         contactNumber: data.contactNumber,
         products: selectProducts,
         paymentMode: values.transactionMode,
@@ -113,11 +132,11 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
         dueAmount: values.dueAmount,
         dueDate: values.enrollmentDate,
       };
-
-      enrollLead(userData.auth.userData.token, newData);
-      closeModal();
+      console.log("newData - update api call", newData);
+      onSubmitApi(newData);
     },
   });
+
   const enrollmentLable: CSSProperties = {
     color: theme.palette.secondary.main,
     fontSize: "17px",
@@ -146,6 +165,7 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
         }}
       />
       <form onSubmit={formik.handleSubmit}>
+        <ToastContainer />
         <DialogContent
           sx={{
             padding: { xs: "12px", sm: "20px 40px" },
@@ -232,22 +252,25 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                   return (
                     <TableRow key={index}>
                       <TableCell style={tableLable}>
-                        <SelectDropdown
-                          name={`product_${index}`}
-                          value={selectedProductId}
-                          onChange={(e) =>
-                            handleProductChange(index, e.target.value)
-                          }
-                          options={allProducts.map((product: any) => ({
-                            label: product.name,
-                            value: product.id,
-                          }))}
-                          sx={{
-                            "& .MuiSelect-select": {
-                              padding: "8px 14px",
-                            },
-                          }}
-                        />
+                        {selectProducts.length > 0 && (
+                          <SelectDropdown
+                            name={`products${index}`}
+                            value={selectedProductId}
+                            onChange={(e) =>
+                              handleProductChange(index, e.target.value)
+                            }
+                            options={allProducts.map((product: any) => ({
+                              label: product.name,
+                              value: product.id,
+                            }))}
+                            sx={{
+                              "& .MuiSelect-select": {
+                                padding: "8px 14px",
+                              },
+                            }}
+                          />
+                        )}
+
                         {formik.touched.products && formik.errors.products && (
                           <FormHelperText error>
                             {formik.errors.products}
@@ -296,41 +319,35 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 name="amount"
                 placeholder="Total Amount"
                 formik={formik}
+                handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  let value = e.target.value.replace(/\D/g, "");
+                  formik.setFieldValue("amount", value);
+                }}
               />
-              {/* <Typography variant="subtitle2" sx={{ ...enrollmentTitle }}>
-                                Total Amount<span style={{ color: "red" }}>*</span>
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                                name="amount"
-                                value={formik.values.amount}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                placeholder="Rs"
-                                error={formik.touched.amount && Boolean(formik.errors.amount)}
-                                helperText={formik.touched.amount && formik.errors.amount}
-                                sx={{
-                                    "& .MuiInputBase-root": {
-                                        height: 40,
-                                        borderRadius: "8px",
-                                    },
-                                }}
-                            /> */}
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
               <FormTextField
                 label="Discount"
                 name="discount"
-                placeholder="Rs"
+                placeholder=" Total Discount"
                 formik={formik}
+                handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  let value = e.target.value.replace(/\D/g, "");
+                  formik.setFieldValue("discount", value);
+                }}
               />
             </Grid>
+
             <Grid item xs={12} sm={6} md={4}>
               <FormTextField
                 label="Final Amount"
                 name="finalAmount"
                 placeholder="Rs"
                 formik={formik}
+                handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  let value = e.target.value.replace(/\D/g, "");
+                  formik.setFieldValue("finalAmount", value);
+                }}
               />
             </Grid>
           </Grid>
@@ -362,6 +379,10 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 name="transactionAmount"
                 placeholder="Rs"
                 formik={formik}
+                handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  let value = e.target.value.replace(/\D/g, "");
+                  formik.setFieldValue("transactionAmount", value);
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
@@ -393,29 +414,32 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                   </FormHelperText>
                 )}
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Typography sx={{ ...enrollmentTitle }}>
-                Transaction Proof<span style={{ color: "red" }}>*</span>
-              </Typography>
-              <TextField
-                fullWidth
-                name="transactionProof"
-                type="file"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                sx={{
-                  "& .MuiInputBase-root": {
-                    height: 40,
-                  },
-                }}
-              />
-              {formik.touched.transactionProof &&
-                formik.errors.transactionProof && (
-                  <FormHelperText error>
-                    {formik.errors.transactionProof}
-                  </FormHelperText>
-                )}
-            </Grid>
+            {formik.values.transactionMode === "Online" ? (
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography sx={{ ...enrollmentTitle }}>
+                  Transaction Proof<span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  fullWidth
+                  name="transactionProof"
+                  type="file"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  sx={{
+                    "& .MuiInputBase-root": {
+                      height: 40,
+                    },
+                  }}
+                />
+                {formik.touched.transactionProof &&
+                  formik.errors.transactionProof && (
+                    <FormHelperText error>
+                      {formik.errors.transactionProof}
+                    </FormHelperText>
+                  )}
+              </Grid>
+            ) : null}
+
             <Grid item xs={12} sm={6} md={4}>
               <Typography sx={{ ...enrollmentTitle }}>
                 Enrollment Date<span style={{ color: "red" }}>*</span>
@@ -445,6 +469,18 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                   </FormHelperText>
                 )}
             </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <FormTextField
+                label="DueAmount *"
+                name="dueAmount"
+                placeholder="dueAmount"
+                formik={formik}
+                handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  let value = e.target.value.replace(/\D/g, "");
+                  formik.setFieldValue("dueAmount", value);
+                }}
+              />
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions style={{ justifyContent: "flex-end", paddingRight: 25 }}>
@@ -454,7 +490,11 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
             sx={{ left: -11 }}
             onClick={() => console.log("Button clicked")}
           >
-            Submit
+            {isLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Submit"
+            )}
           </ButtonView>
         </DialogActions>
       </form>

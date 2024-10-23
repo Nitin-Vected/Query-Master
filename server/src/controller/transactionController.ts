@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import transactionModel from "../model/transactionModel";
-import { CustomRequest, generateUniqueId, Messages, StatusCodes } from "../config";
+import {
+  CustomRequest,
+  generateUniqueId,
+  Messages,
+  StatusCodes,
+} from "../config";
 import mongoose from "mongoose";
 import orderModel from "../model/orderModel";
 
@@ -82,7 +87,10 @@ export const createTransactionController = async (
 
     return response
       .status(StatusCodes.CREATED)
-      .json({ transactionId, message: "Transaction " + Messages.CREATED_SUCCESSFULLY });
+      .json({
+        transactionId,
+        message: "Transaction " + Messages.CREATED_SUCCESSFULLY,
+      });
   } catch (error: unknown) {
     console.log("Error occurred in createTransactionController: ", error);
     if (error instanceof Error) {
@@ -132,10 +140,14 @@ export const createTransaction = async (
   return transactionId;
 };
 
-export const getTransactionByIdController = async (request: Request, response: Response) => {
+export const getTransactionByIdController = async (
+  request: Request,
+  response: Response
+) => {
   const { transactionId } = request.params;
   try {
-    const transaction = await transactionModel.findOne({ id: transactionId })
+    const transaction = await transactionModel
+      .findOne({ id: transactionId })
       .select("-_id id orderId amount date proof");
     if (!transaction) {
       return response
@@ -144,19 +156,25 @@ export const getTransactionByIdController = async (request: Request, response: R
     }
     response
       .status(StatusCodes.OK)
-      .json({ data: transaction, message: "Transaction " + Messages.FETCHED_SUCCESSFULLY });
+      .json({
+        data: transaction,
+        message: "Transaction " + Messages.FETCHED_SUCCESSFULLY,
+      });
   } catch (error) {
     console.log("Error occured in getTransactionById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
-}
+};
 
-export const getAllTransactionsController = async (request: Request, response: Response) => {
+export const getAllTransactionsController = async (
+  request: Request,
+  response: Response
+) => {
   const page = parseInt(request.query.page as string) || 1;
   const limit = parseInt(request.query.limit as string) || 0;
-  const skip = (page - 1) * limit
+  const skip = (page - 1) * limit;
 
   try {
     const transactionList = await transactionModel

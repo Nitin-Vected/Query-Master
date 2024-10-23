@@ -19,7 +19,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
       value={value} // This will display "Not Assigned" as the default if the value is undefined or null
       onChange={onChange}
       displayEmpty
-      disabled={disabled}
+      disabled={disabled || false}
       style={style}
       sx={{
         height: 40,

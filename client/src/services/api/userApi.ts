@@ -31,6 +31,8 @@ import {
   fetchOrderDataStart,
   fetchOrderDataSuccess,
 } from "../../redux/slices/orderSlice";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import the CSS for the toast
 export const loginWithGoogleApi = async (accessToken: string) => {
   return await axios.post(`${API_URL}/login`, {
     tokenResponse: { access_token: accessToken },
@@ -81,19 +83,22 @@ export const getAllLeads = async (
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        console.error("Error response:", error.response.data);
+        toast.error(
+          `Error: ${error.response.data.message || "Something went wrong"}`
+        );
       } else if (error.request) {
         console.error("No response received:", error.request);
+        toast.error("No response from the server");
       } else {
         console.error("Error message:", error.message);
+        toast.error(`Error: ${error.message}`);
       }
     } else {
-      console.error("An unknown error occurred:", error);
+      toast.error("An unknown error occurred");
     }
     // Type assertion to handle the error
     const errorMessage =
       (error as Error).message || "An unknown error occurred";
-
     store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
     throw error; // Re-throw the error for further handling
   }
@@ -104,7 +109,6 @@ export const getAllLeadsUpdate = async (
   leadId: string,
   data: object
 ) => {
-  console.log("t,oken", leadId, data);
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.put(
@@ -116,19 +120,27 @@ export const getAllLeadsUpdate = async (
         },
       }
     );
+    toast.success(response.data.message); // Show success toast
     return response.data; // Return the data from the response
   } catch (error) {
-    const errorMessage =
-      (error as Error).message || "An unknown error occurred";
-    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
-    throw error; // Re-throw the error for further handling
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        toast.error(
+          `Error: ${error.response.data.message || "Something went wrong"}`
+        );
+      } else if (error.request) {
+        toast.error("No response from the server");
+      } else {
+        toast.error(`Error: ${error.message}`);
+      }
+    } else {
+      toast.error("An unknown error occurred");
+    }
   }
 };
 
 export const enrollLead = async (token: string, data: object) => {
-  console.log("EnrollLead data", data);
   try {
-    store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.post(
       `${constants.EnrollLead_Api}`, // Update URL if necessary
       data,
@@ -138,24 +150,23 @@ export const enrollLead = async (token: string, data: object) => {
         },
       }
     );
-    console.log("enrollLead - api call", response);
+    toast.success(response.data.message); // Show success toast
+
     return response.data; // Return the data from the response
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        console.error("Error response:", error.response.data);
+        toast.error(
+          `Error: ${error.response.data.message || "Something went wrong"}`
+        );
       } else if (error.request) {
-        console.error("No response received:", error.request);
+        toast.error("No response from the server");
       } else {
-        console.error("Error message:", error.message);
+        toast.error(`Error: ${error.message}`);
       }
     } else {
-      console.error("An unknown error occurred:", error);
+      toast.error("An unknown error occurred");
     }
-    const errorMessage =
-      (error as Error).message || "An unknown error occurred";
-    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
-    throw error; // Re-throw the error for further handling
   }
 };
 
@@ -175,6 +186,7 @@ export const getCounsellorListLeadsUpdate = async (
         },
       }
     );
+    toast.success(response.data.message); // Show success toast
     return response.data; // Return the data from the response
   } catch (error) {
     const errorMessage =
@@ -189,7 +201,6 @@ export const updateLead = async (
   data: object,
   leadId: string
 ) => {
-  console.log("send data 1234", data);
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.put(
@@ -202,40 +213,26 @@ export const updateLead = async (
       }
     );
     // getAllLeads(token);
+    toast.success(response.data.message); // Show success toast
+
     return response.data; // Return the data from the response
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        console.error("Error response:", error.response.data);
+        toast.error(
+          `Error: ${error.response.data.message || "Something went wrong"}`
+        );
       } else if (error.request) {
         console.error("No response received:", error.request);
+        toast.error("No response from the server");
       } else {
         console.error("Error message:", error.message);
+        toast.error(`Error: ${error.message}`);
       }
     } else {
       console.error("An unknown error occurred:", error);
+      toast.error("An unknown error occurred");
     }
-    const errorMessage =
-      (error as Error).message || "An unknown error occurred";
-    store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
-    throw error; // Re-throw the error for further handling
-  }
-};
-
-export const getLeadById = async (token: string, leadId: string) => {
-  try {
-    store.dispatch(fetchLeadDataStart()); // Dispatch start action
-    store.dispatch(fetchLeadDataStart()); // Dispatch start action
-    const response = await axios.get(
-      `${constants.Lead_Api} / ${leadId}`, // Update URL if necessary
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return response.data; // Return the data from the response
-  } catch (error) {
     const errorMessage =
       (error as Error).message || "An unknown error occurred";
     store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
@@ -271,6 +268,22 @@ export const getallCounsellor = async (token: string) => {
     // console.log("data", response.data);
     return response.data; // Return the data from the response
   } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        toast.error(
+          `Error: ${error.response.data.message || "Something went wrong"}`
+        );
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+        toast.error("No response from the server");
+      } else {
+        console.error("Error message:", error.message);
+        toast.error(`Error: ${error.message}`);
+      }
+    } else {
+      console.error("An unknown error occurred:", error);
+      toast.error("An unknown error occurred");
+    }
     console.error("Error occurred during API call:", error);
     const errorMessage =
       (error as Error).message || "An unknown error occurred";
@@ -286,7 +299,6 @@ export const getallManageStatusApi = async (token: string) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log("@TEST data", response.data);
     return response.data; // Return the data from the response
   } catch (error) {
     console.error("Error occurred during API call:", error);

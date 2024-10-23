@@ -1,5 +1,6 @@
 import { TextFieldProps } from "@mui/material";
 import { FormikValues } from "formik";
+import { ChangeEvent } from "react";
 
 export interface FormTextFieldProps {
   label?: string;
@@ -19,8 +20,10 @@ export interface FormTextFieldProps {
     | any;
   required?: boolean;
   InputProps?: TextFieldProps["InputProps"]; // Define the type properly
+  inputProps?: TextFieldProps["inputProps"]; // Define the type properly
   type?: string;
   multiline?: boolean;
   rows?: string;
   variant?: TextFieldProps["variant"]; // Define variant type from Material-UI
+  handleChange?: (e: ChangeEvent<HTMLInputElement>) => void; // Define type for handleChange
 }

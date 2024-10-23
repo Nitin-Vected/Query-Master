@@ -35,8 +35,8 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import EnrollmentModal from "../../components/enrollment-modal";
-import { getAllProducts } from "../../redux/sagas/productService";
 import Spinner from "../../components/Spinner";
+import { ToastContainer } from "react-toastify";
 
 const Lead = () => {
   const [open, setOpen] = useState(false);
@@ -64,8 +64,6 @@ const Lead = () => {
   ) => {
     setPage(value);
   };
-  const allStatus = userData.status.data.statusList;
-  console.log("allStatus", allStatus);
 
   const handleClose = () => {
     setOpen(false);
@@ -77,7 +75,6 @@ const Lead = () => {
 
   const handleEdit = (row: LeadData, type: boolean) => {
     setOpen(true);
-
     setLeadData(row);
     setIsEdit(type);
   };
@@ -101,7 +98,6 @@ const Lead = () => {
 
   useEffect(() => {
     getAllStatus(userToken);
-    getAllProducts(userToken, page, limit);
     getAllLeads(userToken, page, limit);
     fetchCounsellorData(userToken);
     getallManage(userToken);
@@ -138,9 +134,9 @@ const Lead = () => {
       console.log("Lead Data -->", leadData);
       const data = await createLead(userData.auth.userData.token, leadData);
       console.log(data);
-      if (data) {
-        // getAllLeads(userData.auth.userData.token);
-      }
+      // if (data) {
+      //   getAllLeads(userData.auth.userData.token);
+      // }
     } catch (error) {
       console.error("Error occurred during lead creation:", error);
     }
@@ -200,26 +196,6 @@ const Lead = () => {
               id: status.id, // Add the ID for later use
             }))}
           />
-          // <SelectDropdown
-          //   name={`status${index}`}
-          //   disabled={value === "Enrolled"} // Disable if the status is "Enrolled"
-          //   value={allStatus[index]?.status || value || ""} // Show the row's status or fallback to original value or empty string
-          //   onChange={(e) => {
-          //     const selectedStatus = allStatus.find(
-          //       (status) => status.name === e.target.value // Find the selected status
-          //     );
-
-          //     if (selectedStatus) {
-          //       const statusId = selectedStatus.id;
-          //       handleStatusChange(e, index, statusId, row); // Pass the selected ID
-          //     }
-          //   }}
-          //   options={allStatus.map((status) => ({
-          //     label: status.name, // Display name of the status
-          //     value: status.name, // Use the status name as the dropdown option
-          //     id: status.id, // Add the ID for later use
-          //   }))}
-          // />
         );
       },
     },
@@ -285,6 +261,7 @@ const Lead = () => {
   return (
     <>
       <Box sx={{ flexGrow: 1, p: 3, mt: 10 }}>
+        <ToastContainer />
         <ComponentHeading heading="Leads" />
 
         {SpinnerLoading ? (
