@@ -88,10 +88,10 @@ const Lead = () => {
       console.error("Failed to fetch get all Manage data:", error);
     }
   };
-
   useEffect(() => {
+    console.log(userData)
     getAllStatus(userData.auth.userData.token);
-    getAllProducts(userData.auth.userData.token);
+    getAllProducts(userData.auth.userData.token, page, limit);
     getAllLeads(userData.auth.userData.token, page, limit);
     fetchCounsellorData(userData.auth.userData.token);
     getallManage(userData.auth.userData.token);
@@ -166,7 +166,7 @@ const Lead = () => {
       console.error("Error updating counsellor:", error);
     }
   };
-const headers: TableColumn<LeadData>[] = [
+  const headers: TableColumn<LeadData>[] = [
     { label: "Full Name", key: "fullName" },
     { label: "Contact Number", key: "contactNumber" },
     { label: "Email Id", key: "email" },

@@ -124,14 +124,14 @@ export const getAllOrdersController = async (request: Request, response: Respons
           as: "profileDetails",
         },
       },
-      {
-        $lookup: {
-          from: "products",
-          localField: "products",
-          foreignField: "id",
-          as: "productDetails",
-        },
-      },
+      // {
+      //   $lookup: {
+      //     from: "products",
+      //     localField: "products",
+      //     foreignField: "id",
+      //     as: "productDetails",
+      //   },
+      // },
       { $unwind: "$profileDetails" },
       {
         $project: {
@@ -142,13 +142,14 @@ export const getAllOrdersController = async (request: Request, response: Respons
           amount: 1,
           dueDate: 1,
           isActive: 1,
-          products: {
-            $map: {
-              input: "$productDetails",
-              as: "product",
-              in: "$$product.name"
-            },
-          },
+          products: 1,
+          // products: {
+          //   $map: {
+          //     input: "$productDetails",
+          //     as: "product",
+          //     in: "$$product.name"
+          //   },
+          // },
           userName: {
             $concat: [
               { $ifNull: ["$profileDetails.firstName", ""] },
@@ -160,7 +161,7 @@ export const getAllOrdersController = async (request: Request, response: Respons
           contactNumber: "$profileDetails.contactNumber",
         },
       },
-      { $sort: { updatedAt: -1, createdAt: -1 } },
+      { $sort: { id: -1, createdAt: -1 } },
       { $skip: skip },
     ];
 

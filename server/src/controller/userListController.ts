@@ -58,7 +58,7 @@ export const viewStudentListController = async (
           isActive: "$profileDetails.isActive"
         },
       },
-      { $sort: { updatedAt: -1, createdAt: -1 } },
+      { $sort: { enrollmentNumber: -1 } },
       { $skip: skip },
     ];
     if (limit > 0) {

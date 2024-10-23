@@ -162,7 +162,7 @@ export const getAllTransactionsController = async (request: Request, response: R
     const transactionList = await transactionModel
       .find()
       .select("-_id id orderId amount date proof mode")
-      .sort({ updatedAt: -1, createdAt: -1 })
+      .sort({ id: -1 })
       .skip(skip)
       .limit(limit);
 

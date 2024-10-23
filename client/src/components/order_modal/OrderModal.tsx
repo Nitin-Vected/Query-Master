@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,8 @@ import {
   Paper,
   FormHelperText,
   TextField,
+  TableHead,
+  Tooltip,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import theme from "../../theme/theme";
@@ -24,6 +26,9 @@ import ModalHeader from "../../template/modal-header";
 import ButtonView from "../../template/button-view";
 import FormTextField from "../../template/form-text-field";
 import FormSelectField from "../../template/form-select-field";
+import { Order, Product, Transaction } from "../../pages/orders/interface";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 const OrderModal: React.FC<OderFormModalProps> = ({
   OpenOrderModal,
@@ -31,19 +36,30 @@ const OrderModal: React.FC<OderFormModalProps> = ({
   orderData,
 }) => {
   const [isFieldVisible, setIsFieldVisible] = useState(false);
-
+  const userData: any = useSelector((state: RootState) => state);
+  const allProducts = userData.product.data.productList;
+  const allTransactions = userData.transaction.data.transactionList;
   const orderLabel: CSSProperties = {
     color: theme.palette.secondary.main,
     fontSize: "21.5px",
     fontWeight: "600",
   };
+  const [products, setProducts] = useState<Product[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
+  console.log(orderData?.transactions)
+  console.log(userData)
+  useEffect(() => {
+    setTransactions(allTransactions.filter((transaction: Transaction) =>
+      orderData?.transactions.includes(transaction.id)))
+    setProducts(allProducts.filter((product: Product) => orderData?.products.includes(product.id)))
+  }, [orderData])
+  console.log(transactions)
   const orderTitle: CSSProperties = {
     color: theme.palette.secondary.main,
     fontSize: "15px",
     fontWeight: "400",
   };
-
   const tableHead: CSSProperties = {
     border: `1px solid ${theme.palette.info.dark}`,
     borderWidth: 1,
@@ -72,7 +88,7 @@ const OrderModal: React.FC<OderFormModalProps> = ({
     borderColor: theme.palette.text.secondary,
     borderTopWidth: "none",
     padding: "none",
-    marginTop: 20,
+    marginTop: 10,
   };
   // Validation schema using Yup
   const validationSchema = Yup.object({
@@ -124,16 +140,16 @@ const OrderModal: React.FC<OderFormModalProps> = ({
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={4}>
-            <Typography sx={{ ...orderTitle }}>Full Name </Typography>
-            <Typography sx={{ ...orderTitle }}>John Doe</Typography>
+            <Typography sx={{ ...orderTitle }}>Full Name :</Typography>
+            <Typography sx={{ ...orderTitle }}>{orderData?.userName}</Typography>
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <Typography sx={{ ...orderTitle }}>Contact Number </Typography>
-            <Typography sx={{ ...orderTitle }}>9876543210</Typography>
+            <Typography sx={{ ...orderTitle }}>Contact Number :</Typography>
+            <Typography sx={{ ...orderTitle }}>{orderData?.contactNumber}</Typography>
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <Typography sx={{ ...orderTitle }}>Email Id </Typography>
-            <Typography sx={{ ...orderTitle }}>johndoe@example.com</Typography>
+            <Typography sx={{ ...orderTitle }}>Email Id :</Typography>
+            <Typography sx={{ ...orderTitle }}>{orderData?.email}</Typography>
           </Grid>
         </Grid>
 
@@ -151,36 +167,54 @@ const OrderModal: React.FC<OderFormModalProps> = ({
 
         <TableContainer component={Paper} style={tableContainer}>
           <Table>
-            <TableBody>
+            <TableHead>
               <TableRow style={{ backgroundColor: theme.palette.success.dark }}>
                 <TableCell style={tableHead}>Product Name</TableCell>
                 <TableCell style={tableHead}>Product Amount</TableCell>
                 <TableCell style={tableHead}>Product Description</TableCell>
               </TableRow>
-              <TableRow>
-                <TableCell style={tableLabel}>Data Analytics</TableCell>
-                <TableCell style={tableLabel}>30,000Rs</TableCell>
-                <TableCell style={tableLabel}>Description</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell style={tableLabel}>AWS Expert</TableCell>
-                <TableCell style={tableLabel}>15,000Rs</TableCell>
-                <TableCell style={tableLabel}>Description</TableCell>
-              </TableRow>
+            </TableHead>
+            <TableBody>
+              {products.map((product, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell style={tableLabel}>{product.name}</TableCell>
+                    <TableCell style={tableLabel}>{product.price}</TableCell>
+                    <TableCell
+                      sx={{
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        maxWidth: '250px',
+                      }}
+                      style={tableLabel}
+                    >
+                      <Tooltip title={product.description} arrow>
+                        <span>{product.description}</span>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </TableContainer>
 
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={4} marginTop={1.5}>
-            <Typography sx={{ ...orderTitle }}>Total Amount</Typography>
+            <Typography sx={{ ...orderTitle }}>Total Amount :</Typography>
             <Typography sx={{ ...orderTitle }}>
-              {" "}
-              {orderData?.totalAmount}
+              {orderData?.amount}
             </Typography>
           </Grid>
           <Grid item xs={12} sm={6} md={4} marginTop={1.5}>
-            <Typography sx={{ ...orderTitle }}>Due Date</Typography>
+            <Typography sx={{ ...orderTitle }}>Due Amount :</Typography>
+            <Typography sx={{ ...orderTitle }}>
+              {orderData?.dueAmount}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={6} md={4} marginTop={1.5}>
+            <Typography sx={{ ...orderTitle }}>Due Date :</Typography>
             <Typography sx={{ ...orderTitle }}>{orderData?.dueDate}</Typography>
           </Grid>
         </Grid>
@@ -198,18 +232,23 @@ const OrderModal: React.FC<OderFormModalProps> = ({
 
         <TableContainer component={Paper} style={tableContainer}>
           <Table>
-            <TableBody>
+            <TableHead>
               <TableRow style={{ backgroundColor: theme.palette.success.dark }}>
                 <TableCell style={tableHead}>Transaction Mode</TableCell>
                 <TableCell style={tableHead}>Transaction Amount</TableCell>
                 <TableCell style={tableHead}>Transaction Date</TableCell>
               </TableRow>
-
-              <TableRow>
-                <TableCell style={tableLabel}>Online</TableCell>
-                <TableCell style={tableLabel}>15,000Rs</TableCell>
-                <TableCell style={tableLabel}>02/02/2024</TableCell>
-              </TableRow>
+            </TableHead>
+            <TableBody>
+              {transactions.map((transactions, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell style={tableLabel}>{transactions.mode}</TableCell>
+                    <TableCell style={tableLabel}>{transactions.amount}</TableCell>
+                    <TableCell style={tableLabel}>{transactions.date}</TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </TableContainer>

@@ -74,11 +74,13 @@ export const generateUniqueId = async (
 ): Promise<string> => {
   try {
     const lastEntry = await model.findOne().sort({ _id: -1 });
-
+    
     let newUniqueId: string;
 
-    if (lastEntry && lastEntry.id) {
-      const lastNumericPart = parseInt(lastEntry.id.replace(prefix, ""), 10);
+    const lastIdentifier = lastEntry?.enrollmentNumber || lastEntry?.id;
+
+    if (lastEntry && lastIdentifier) {
+      const lastNumericPart = parseInt(lastIdentifier.replace(prefix, ""), 10);
 
       const nextId = lastNumericPart + 1;
 
@@ -93,3 +95,4 @@ export const generateUniqueId = async (
     throw error;
   }
 };
+

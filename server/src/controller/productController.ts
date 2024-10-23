@@ -82,16 +82,16 @@ export const getAllProductController = async (
   request: CustomRequest,
   response: Response
 ) => {
-  const page = parseInt(request.query.page as string) || 1; 
-  const limit = parseInt(request.query.limit as string) || 0; 
-  const skip = (page - 1) * limit; 
+  const page = parseInt(request.query.page as string) || 1;
+  const limit = parseInt(request.query.limit as string) || 0;
+  const skip = (page - 1) * limit;
 
   try {
     const productList = await productModel
       .find()
       .select("-_id id name category price discountPrice description assets")
-      .sort({ updatedAt: -1, createdAt: -1 }) 
-      .skip(skip) 
+      .sort({ id: -1 })
+      .skip(skip)
       .limit(limit || 0);
 
     const totalProducts = await productModel.countDocuments();
@@ -101,7 +101,7 @@ export const getAllProductController = async (
     if (productList && productList.length > 0) {
       response.status(StatusCodes.OK).json({
         productList: productList,
-        totalPages: totalPages, 
+        totalPages: totalPages,
         message: "Products " + Messages.FETCHED_SUCCESSFULLY,
       });
     } else {

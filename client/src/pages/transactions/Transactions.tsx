@@ -36,40 +36,7 @@ const Transactions = () => {
   ) => {
     setPage(value);
   }
-  // const rows = [
-  //   {
-  //     orderId: "ORD1234",
-  //     transactionId: "TX1234",
-  //     transactionAmount: "₹1,24,500",
-  //     transactionDate: "2024-10-01",
-  //     transactionType: "Online",
-  //     transactionProof: "proof1.jpg",
-  //   },
-  //   {
-  //     orderId: "ORD5678",
-  //     transactionId: "TX5678",
-  //     transactionAmount: "₹83,000",
-  //     transactionDate: "2024-09-15",
-  //     transactionType: "Cash",
-  //     transactionProof: "",
-  //   },
-  //   {
-  //     orderId: "ORD9101",
-  //     transactionId: "TX9101",
-  //     transactionAmount: "₹66,400",
-  //     transactionDate: "2024-09-25",
-  //     transactionType: "Online",
-  //     transactionProof: "proof3.jpg",
-  //   },
-  //   {
-  //     orderId: "ORD1121",
-  //     transactionId: "TX1121",
-  //     transactionAmount: "₹33,200",
-  //     transactionDate: "2024-09-30",
-  //     transactionType: "Cash",
-  //     transactionProof: "",
-  //   },
-  // ];
+  
   useEffect(() => {
     console.log(page)
     getAllTransactions(userData.auth.userData.token, page, limit);

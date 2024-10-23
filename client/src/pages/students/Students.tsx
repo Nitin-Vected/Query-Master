@@ -35,41 +35,6 @@ const Students = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const allStudents = userData.student.data.data;
 
-  const students = [
-    {
-      enrollmentNumber: "STU1234",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      contactNumber: "9865784578",
-      products: ["Laptop", "Mouse"],
-      transactions: ["Paid ₹50,000", "Paid ₹30,000"],
-    },
-    {
-      enrollmentNumber: "STU5678",
-      name: "Sarah Haw",
-      email: "sarah.haw@example.com",
-      contactNumber: "9862284578",
-      products: ["Smartphone", "Headphones"],
-      transactions: ["Paid ₹60,000", "Pending ₹40,000"],
-    },
-    {
-      enrollmentNumber: "STU9101",
-      name: "Tyson Tan",
-      email: "tyson.tan@example.com",
-      contactNumber: "8862284556",
-      products: ["Tablet", "Keyboard"],
-      transactions: ["Paid ₹25,000", "Paid ₹15,000"],
-    },
-    {
-      enrollmentNumber: "STU1121",
-      name: "Robert Shell",
-      email: "robert.shell@example.com",
-      contactNumber: "7862858543",
-      products: ["Smartwatch", "Charger"],
-      transactions: ["Paid ₹10,000", "Pending ₹5,000"],
-    },
-  ];
-
   const handleOrderChange = (event: SelectChangeEvent<string>) => {
     setSelectedOrder(event.target.value);
   };
