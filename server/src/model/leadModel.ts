@@ -70,7 +70,7 @@ const leadSchema = new Schema<Lead>(
     email: { type: String, required: true, lowercase: true },
     contactNumber: { type: String, required: true },
     productAmount: { type: Number, min: 0 },
-    discount: { type: Number, min: 0, max: 2000 },
+    discount: { type: Number, min: 0, max: 3000, default: 0 },
     channelId: { type: String, ref: "channelMaster" },
     statusId: { type: String, ref: "Status" },
     productId: { type: String, ref: "Product" },

@@ -9,12 +9,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import ButtonView from "../../template/button-view";
 import ModalHeader from "../../template/modal-header";
-import { Channels, LeadFormModalProps, Status } from "./interface";
+import { Channels, LeadFormModalProps } from "./interface";
 import FormTextField from "../../template/form-text-field";
 import FormSelectField from "../../template/form-select-field";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { getAllChannels, getallManageStatusApi, getAllStatus } from "../../services/api/userApi";
+import { getAllChannels } from "../../services/api/userApi";
 
 const validationSchema = Yup.object({
   fullName: Yup.string().required("Full name is required"),
@@ -25,8 +25,13 @@ const validationSchema = Yup.object({
     .email("Invalid email address")
     .required("Email is required"),
   productId: Yup.string().required("Product is required"),
-  status: Yup.string().required("Status is required"),
-  channel: Yup.string().required("Channel is required"),
+  statusId: Yup.string().required("Status is required"),
+  channelId: Yup.string().required("Channel is required"),
+  productAmount: Yup.string().required("Product Amount is required"),
+  discount: Yup.number()
+    .typeError("Discount must be a number")
+    .nullable() // Allow it to be null or undefined
+    .max(3000, "Discount cannot be more than 3000"),
 });
 
 const LeadFormModal: React.FC<LeadFormModalProps> = ({
@@ -50,6 +55,7 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
   useEffect(() => {
     getChannels(userData.auth.userData.token);
   }, [userData.auth.userData.token])
+
   const formik = useFormik({
     initialValues: {
       fullName: "",
@@ -58,19 +64,19 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
       productId: "PRODUCT0001",
       statusId: "STATUS0001",
       channelId: "CHANNEL0001",
+      productAmount: "",
+      discount: "",
       description: "",
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
       if (onSubmit) {
+        // console.log("create Lead called")
         onSubmit(values);
-      }
-      if (onClose) {
         onClose();
       }
     },
   });
-  console.log(formik.values)
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <ModalHeader title={"Create Lead"} onClose={onClose} />
@@ -117,7 +123,24 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 required
               />
             </Grid>
-
+            <Grid item xs={12} md={6} >
+              <FormTextField
+                label="Product Amount"
+                name="productAmount"
+                placeholder="Rs"
+                formik={formik}
+                type="number"
+              />
+            </Grid>
+            <Grid item xs={12} md={6} >
+              <FormTextField
+                label="Discount"
+                name="discount"
+                placeholder="Rs"
+                formik={formik}
+                type="number"
+              />
+            </Grid>
             <Grid item xs={12} md={6}>
               {/* Use FormSelectField for Status */}
               <FormSelectField
@@ -161,7 +184,6 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
             isEditable={true}
             style={{ marginTop: 3 }}
             sx={{ left: -11 }}
-            onClick={() => console.log("Button clicked")}
           >
             Submit
           </ButtonView>

@@ -17,17 +17,45 @@ import {
   fetchAllStatusStart,
   fetchAllStatusSuccess,
 } from "../../redux/slices/statusSlice";
-
+import { fetchStudentDataFailure, fetchStudentDataStart, fetchStudentDataSuccess } from "../../redux/slices/studentSlice";
+import { fetchTransactionDataFailure, fetchTransactionDataStart, fetchTransactionDataSuccess } from "../../redux/slices/transactionSlice";
+import { fetchOrderDataFailure, fetchOrderDataStart, fetchOrderDataSuccess } from "../../redux/slices/orderSlice";
 export const loginWithGoogleApi = async (accessToken: string) => {
   return await axios.post(`${API_URL}/login`, {
     tokenResponse: { access_token: accessToken },
   });
 };
 
-export const getAllLeads = async (token: string) => {
+export const createLead = async (token: string, data: object) => {
+  try {
+    const response = await axios.post(`${constants.Lead_Api}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
+    throw error;
+  }
+};
+
+export const getAllLeads = async (token: string, page: number, limit: number) => {
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
-    const response = await axios.get(`${constants.Lead_Api}`, {
+    const response = await axios.get(`${constants.Lead_Api}?page=${page}&limit=${limit}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -35,7 +63,17 @@ export const getAllLeads = async (token: string) => {
     store.dispatch(fetchLeadDataSuccess(response.data)); // Dispatch success action
     return response.data; // Return the data from the response
   } catch (error) {
-    console.error("Error occurred during API call:", error);
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
     // Type assertion to handle the error
     const errorMessage =
       (error as Error).message || "An unknown error occurred";
@@ -159,8 +197,9 @@ export const updateLead = async (
 export const getLeadById = async (token: string, leadId: string) => {
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
+    store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.get(
-      `${constants.Lead_Api}/${leadId}`, // Update URL if necessary
+      `${constants.Lead_Api} / ${leadId}`, // Update URL if necessary
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -267,10 +306,10 @@ export const getAllStatus = async (token: string) => {
     throw error; // Re-throw the error for further handling
   }
 };
-export const getAllProducts = async (token: string) => {
+export const getAllProducts = async (token: string, page: number, limit: number) => {
   try {
     store.dispatch(fetchAllProductsStart()); // Dispatch start action
-    const response = await axios.get(`${constants.Product_Api}`, {
+    const response = await axios.get(`${constants.Product_Api}?page=${page}&limit=${limit}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -284,6 +323,97 @@ export const getAllProducts = async (token: string) => {
       (error as Error).message || "An unknown error occurred";
 
     store.dispatch(fetchAllProductsFailure(errorMessage)); // Dispatch failure action
+    throw error; // Re-throw the error for further handling
+  }
+};
+export const getAllOrders = async (token: string, page: number, limit: number) => {
+  try {
+    store.dispatch(fetchOrderDataStart()); // Dispatch start action
+    const response = await axios.get(`${constants.Order_Api}?page=${page}&limit=${limit}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    store.dispatch(fetchOrderDataSuccess(response.data)); // Dispatch success action
+    return response.data; // Return the data from the response
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
+    // Type assertion to handle the error
+    const errorMessage =
+      (error as Error).message || "An unknown error occurred";
+
+    store.dispatch(fetchOrderDataFailure(errorMessage)); // Dispatch failure action
+    throw error; // Re-throw the error for further handling
+  }
+};
+
+export const getAllStudents = async (token: string, page: number, limit: number) => {
+  try {
+    store.dispatch(fetchStudentDataStart()); // Dispatch start action
+    const response = await axios.get(`${constants.Student_Api}?page=${page}&limit=${limit}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    store.dispatch(fetchStudentDataSuccess(response.data)); // Dispatch success action
+    return response.data; // Return the data from the response
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
+    // Type assertion to handle the error
+    const errorMessage =
+      (error as Error).message || "An unknown error occurred";
+
+    store.dispatch(fetchStudentDataFailure(errorMessage)); // Dispatch failure action
+    throw error; // Re-throw the error for further handling
+  }
+};
+export const getAllTransactions = async (token: string, page: number, limit: number) => {
+  try {
+    store.dispatch(fetchTransactionDataStart()); // Dispatch start action
+    const response = await axios.get(`${constants.Transaction_Api}?page=${page}&limit=${limit}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    store.dispatch(fetchTransactionDataSuccess(response.data)); // Dispatch success action
+    return response.data; // Return the data from the response
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
+    // Type assertion to handle the error
+    const errorMessage =
+      (error as Error).message || "An unknown error occurred";
+
+    store.dispatch(fetchTransactionDataFailure(errorMessage)); // Dispatch failure action
     throw error; // Re-throw the error for further handling
   }
 };

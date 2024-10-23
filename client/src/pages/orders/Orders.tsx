@@ -8,7 +8,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { RemoveRedEyeOutlined } from "@mui/icons-material";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SelectDropdown from "../../template/select-dropdown";
 import OrderModal from "../../components/order_modal";
 import CustomTable from "../../template/custom-table";
@@ -19,63 +19,36 @@ import SearchInput from "../../template/search-input";
 import { TableColumn } from "../../template/custom-table/interface";
 import { Order } from "./interface";
 import theme from "../../theme/theme";
+import { getAllOrders } from "../../services/api/userApi";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 const Orders = () => {
+  const [page, setPage] = useState<number>(1); // Start with page 1
+  const [limit, setLimit] = useState<number>(5);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const [selectedOrder, setSelectedOrder] = useState("All Orders");
-  const [page, setPage] = useState<number>(1);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [products, setProducts] = useState<{ name: string }[]>([]);
+  const [products, setProducts] = useState<string[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<Order | undefined>();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const userData: any = useSelector((state: RootState) => state);
+  const allOrders = userData.order.data.orderList;
 
-  const rows = [
-    {
-      orderId: "ORD1234",
-      userName: "John Doe",
-      products: [{ name: "Laptop" }, { name: "Mouse" }],
-      totalAmount: "₹1,24,500",
-      dueAmount: "₹41,500",
-      dueDate: "2024-11-01",
-      action: "",
-    },
-    {
-      orderId: "ORD5678",
-      userName: "Sarah Haw",
-      products: [{ name: "Smartphone" }],
-      totalAmount: "₹83,000",
-      dueAmount: "₹16,600",
-      dueDate: "2024-10-15",
-      action: "",
-    },
-    {
-      orderId: "ORD9101",
-      userName: "Tyson Tan",
-      products: [{ name: "Tablet" }, { name: "Stylus Pen" }],
-      totalAmount: "₹66,400",
-      dueAmount: "₹24,900",
-      dueDate: "2024-10-25",
-      action: "",
-    },
-    {
-      orderId: "ORD1121",
-      userName: "Robert Shell",
-      products: [{ name: "Smartwatch" }],
-      totalAmount: "₹33,200",
-      dueAmount: "₹8,300",
-      dueDate: "2024-10-30",
-      action: "",
-    },
-  ];
+  useEffect(() => {
+    getAllOrders(userData.auth.userData.token, page, limit);
+    setTotalPages(userData.order.data.totalPages)
+  }, [userData.auth.userData.token, page, limit, totalPages]);
 
   const tableHeaders: TableColumn<Order>[] = [
-    { label: "Order ID", key: "orderId" },
+    { label: "Order ID", key: "id" },
     { label: "User Name", key: "userName" },
     {
       label: "Product Name",
       key: "products",
       render: (
-        _value: string | { name: string }[],
+        _value: string | string[],
         row: Order,
         _index: number
       ) => (
@@ -93,14 +66,14 @@ const Orders = () => {
         </Button>
       ),
     },
-    { label: "Total Amount", key: "totalAmount" },
+    { label: "Total Amount", key: "amount" },
     { label: "Due Amount", key: "dueAmount" },
     { label: "Due Date", key: "dueDate" },
     {
       label: "Action",
       key: "action",
       render: (
-        _value: string | { name: string }[],
+        _value: string | string[],
         row: Order,
         _index: number
       ) => (
@@ -133,12 +106,12 @@ const Orders = () => {
 
   const handleViewProducts = (
     event: React.MouseEvent<HTMLElement>,
-    productsList: { name: string }[]
+    productsList: string[]
   ) => {
-    console.log("productsList", productsList);
     setAnchorEl(event.currentTarget);
-    setProducts(productsList);
+    setProducts(productsList); // No changes needed here, just confirm the type
   };
+
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
@@ -215,12 +188,12 @@ const Orders = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder={"Search Order"} onChange={() => {}} />
+            <SearchInput placeholder={"Search Order"} onChange={() => { }} />
           </Box>
 
-          <CustomTable headers={tableHeaders} rows={rows} />
+          <CustomTable headers={tableHeaders} rows={allOrders} />
 
-          <CustomPagination count={3} page={page} onChange={handlePageChange} />
+          <CustomPagination count={totalPages} page={page} onChange={handlePageChange} />
         </Box>
       </Box>
 
@@ -237,12 +210,17 @@ const Orders = () => {
           horizontal: "center",
         }}
       >
-        {products.map((product, index) => (
-          <MenuItem key={index} onClick={handleCloseMenu}>
-            {product.name}
-          </MenuItem>
-        ))}
+        {products.length > 0 ? (
+          products.map((product, index) => (
+            <MenuItem key={index} onClick={handleCloseMenu}>
+              {product} {/* Directly render the string value */}
+            </MenuItem>
+          ))
+        ) : (
+          <MenuItem disabled>No products available</MenuItem>
+        )}
       </Menu>
+
 
       <OrderModal
         OpenOrderModal={open}

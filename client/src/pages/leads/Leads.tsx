@@ -11,7 +11,7 @@ import LeadsModal from "../../components/leads-modal";
 import { RemoveRedEyeOutlined } from "@mui/icons-material";
 import editIcon from "../../assets/image/editIcon.png";
 import SelectDropdown from "../../template/select-dropdown";
-import { Counsellor, LeadData, ManageStatus } from "./interface";
+import { Counsellor, LeadData, LeadDataSubmit, ManageStatus } from "./interface";
 import FileImportButton from "../../template/file-import-button";
 import SearchInput from "../../template/search-input";
 import ComponentHeading from "../../template/component-heading";
@@ -21,6 +21,7 @@ import EnrollmentModal from "../../components/enrollment-modal";
 import { TableColumn } from "../../template/custom-table/interface";
 import theme from "../../theme/theme";
 import {
+  createLead,
   getallCounsellor,
   getAllLeads,
   getAllLeadsUpdate,
@@ -35,8 +36,10 @@ import { RootState } from "../../redux/store";
 const Lead = () => {
   const [open, setOpen] = useState(false);
   const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
-  const [leadData, setLeadData] = useState<LeadData[]>([]);
-  const [page, setPage] = useState<number>(1);
+  const [leadData, setLeadData] = useState<LeadData | null>(null);
+  const [page, setPage] = useState<number>(1); // Start with page 1
+  const [limit, setLimit] = useState<number>(5);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const [selectedLead, setSelectedLead] = useState("All Leads");
   const [counsellorList, setCounsellorList] = useState<Counsellor[]>([]);
   const [manageStatusList, setManageStatusList] = useState<ManageStatus[]>([]);
@@ -44,7 +47,8 @@ const Lead = () => {
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const userData: any = useSelector((state: RootState) => state);
-  const AllLedaData = userData.leads.data;
+  const AllLedaData = userData.leads.data.leads;
+
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
@@ -52,6 +56,7 @@ const Lead = () => {
     setPage(value);
   };
   const allStatus = userData.status.data.statusList;
+  // const allStatus = userData.status.data.statusList;
 
   const handleClose = () => {
     setOpen(false);
@@ -88,10 +93,11 @@ const Lead = () => {
   useEffect(() => {
     getAllStatus(userData.auth.userData.token);
     getAllProducts(userData.auth.userData.token);
-    getAllLeads(userData.auth.userData.token);
+    getAllLeads(userData.auth.userData.token, page, limit);
     fetchCounsellorData(userData.auth.userData.token);
     getallManage(userData.auth.userData.token);
-  }, [userData.auth.userData.token]);
+    setTotalPages(userData.leads.data.totalPages)
+  }, [userData.auth.userData.token, page, limit]);
 
   const handleLeadChange = (event: SelectChangeEvent<string>) => {
     setSelectedLead(event.target.value);
@@ -116,13 +122,19 @@ const Lead = () => {
     if (selectedValue === "Enrolled") {
       setIsEnrollmentModalOpen(true);
     } else {
+      console.log("first")
       getAllLeadsUpdate(userData.auth.userData.token, row.id, data);
     }
   };
 
-  const leadDataSubmit = async (leadData: LeadData) => {
+  const leadDataSubmit = async (leadData: LeadDataSubmit) => {
     try {
-      console.log("leadData", leadData);
+      console.log("Lead Data -->", leadData);
+      const data = await createLead(userData.auth.userData.token, leadData);
+      console.log(data)
+      if (data) {
+        // getAllLeads(userData.auth.userData.token);
+      }
     } catch (error) {
       console.error("Error occurred during lead creation:", error);
     }
@@ -155,8 +167,7 @@ const Lead = () => {
       console.error("Error updating counsellor:", error);
     }
   };
-
-  const headers: TableColumn<LeadData>[] = [
+const headers: TableColumn<LeadData>[] = [
     { label: "Full Name", key: "fullName" },
     { label: "Contact Number", key: "contactNumber" },
     { label: "Email Id", key: "email" },
@@ -320,7 +331,7 @@ const Lead = () => {
                 fileInputRef={fileInputRef}
               />
             </Grid>
-          </Grid>
+          </Grid >
 
           <Box
             sx={{
@@ -334,7 +345,7 @@ const Lead = () => {
 
           <CustomTable headers={headers} rows={AllLedaData} />
 
-          <CustomPagination count={3} page={page} onChange={handlePageChange} />
+          <CustomPagination count={totalPages} page={page} onChange={handlePageChange} />
         </Box>
 
         {isLeadsModalOpen && (
@@ -347,14 +358,16 @@ const Lead = () => {
           />
         )}
 
-        {open && (
-          <LeadPreviewModal
-            open={open}
-            handleClose={handleClose}
-            data={leadData}
-            isEdit={isEdit}
-          />
-        )}
+        {
+          open && (
+            <LeadPreviewModal
+              open={open}
+              handleClose={handleClose}
+              data={leadData}
+              isEdit={isEdit}
+            />
+          )
+        }
 
         <EnrollmentModal
           openEnrollment={isEnrollmentModalOpen}
@@ -362,7 +375,7 @@ const Lead = () => {
             setIsEnrollmentModalOpen(false);
           }}
         />
-      </Box>
+      </Box >
     </>
   );
 };

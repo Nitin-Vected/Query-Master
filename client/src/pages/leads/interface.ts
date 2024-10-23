@@ -1,13 +1,26 @@
 export interface LeadData {
+  id: string;
   firstName: string;
   contactNumber: string;
   email: string;
   channel: string;
   status: number;
+  product: number;
   assignedTo: string;
   fullName: string;
-  index: number;
-  id: number;
+  index: number
+  action: string;
+}
+export interface LeadDataSubmit {
+  fullName: string;
+  contactNumber: string;
+  leadEmail: string;
+  channelId: string;
+  productId: string;
+  statusId: string;
+  description: string;
+  discount: number;
+  productAmount: number;
 }
 
 export interface Counsellor {
@@ -17,16 +30,18 @@ export interface Counsellor {
   email: string;
   contactNumber: string;
   profileImg: string;
-  index: number;
-  status: string;
-  Counsellor: string;
+  index: number,
+  status: string
+  Counsellor: string
+
 }
 export interface ManageStatus {
   id: string;
   name: string;
-  status: string;
-  index: string;
-  Counsellor: string;
+  status: string
+  index: string
+  Counsellor: string
+
 }
 
 export interface AllLead {

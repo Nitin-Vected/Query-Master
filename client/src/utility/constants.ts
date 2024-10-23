@@ -8,11 +8,13 @@ const constants = {
   BaseURL: BaseURL,
   Lead_Api: `${BaseURL}/lead`,
   Counsellor_Api: `${BaseURL}/counsellor`,
+  GET_All_Status: `${BaseURL}/status`,
   Status_Api: `${BaseURL}/status`,
   Product_Api: `${BaseURL}/product`,
   Channel_Api: `${BaseURL}/channel`,
-  EnrollLead_Api: `${BaseURL}/enrollLead`,
-
+  Order_Api: `${BaseURL}/order`,
+  Student_Api: `${BaseURL}/student`,
+  Transaction_Api: `${BaseURL}/transaction`,
 };
 
 export default constants;

@@ -31,8 +31,7 @@ export const addNewLeadController = async (
     const result = [];
     for (const leadData of leads) {
       const {
-        firstName,
-        lastName,
+        fullName,
         leadEmail,
         contactNumber,
         productAmount,
@@ -42,7 +41,7 @@ export const addNewLeadController = async (
         productId,
         description,
       } = leadData;
-
+      const [firstName, lastName] = fullName.split(" ")
       let existingLead = await leadModel.findOne({ email: leadEmail });
 
       if (existingLead) {
@@ -92,10 +91,10 @@ export const getAllLeadsController = async (
 ) => {
   const page = parseInt(request.query.page as string) || 1;
   const limit = parseInt(request.query.limit as string) || 0;
-  const skip = (page - 1) * limit;
+  const skip = (page - 1) * limit
 
   try {
-    const leads = await leadModel.aggregate([
+    const leadAggregation: any[] = [
       {
         $lookup: {
           from: "statusMaster",
@@ -181,12 +180,11 @@ export const getAllLeadsController = async (
       },
       { $sort: { updatedAt: -1, createdAt: -1 } },
       { $skip: skip },
-    ]);
-
+    ];
     if (limit > 0) {
-      leads.push({ $limit: limit });
+      leadAggregation.push({ $limit: limit });
     }
-
+    const leads = await leadModel.aggregate(leadAggregation);
     const totalLeads = await leadModel.countDocuments();
 
     const totalPages = limit ? Math.ceil(totalLeads / limit) : 1;
@@ -343,8 +341,7 @@ export const updateLeadController = async (
     }
 
     const {
-      firstName,
-      lastName,
+      fullName,
       contactNumber,
       productAmount,
       discount,
@@ -378,14 +375,18 @@ export const updateLeadController = async (
       } as Audit);
     };
 
-    if (firstName && firstName !== existingLead.firstName) {
-      addAuditLog("firstName", existingLead.firstName, firstName);
-      existingLead.firstName = firstName;
-    }
+    if (fullName) {
+      const [firstName, lastName] = fullName.split(" ");
 
-    if (lastName && lastName !== existingLead.lastName) {
-      addAuditLog("lastName", existingLead.lastName, lastName);
-      existingLead.lastName = lastName;
+      if (firstName && firstName !== existingLead.firstName) {
+        addAuditLog("firstName", existingLead.firstName, firstName);
+        existingLead.firstName = firstName;
+      }
+
+      if (lastName && lastName !== existingLead.lastName) {
+        addAuditLog("lastName", existingLead.lastName, lastName);
+        existingLead.lastName = lastName;
+      }
     }
 
     if (contactNumber && contactNumber !== existingLead.contactNumber) {
