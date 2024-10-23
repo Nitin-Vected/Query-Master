@@ -30,12 +30,13 @@ import {
   getAllLeads,
   getAllLeadsUpdate,
   getallManageStatusApi,
-  getAllProducts,
   getAllStatus,
 } from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import EnrollmentModal from "../../components/enrollment-modal";
+import { getAllProducts } from "../../redux/sagas/productService";
+import Spinner from "../../components/Spinner";
 
 const Lead = () => {
   const [open, setOpen] = useState(false);
@@ -55,6 +56,7 @@ const Lead = () => {
   let userToken = userData.auth.userData.token;
   const [enrollmentModalData, setEnrollmentModalData] =
     useState<LeadData | null>(null);
+  const SpinnerLoading = useSelector((state: RootState) => state.leads.loading);
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
@@ -285,90 +287,94 @@ const Lead = () => {
       <Box sx={{ flexGrow: 1, p: 3, mt: 10 }}>
         <ComponentHeading heading="Leads" />
 
-        <Box
-          sx={{
-            // margin: "auto",
-            padding: 2,
-            boxShadow: `0px 0px 5px 0px ${theme.palette.primary.dark}`,
-          }}
-        >
-          <Grid
-            container
-            spacing={2}
-            sx={{
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-              pb: 2,
-              borderBottom: `1px solid ${theme.palette.primary.dark}`,
-            }}
-          >
-            <Grid item xs={12} sm={6} md={6} display="flex" gap={2}>
-              <SelectDropdown
-                name="leadFilter"
-                value={selectedLead}
-                onChange={handleLeadChange}
-                options={[
-                  { label: "All Leads", value: "All Leads" },
-                  { label: "Enrolled", value: "Enrolled" },
-                ]}
-                sx={{
-                  borderRadius: "8px",
-                  maxWidth: "180px",
-                }}
-                fullWidth={false}
-              />
-
-              <Button
-                sx={{
-                  height: "40px",
-                  color: theme.palette.secondary.main,
-                  textTransform: "none",
-                  borderRadius: "8px",
-                  border: `1px solid ${theme.palette.primary.dark}`,
-                  maxWidth: "180px",
-                }}
-                onClick={() => setIsLeadsModalOpen(true)}
-              >
-                + Create Lead
-              </Button>
-            </Grid>
-
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={6}
-              display="flex"
-              sx={{
-                justifyContent: { xs: "flex-start", sm: "flex-end" },
-              }}
-            >
-              <FileImportButton
-                onFileChange={handleFileChange}
-                fileInputRef={fileInputRef}
-              />
-            </Grid>
-          </Grid>
-
+        {SpinnerLoading ? (
+          <Spinner />
+        ) : (
           <Box
             sx={{
-              mb: 3,
-              display: "flex",
-              justifyContent: "flex-start",
+              // margin: "auto",
+              padding: 2,
+              boxShadow: `0px 0px 5px 0px ${theme.palette.primary.dark}`,
             }}
           >
-            <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
+            <Grid
+              container
+              spacing={2}
+              sx={{
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+                pb: 2,
+                borderBottom: `1px solid ${theme.palette.primary.dark}`,
+              }}
+            >
+              <Grid item xs={12} sm={6} md={6} display="flex" gap={2}>
+                <SelectDropdown
+                  name="leadFilter"
+                  value={selectedLead}
+                  onChange={handleLeadChange}
+                  options={[
+                    { label: "All Leads", value: "All Leads" },
+                    { label: "Enrolled", value: "Enrolled" },
+                  ]}
+                  sx={{
+                    borderRadius: "8px",
+                    maxWidth: "180px",
+                  }}
+                  fullWidth={false}
+                />
+
+                <Button
+                  sx={{
+                    height: "40px",
+                    color: theme.palette.secondary.main,
+                    textTransform: "none",
+                    borderRadius: "8px",
+                    border: `1px solid ${theme.palette.primary.dark}`,
+                    maxWidth: "180px",
+                  }}
+                  onClick={() => setIsLeadsModalOpen(true)}
+                >
+                  + Create Lead
+                </Button>
+              </Grid>
+
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={6}
+                display="flex"
+                sx={{
+                  justifyContent: { xs: "flex-start", sm: "flex-end" },
+                }}
+              >
+                <FileImportButton
+                  onFileChange={handleFileChange}
+                  fileInputRef={fileInputRef}
+                />
+              </Grid>
+            </Grid>
+
+            <Box
+              sx={{
+                mb: 3,
+                display: "flex",
+                justifyContent: "flex-start",
+              }}
+            >
+              <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
+            </Box>
+
+            <CustomTable headers={headers} rows={AllLedaData} />
+
+            <CustomPagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+            />
           </Box>
-
-          <CustomTable headers={headers} rows={AllLedaData} />
-
-          <CustomPagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-          />
-        </Box>
+        )}
 
         {isLeadsModalOpen && (
           <LeadsModal
