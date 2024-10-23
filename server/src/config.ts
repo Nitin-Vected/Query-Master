@@ -51,8 +51,8 @@ export const Messages = {
   THIS_NOT_FOUND: "Not Found or Inactive!",
   USER_NOT_FOUND: "User Not Found or Inactive!",
   ROLE_NOT_RECOGNIZED: "Role Not Recognized!",
-  MISSING_REQUIRED_FIELD: "Missing Required Fields for Creation of"
-}
+  MISSING_REQUIRED_FIELD: "Missing Required Fields for Creation of",
+};
 
 interface UserPayload {
   userId: string;
@@ -68,17 +68,45 @@ export interface CustomRequest extends Request {
   payload?: UserPayload;
 }
 
+// export const generateUniqueId = async (
+//   model: any,
+//   prefix: string
+// ): Promise<string> => {
+//   try {
+//     const lastEntry = await model.findOne().sort({ id: -1 });
+
+//     let newUniqueId: string;
+
+//     if (lastEntry && lastEntry.id) {
+//       const lastNumericPart = parseInt(lastEntry.id.replace(prefix, ""), 10);
+
+//       const nextId = lastNumericPart + 1;
+
+//       newUniqueId = `${prefix}${String(nextId).padStart(4, "0")}`;
+//     } else {
+//       newUniqueId = `${prefix}0001`;
+//     }
+
+//     return newUniqueId;
+//   } catch (error) {
+//     console.error(`Error generating unique ID for ${prefix}:`, error);
+//     throw error;
+//   }
+// };
+
 export const generateUniqueId = async (
   model: any,
   prefix: string
 ): Promise<string> => {
   try {
     const lastEntry = await model.findOne().sort({ _id: -1 });
-
+    
     let newUniqueId: string;
 
-    if (lastEntry && lastEntry.id) {
-      const lastNumericPart = parseInt(lastEntry.id.replace(prefix, ""), 10);
+    const lastIdentifier = lastEntry?.enrollmentNumber || lastEntry?.id;
+
+    if (lastEntry && lastIdentifier) {
+      const lastNumericPart = parseInt(lastIdentifier.replace(prefix, ""), 10);
 
       const nextId = lastNumericPart + 1;
 

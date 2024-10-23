@@ -37,6 +37,7 @@ import { ChanelList, Counsellor } from "../../pages/leads/interface";
 import {
   getAllChannels,
   getallCounsellor,
+  getAllLeads,
   updateLead,
 } from "../../services/api/userApi";
 import moment from "moment";
@@ -56,7 +57,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   const [channelList, setChannelList] = useState<ChanelList[]>([]);
   const allStatus = userData.status.data.statusList;
   const [updatedValues, setUpdatedValues] = useState<Partial<FormValues>>({});
-
+  console.log("data ---", data);
   useEffect(() => {
     if (isEdit) {
       setIsEditable(true);
@@ -90,7 +91,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
       // )
       .required("Email is required"),
     // comment: Yup.string().required("comment  is required"),
-    description: Yup.string().required("comment  is required"),
+    description: Yup.string().required("description  is required"),
     contactNumber: Yup.string()
       .matches(
         /^(?:\+91|91)?[6789]\d{9}$/,
@@ -133,7 +134,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   const initialChannelId =
     channelList.find((product: ChanelList) => product.name === data.channel)
       ?.id || "";
-
+  console.log("data.description", data.description);
   const formik = useFormik<FormValues>({
     initialValues: {
       fullName: data.fullName,
@@ -150,13 +151,10 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
     validationSchema: validationSchema,
 
     onSubmit: (values) => {
-      console.log("updatedValues", updatedValues);
       if (Object.keys(updatedValues).length > 0) {
         updateLead(userData.auth.userData.token, updatedValues, data.id);
-      } else {
-        console.log("No changes detected. API call not made.");
+        // getAllLeads(userData.auth.userData.token, page, limit);
       }
-
       handleClose();
     },
   });
@@ -343,7 +341,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                                 (counsellor: any) =>
                                   `${counsellor.firstName} ${counsellor.lastName}` ===
                                   data.assignedTo
-                              )?.id || data.assignedTo)
+                              )?.id || data.assignedTo) // Default to an empty string if no match found
                         }
                         onChange={(event) => {
                           const selectedCounsellorId = event.target.value;
@@ -373,7 +371,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                         options={[
                           ...counsellorList.map((counsellor: any) => ({
                             label: `${counsellor.firstName} ${counsellor.lastName}`,
-                            value: counsellor.id,
+                            value: counsellor.id, // Ensure you're using id here
                           })),
                           { label: "Unassigned", value: "Unassigned" },
                         ]}

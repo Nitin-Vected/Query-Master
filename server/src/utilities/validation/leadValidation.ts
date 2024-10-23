@@ -169,17 +169,11 @@ export const validateEnrollLead = [
 ];
 
 export const validateAddNewLead = [
-  body("firstName")
+  body("fullName")
     .notEmpty()
-    .withMessage("First name is required")
+    .withMessage("Full Name is required")
     .isString()
-    .withMessage("First name must be a string"),
-
-  body("lastName")
-    .notEmpty()
-    .withMessage("Last name is required")
-    .isString()
-    .withMessage("Last name must be a string"),
+    .withMessage("Full Name must be a string"),
 
   body("leadEmail")
     .notEmpty()

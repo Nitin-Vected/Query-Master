@@ -1,6 +1,6 @@
 export interface Student {
   enrollmentNumber: string;
-  name: string;
+  fullName: string;
   email: string;
   contactNumber: string;
   products: string[];

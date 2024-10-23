@@ -5,7 +5,7 @@ import {
   Typography,
   SelectChangeEvent,
 } from "@mui/material";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SelectDropdown from "../../template/select-dropdown";
 import CustomPagination from "../../template/custom-pagination";
 import ComponentHeading from "../../template/component-heading";
@@ -16,63 +16,79 @@ import ProofImageModal from "../../components/proof-image-modal";
 import { TableColumn } from "../../template/custom-table/interface";
 import theme from "../../theme/theme";
 import { Transaction } from "./interface";
+import { getAllTransactions } from "../../services/api/userApi";
+import { RootState } from "../../redux/store";
+import { useSelector } from "react-redux";
 
 const Transactions = () => {
   const [selectedOrder, setSelectedOrder] = useState("All Transactions");
-  const [page, setPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(1); // Start with page 1
+  const [limit, setLimit] = useState<number>(5);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const userData: any = useSelector((state: RootState) => state);
   const [openModal, setOpenModal] = useState(false);
   const [selectedProof, setSelectedProof] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const rows = [
-    {
-      orderId: "ORD1234",
-      transactionId: "TX1234",
-      transactionAmount: "₹1,24,500",
-      transactionDate: "2024-10-01",
-      transactionType: "Online",
-      transactionProof: "proof1.jpg",
-    },
-    {
-      orderId: "ORD5678",
-      transactionId: "TX5678",
-      transactionAmount: "₹83,000",
-      transactionDate: "2024-09-15",
-      transactionType: "Cash",
-      transactionProof: "",
-    },
-    {
-      orderId: "ORD9101",
-      transactionId: "TX9101",
-      transactionAmount: "₹66,400",
-      transactionDate: "2024-09-25",
-      transactionType: "Online",
-      transactionProof: "proof3.jpg",
-    },
-    {
-      orderId: "ORD1121",
-      transactionId: "TX1121",
-      transactionAmount: "₹33,200",
-      transactionDate: "2024-09-30",
-      transactionType: "Cash",
-      transactionProof: "",
-    },
-  ];
-
+  const allTransactions = userData?.transaction?.data?.transactionList;
+  const handlePageChange = (
+    _event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setPage(value);
+  };
+  // const rows = [
+  //   {
+  //     orderId: "ORD1234",
+  //     transactionId: "TX1234",
+  //     transactionAmount: "₹1,24,500",
+  //     transactionDate: "2024-10-01",
+  //     transactionType: "Online",
+  //     transactionProof: "proof1.jpg",
+  //   },
+  //   {
+  //     orderId: "ORD5678",
+  //     transactionId: "TX5678",
+  //     transactionAmount: "₹83,000",
+  //     transactionDate: "2024-09-15",
+  //     transactionType: "Cash",
+  //     transactionProof: "",
+  //   },
+  //   {
+  //     orderId: "ORD9101",
+  //     transactionId: "TX9101",
+  //     transactionAmount: "₹66,400",
+  //     transactionDate: "2024-09-25",
+  //     transactionType: "Online",
+  //     transactionProof: "proof3.jpg",
+  //   },
+  //   {
+  //     orderId: "ORD1121",
+  //     transactionId: "TX1121",
+  //     transactionAmount: "₹33,200",
+  //     transactionDate: "2024-09-30",
+  //     transactionType: "Cash",
+  //     transactionProof: "",
+  //   },
+  // ];
+  useEffect(() => {
+    console.log(page);
+    getAllTransactions(userData.auth.userData.token, page, limit);
+    setTotalPages(userData.transaction.data.totalPages);
+  }, [userData.auth.userData.token, page, limit]);
   const headers: TableColumn<Transaction>[] = [
     { label: "Order ID", key: "orderId" },
-    { label: "Transaction ID", key: "transactionId" },
-    { label: "Amount", key: "transactionAmount" },
-    { label: "Date", key: "transactionDate" },
-    { label: "Type", key: "transactionType" },
+    { label: "Transaction ID", key: "id" },
+    { label: "Amount", key: "amount" },
+    { label: "Date", key: "date" },
+    { label: "Type", key: "mode" },
     {
       label: "Proof",
-      key: "transactionProof",
+      key: "proof",
       render: (value: string, row: Transaction, _index: number) => {
         return value ? (
           <Button
             variant="outlined"
-            onClick={() => handleViewProducts(row.transactionProof)}
+            onClick={() => handleViewProducts(row.proof)}
             sx={{
               textTransform: "none",
               color: theme.palette.secondary.main,
@@ -105,13 +121,6 @@ const Transactions = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
     console.log("File selected:", file);
-  };
-
-  const handlePageChange = (
-    _event: React.ChangeEvent<unknown>,
-    value: number
-  ) => {
-    setPage(value);
   };
 
   const handleViewProducts = (proofImage: string) => {
@@ -194,9 +203,13 @@ const Transactions = () => {
             <SearchInput placeholder="Search Order" onChange={() => {}} />
           </Box>
 
-          <CustomTable headers={headers} rows={rows} />
+          <CustomTable headers={headers} rows={allTransactions} />
 
-          <CustomPagination count={3} page={page} onChange={handlePageChange} />
+          <CustomPagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+          />
         </Box>
       </Box>
 
