@@ -1,4 +1,3 @@
-import { enrollStudent } from "./../../../../server/src/controller/studentController";
 import axios from "axios";
 import constants, { API_URL } from "../../utility/constants";
 import {
@@ -17,9 +16,21 @@ import {
   fetchAllStatusStart,
   fetchAllStatusSuccess,
 } from "../../redux/slices/statusSlice";
-import { fetchStudentDataFailure, fetchStudentDataStart, fetchStudentDataSuccess } from "../../redux/slices/studentSlice";
-import { fetchTransactionDataFailure, fetchTransactionDataStart, fetchTransactionDataSuccess } from "../../redux/slices/transactionSlice";
-import { fetchOrderDataFailure, fetchOrderDataStart, fetchOrderDataSuccess } from "../../redux/slices/orderSlice";
+import {
+  fetchStudentDataFailure,
+  fetchStudentDataStart,
+  fetchStudentDataSuccess,
+} from "../../redux/slices/studentSlice";
+import {
+  fetchTransactionDataFailure,
+  fetchTransactionDataStart,
+  fetchTransactionDataSuccess,
+} from "../../redux/slices/transactionSlice";
+import {
+  fetchOrderDataFailure,
+  fetchOrderDataStart,
+  fetchOrderDataSuccess,
+} from "../../redux/slices/orderSlice";
 export const loginWithGoogleApi = async (accessToken: string) => {
   return await axios.post(`${API_URL}/login`, {
     tokenResponse: { access_token: accessToken },
@@ -28,13 +39,11 @@ export const loginWithGoogleApi = async (accessToken: string) => {
 
 export const createLead = async (token: string, data: object) => {
   try {
-    const response = await axios.post(`${constants.Lead_Api}`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    const response = await axios.post(`${constants.Lead_Api}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -52,14 +61,21 @@ export const createLead = async (token: string, data: object) => {
   }
 };
 
-export const getAllLeads = async (token: string, page: number, limit: number) => {
+export const getAllLeads = async (
+  token: string,
+  page: number,
+  limit: number
+) => {
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
-    const response = await axios.get(`${constants.Lead_Api}?page=${page}&limit=${limit}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      `${constants.Lead_Api}?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     store.dispatch(fetchLeadDataSuccess(response.data)); // Dispatch success action
     return response.data; // Return the data from the response
   } catch (error) {
@@ -88,7 +104,7 @@ export const getAllLeadsUpdate = async (
   leadId: string,
   data: object
 ) => {
-  console.log("t,oken",leadId,data)
+  console.log("t,oken", leadId, data);
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.put(
@@ -110,6 +126,7 @@ export const getAllLeadsUpdate = async (
 };
 
 export const enrollLead = async (token: string, data: object) => {
+  console.log("EnrollLead data", data);
   try {
     store.dispatch(fetchLeadDataStart()); // Dispatch start action
     const response = await axios.post(
@@ -124,6 +141,17 @@ export const enrollLead = async (token: string, data: object) => {
     console.log("enrollLead - api call", response);
     return response.data; // Return the data from the response
   } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
     const errorMessage =
       (error as Error).message || "An unknown error occurred";
     store.dispatch(fetchLeadDataFailure(errorMessage)); // Dispatch failure action
@@ -173,7 +201,7 @@ export const updateLead = async (
         },
       }
     );
-    getAllLeads(token);
+    // getAllLeads(token);
     return response.data; // Return the data from the response
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -306,14 +334,21 @@ export const getAllStatus = async (token: string) => {
     throw error; // Re-throw the error for further handling
   }
 };
-export const getAllProducts = async (token: string, page: number, limit: number) => {
+export const getAllProducts = async (
+  token: string,
+  page: number,
+  limit: number
+) => {
   try {
     store.dispatch(fetchAllProductsStart()); // Dispatch start action
-    const response = await axios.get(`${constants.Product_Api}?page=${page}&limit=${limit}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      `${constants.Product_Api}?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     store.dispatch(fetchAllProductsSuccess(response.data)); // Dispatch success action
     return response.data; // Return the data from the response
   } catch (error) {
@@ -326,14 +361,21 @@ export const getAllProducts = async (token: string, page: number, limit: number)
     throw error; // Re-throw the error for further handling
   }
 };
-export const getAllOrders = async (token: string, page: number, limit: number) => {
+export const getAllOrders = async (
+  token: string,
+  page: number,
+  limit: number
+) => {
   try {
     store.dispatch(fetchOrderDataStart()); // Dispatch start action
-    const response = await axios.get(`${constants.Order_Api}?page=${page}&limit=${limit}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      `${constants.Order_Api}?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     store.dispatch(fetchOrderDataSuccess(response.data)); // Dispatch success action
     return response.data; // Return the data from the response
   } catch (error) {
@@ -357,14 +399,21 @@ export const getAllOrders = async (token: string, page: number, limit: number) =
   }
 };
 
-export const getAllStudents = async (token: string, page: number, limit: number) => {
+export const getAllStudents = async (
+  token: string,
+  page: number,
+  limit: number
+) => {
   try {
     store.dispatch(fetchStudentDataStart()); // Dispatch start action
-    const response = await axios.get(`${constants.Student_Api}?page=${page}&limit=${limit}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      `${constants.Student_Api}?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     store.dispatch(fetchStudentDataSuccess(response.data)); // Dispatch success action
     return response.data; // Return the data from the response
   } catch (error) {
@@ -387,14 +436,21 @@ export const getAllStudents = async (token: string, page: number, limit: number)
     throw error; // Re-throw the error for further handling
   }
 };
-export const getAllTransactions = async (token: string, page: number, limit: number) => {
+export const getAllTransactions = async (
+  token: string,
+  page: number,
+  limit: number
+) => {
   try {
     store.dispatch(fetchTransactionDataStart()); // Dispatch start action
-    const response = await axios.get(`${constants.Transaction_Api}?page=${page}&limit=${limit}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      `${constants.Transaction_Api}?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     store.dispatch(fetchTransactionDataSuccess(response.data)); // Dispatch success action
     return response.data; // Return the data from the response
   } catch (error) {

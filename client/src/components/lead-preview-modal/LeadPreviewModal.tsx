@@ -37,6 +37,7 @@ import { ChanelList, Counsellor } from "../../pages/leads/interface";
 import {
   getAllChannels,
   getallCounsellor,
+  getAllLeads,
   updateLead,
 } from "../../services/api/userApi";
 import moment from "moment";
@@ -56,7 +57,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   const [channelList, setChannelList] = useState<ChanelList[]>([]);
   const allStatus = userData.status.data.statusList;
   const [updatedValues, setUpdatedValues] = useState<Partial<FormValues>>({});
-
+  console.log("data ---", data);
   useEffect(() => {
     if (isEdit) {
       setIsEditable(true);
@@ -150,9 +151,9 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
     validationSchema: validationSchema,
 
     onSubmit: (values) => {
-      console.log("updatedValues", updatedValues);
       if (Object.keys(updatedValues).length > 0) {
         updateLead(userData.auth.userData.token, updatedValues, data.id);
+        // getAllLeads(userData.auth.userData.token, page, limit);
       }
       handleClose();
     },
@@ -181,7 +182,6 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   useEffect(() => {
     fetchCounsellorData(userData.auth.userData.token);
   }, [userData.auth.userData.token]);
-  console.log("data.assignedTo", data.assignedTo);
 
   return (
     <Dialog

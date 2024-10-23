@@ -36,10 +36,9 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
   closeModal,
   data,
 }) => {
-
+  console.log("data", data);
   const userData: any = useSelector((state: RootState) => state);
   const allProducts = userData.product.data.productList;
-  console.log("EnrollmentModal data", data);
   const [selectProducts, setSelectProducts] = useState<string[]>([""]);
 
   const addRow = () => {
@@ -88,19 +87,35 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
   const formik = useFormik({
     initialValues: {
       transactionProof: "",
-      amount: "ddd",
-      products: ["PRODUCT0001", "weoee"],
-      discount: "d",
-      finalAmount: "22",
+      amount: "",
+      products: selectProducts,
+      discount: "",
+      finalAmount: "",
       transactionMode: "Online",
-      transactionAmount: "12",
-      transactionDate: "22",
-      enrollmentDate: "2",
+      transactionAmount: "",
+      transactionDate: "",
+      enrollmentDate: "",
+      dueAmount: "120",
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      console.log("values", values);
-      enrollLead(userData.auth.userData.token, values);
+      let newData = {
+        leadEmail: data.email,
+        firstName: data.fullName,
+        lastName: "Gi",
+        contactNumber: data.contactNumber,
+        products: selectProducts,
+        paymentMode: values.transactionMode,
+        finalAmount: values.finalAmount,
+        transactionAmount: values.transactionAmount,
+        transactionDate: values.transactionDate,
+        transactionProof: values.transactionProof,
+        dueAmount: values.dueAmount,
+        dueDate: values.enrollmentDate,
+      };
+
+      enrollLead(userData.auth.userData.token, newData);
+      closeModal();
     },
   });
   const enrollmentLable: CSSProperties = {
@@ -113,7 +128,6 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
     fontSize: "15px",
     fontWeight: "400",
   };
-  console.log("allProducts", allProducts);
 
   return (
     <Dialog
@@ -213,7 +227,7 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 </TableRow>
                 {selectProducts.map((selectedProductId, index) => {
                   const selectedProduct = allProducts.find(
-                    (p: string) => p.id === selectedProductId
+                    (p: any) => p.id === selectedProductId
                   );
                   return (
                     <TableRow key={index}>
@@ -224,7 +238,7 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                           onChange={(e) =>
                             handleProductChange(index, e.target.value)
                           }
-                          options={allProducts.map((product) => ({
+                          options={allProducts.map((product: any) => ({
                             label: product.name,
                             value: product.id,
                           }))}
@@ -310,25 +324,6 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 placeholder="Rs"
                 formik={formik}
               />
-              {/* <Typography variant="subtitle2" sx={{ ...enrollmentTitle }}>
-                                Discount<span style={{ color: "red" }}>*</span>
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                                name="discount"
-                                value={formik.values.discount}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                placeholder="Rs"
-                                error={formik.touched.discount && Boolean(formik.errors.discount)}
-                                helperText={formik.touched.discount && formik.errors.discount}
-                                sx={{
-                                    "& .MuiInputBase-root": {
-                                        height: 40,
-                                        borderRadius: "8px",
-                                    },
-                                }}
-                            /> */}
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
               <FormTextField
@@ -337,25 +332,6 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 placeholder="Rs"
                 formik={formik}
               />
-              {/* <Typography variant="subtitle2" sx={{ ...enrollmentTitle }}>
-                                Final Amount<span style={{ color: "red" }}>*</span>
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                                name="finalAmount"
-                                value={formik.values.finalAmount}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                placeholder="Rs"
-                                error={formik.touched.finalAmount && Boolean(formik.errors.finalAmount)}
-                                helperText={formik.touched.finalAmount && formik.errors.finalAmount}
-                                sx={{
-                                    "& .MuiInputBase-root": {
-                                        height: 40,
-                                        borderRadius: "8px",
-                                    },
-                                }}
-                            /> */}
             </Grid>
           </Grid>
           <Typography

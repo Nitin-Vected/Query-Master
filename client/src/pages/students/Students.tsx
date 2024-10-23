@@ -23,52 +23,16 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { getAllStudents } from "../../services/api/userApi";
 
-
 const Students = () => {
   const [selectedOrder, setSelectedOrder] = useState("All Students");
   const [page, setPage] = useState<number>(1); // Start with page 1
   const [limit, setLimit] = useState<number>(5);
-  const [totalPages, setTotalPages] = useState<number>(1); const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
   const [products, setProducts] = useState<string[]>([]);
-
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const allStudents = userData.student.data.data;
-
-  const students = [
-    {
-      enrollmentNumber: "STU1234",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      contactNumber: "9865784578",
-      products: ["Laptop", "Mouse"],
-      transactions: ["Paid ₹50,000", "Paid ₹30,000"],
-    },
-    {
-      enrollmentNumber: "STU5678",
-      name: "Sarah Haw",
-      email: "sarah.haw@example.com",
-      contactNumber: "9862284578",
-      products: ["Smartphone", "Headphones"],
-      transactions: ["Paid ₹60,000", "Pending ₹40,000"],
-    },
-    {
-      enrollmentNumber: "STU9101",
-      name: "Tyson Tan",
-      email: "tyson.tan@example.com",
-      contactNumber: "8862284556",
-      products: ["Tablet", "Keyboard"],
-      transactions: ["Paid ₹25,000", "Paid ₹15,000"],
-    },
-    {
-      enrollmentNumber: "STU1121",
-      name: "Robert Shell",
-      email: "robert.shell@example.com",
-      contactNumber: "7862858543",
-      products: ["Smartwatch", "Charger"],
-      transactions: ["Paid ₹10,000", "Pending ₹5,000"],
-    },
-  ];
+  const allStudents = userData?.student?.data?.data;
 
   const handleOrderChange = (event: SelectChangeEvent<string>) => {
     setSelectedOrder(event.target.value);
@@ -76,7 +40,6 @@ const Students = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file: File | null = event.target.files?.[0] || null;
-    console.log("file data", file);
   };
 
   const handlePageChange = (
@@ -89,7 +52,6 @@ const Students = () => {
     event: React.MouseEvent<HTMLElement>,
     productsList: string[]
   ) => {
-    console.log("productsList:", productsList);
     setAnchorEl(event.currentTarget);
     setProducts(productsList); // No changes needed here, just confirm the type
   };
@@ -101,7 +63,7 @@ const Students = () => {
   };
   useEffect(() => {
     getAllStudents(userData.auth.userData.token, page, limit);
-    setTotalPages(userData.student.data.totalPages)
+    setTotalPages(userData.student.data.totalPages);
   }, [userData.auth.userData.token, page, limit]);
   const tableHeaders: TableColumn<Student>[] = [
     { label: "Enrollment Number", key: "enrollmentNumber" },
@@ -111,11 +73,7 @@ const Students = () => {
     {
       label: "Product Name",
       key: "products",
-      render: (
-        _value: string | string[],
-        row: Student,
-        _index: number
-      ) => (
+      render: (_value: string | string[], row: Student, _index: number) => (
         <Button
           variant="outlined"
           onClick={(e) => handleViewProducts(e, row.products)}
@@ -220,12 +178,16 @@ const Students = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder={"Search Lead"} onChange={() => { }} />
+            <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
           </Box>
 
           <CustomTable headers={tableHeaders} rows={allStudents} />
 
-          <CustomPagination count={totalPages} page={page} onChange={handlePageChange} />
+          <CustomPagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+          />
         </Box>
       </Box>
       <Menu

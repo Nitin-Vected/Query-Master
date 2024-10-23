@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  Grid,
-  DialogActions,
-} from "@mui/material";
+import { Dialog, DialogContent, Grid, DialogActions } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import ButtonView from "../../template/button-view";
@@ -54,7 +49,7 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
 
   useEffect(() => {
     getChannels(userData.auth.userData.token);
-  }, [userData.auth.userData.token])
+  }, [userData.auth.userData.token]);
 
   const formik = useFormik({
     initialValues: {
@@ -71,8 +66,7 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
     validationSchema: validationSchema,
     onSubmit: (values) => {
       if (onSubmit) {
-        // console.log("create Lead called")
-        onSubmit(values);
+         onSubmit(values);
         onClose();
       }
     },
@@ -123,7 +117,7 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 required
               />
             </Grid>
-            <Grid item xs={12} md={6} >
+            <Grid item xs={12} md={6}>
               <FormTextField
                 label="Product Amount"
                 name="productAmount"
@@ -132,7 +126,7 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 type="number"
               />
             </Grid>
-            <Grid item xs={12} md={6} >
+            <Grid item xs={12} md={6}>
               <FormTextField
                 label="Discount"
                 name="discount"
@@ -160,8 +154,8 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
                 label="Channel"
                 name="channelId"
                 options={allChannels.map((channel: any) => ({
-                  label: channel.name,  // Product name as label
-                  value: channel.id,     // Product id as value
+                  label: channel.name, // Product name as label
+                  value: channel.id, // Product id as value
                 }))}
                 formik={formik}
                 required

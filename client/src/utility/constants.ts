@@ -15,6 +15,7 @@ const constants = {
   Order_Api: `${BaseURL}/order`,
   Student_Api: `${BaseURL}/student`,
   Transaction_Api: `${BaseURL}/transaction`,
+  EnrollLead_Api: `${BaseURL}/enrollLead`,
 };
 
 export default constants;

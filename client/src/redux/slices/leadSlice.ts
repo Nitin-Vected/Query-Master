@@ -1,4 +1,3 @@
-// src/slices/leadSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const leadSlice = createSlice({
