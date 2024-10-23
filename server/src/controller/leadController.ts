@@ -1,6 +1,7 @@
 import {
   CustomRequest,
   Messages,
+  STATUS_ENROLLED,
   StatusCodes,
   generateUniqueId,
 } from "../config";
@@ -178,7 +179,7 @@ export const getAllLeadsController = async (
           },
         },
       },
-      { $sort: { updatedAt: -1, createdAt: -1 } },
+      { $sort: { id: -1 } },
       { $skip: skip },
     ];
     if (limit > 0) {
@@ -537,6 +538,10 @@ export const enrollLeadController = async (
       session
     );
     console.log("student created successfully -----");
+    // const result = await leadModel.updateOne(
+    //   { email: leadEmail }, // Filter by document's unique identifier
+    //   { $set: { statusId: STATUS_ENROLLED } } // Use $set to update only the specified field
+    // );
 
     await session.commitTransaction();
     session.endSession();

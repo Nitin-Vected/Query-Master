@@ -95,7 +95,6 @@ const Lead = () => {
       console.error("Failed to fetch get all Manage data:", error);
     }
   };
-
   useEffect(() => {
     getAllStatus(userToken);
     getAllLeads(userToken, page, limit);
