@@ -46,15 +46,13 @@ const CustomTable = ({ headers, rows }: CustomTableProps) => {
         <TableBody>
           {rows?.leads?.map((row: Lead, rowIndex: number) => {
             return (
-              <TableRow key={rowIndex}>
+              <TableRow key={rowIndex}  >
                 {headers.map((header, colIndex) => (
                   <CustomTableCell key={colIndex}>
                     {header.render && header.key
                       ? header.render(row[header.key], row, rowIndex)
-                      : header.key && header.value // Check if both key and value exist
-                      ? `${row[header.key]} ${row[header.value]}` // Combine key and value fields
                       : header.key
-                      ? String(row[header.key]) // If only key exists
+                      ? String(row[header.key]) // Converts the value to a string for display
                       : null}
                   </CustomTableCell>
                 ))}

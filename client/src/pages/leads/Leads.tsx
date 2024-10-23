@@ -11,7 +11,7 @@ import LeadsModal from "../../components/leads-modal";
 import { RemoveRedEyeOutlined } from "@mui/icons-material";
 import editIcon from "../../assets/image/editIcon.png";
 import SelectDropdown from "../../template/select-dropdown";
-import { LeadData } from "./interface";
+import { Counsellor, LeadData, ManageStatus } from "./interface";
 import FileImportButton from "../../template/file-import-button";
 import SearchInput from "../../template/search-input";
 import ComponentHeading from "../../template/component-heading";
@@ -20,57 +20,29 @@ import CustomPagination from "../../template/custom-pagination";
 import EnrollmentModal from "../../components/enrollment-modal";
 import { TableColumn } from "../../template/custom-table/interface";
 import theme from "../../theme/theme";
-import { getAllLeads } from "../../services/api/userApi";
+import {
+  getallCounsellor,
+  getAllLeads,
+  getAllLeadsUpdate,
+  getallManageStatusApi,
+  getAllProducts,
+  getAllStatus,
+  getLeadById,
+} from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 
 const Lead = () => {
-  const [rows, setRows] = useState([
-    {
-      name: "John Doe",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Instagram",
-      counsellor: "Peter",
-      status: "Not Enrolled",
-      action: "",
-    },
-    {
-      name: "Sarah Haw",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Youtube",
-      counsellor: "Not Assigned",
-      status: "Enrolled",
-      action: "",
-    },
-    {
-      name: "Tyson Tan",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Facebook",
-      counsellor: "Not Assigned",
-      status: "Enrolled",
-      action: "",
-    },
-    {
-      name: "Robert Shell",
-      contact: "9774432345",
-      email: "johndoe@gmail.com",
-      channel: "Youtube",
-      counsellor: "Not Assigned",
-      status: "Enrolled",
-      action: "",
-    },
-  ]);
   const [open, setOpen] = useState(false);
   const [isLeadsModalOpen, setIsLeadsModalOpen] = useState(false);
-  const [leadData, setLeadData] = useState<LeadData | null>(null);
+  const [leadData, setLeadData] = useState<LeadData[]>([]);
   const [page, setPage] = useState<number>(1);
   const [selectedLead, setSelectedLead] = useState("All Leads");
+  const [counsellorList, setCounsellorList] = useState<Counsellor[]>([]);
+  const [manageStatusList, setManageStatusList] = useState<ManageStatus[]>([]);
   const [isEdit, setIsEdit] = useState(false);
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const userData: any = useSelector((state: RootState) => state);
   const AllLedaData = userData.leads.data;
   const handlePageChange = (
@@ -79,6 +51,7 @@ const Lead = () => {
   ) => {
     setPage(value);
   };
+  const allStatus = userData.status.data.statusList;
 
   const handleClose = () => {
     setOpen(false);
@@ -86,17 +59,38 @@ const Lead = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file: File | null = event.target.files?.[0] || null;
-    console.log("file data", file);
   };
 
   const handleEdit = (row: LeadData, type: boolean) => {
-    setOpen(true);
     setLeadData(row);
     setIsEdit(type);
+    setOpen(true);
+  };
+
+  const fetchCounsellorData = async (token: string) => {
+    try {
+      const data = await getallCounsellor(token); // Fetch the data
+
+      setCounsellorList(data.counsellorList || []); // Ensure to set the counsellorList
+    } catch (error) {
+      console.error("Failed to fetch counsellor data:", error);
+    }
+  };
+  const getallManage = async (token: string) => {
+    try {
+      const data = await getallManageStatusApi(token); // Fetch the data
+      setManageStatusList(data.statusList); // Ensure to set the counsellorList
+    } catch (error) {
+      console.error("Failed to fetch get all Manage data:", error);
+    }
   };
 
   useEffect(() => {
+    getAllStatus(userData.auth.userData.token);
+    getAllProducts(userData.auth.userData.token);
     getAllLeads(userData.auth.userData.token);
+    fetchCounsellorData(userData.auth.userData.token);
+    getallManage(userData.auth.userData.token);
   }, [userData.auth.userData.token]);
 
   const handleLeadChange = (event: SelectChangeEvent<string>) => {
@@ -105,23 +99,25 @@ const Lead = () => {
 
   const handleStatusChange = (
     event: SelectChangeEvent<string>,
-    rowIndex: number
+    rowIndex: number,
+    statusId: string,
+    row: object | any
   ) => {
-    if (event.target.value === "Enrolled") {
-      setIsEnrollmentModalOpen(true);
-    }
-    const newRows = [...rows];
-    newRows[rowIndex].status = event.target.value;
-    setRows(newRows);
-  };
+    // Get the selected value from the dropdown
+    const selectedValue = event.target.value;
 
-  const handleAssignedToChange = (
-    event: SelectChangeEvent<string>,
-    rowIndex: number
-  ) => {
-    const newRows = [...rows];
-    newRows[rowIndex].counsellor = event.target.value;
-    setRows(newRows);
+    const newRows = [...manageStatusList];
+    newRows[rowIndex].status = selectedValue;
+    setManageStatusList(newRows);
+    let data = {
+      statusId: statusId,
+    };
+
+    if (selectedValue === "Enrolled") {
+      setIsEnrollmentModalOpen(true);
+    } else {
+      getAllLeadsUpdate(userData.auth.userData.token, row.id, data);
+    }
   };
 
   const leadDataSubmit = async (leadData: LeadData) => {
@@ -131,49 +127,112 @@ const Lead = () => {
       console.error("Error occurred during lead creation:", error);
     }
   };
+  const options = counsellorList.map((user) => ({
+    label: `${user.firstName} ${user.lastName}`, // Concatenate first and last names
+    value: `${user.firstName} ${user.lastName}`,
+  }));
+
+  options.push({ label: "Unassigned", value: "Unassigned" });
+
+  const handleCounsellorChange = async (
+    counsellorId: string,
+    row: LeadData
+  ) => {
+    let data = {
+      assignedTo: counsellorId,
+    };
+
+    try {
+      await getAllLeadsUpdate(userData.auth.userData.token, row.id, data);
+
+      const updatedData = AllLedaData.map((lead: LeadData) =>
+        lead.id === row.id ? { ...lead, assignedTo: counsellorId } : lead
+      );
+
+      // Assuming you are updating the state holding all leads
+      setLeadData(updatedData);
+    } catch (error) {
+      console.error("Error updating counsellor:", error);
+    }
+  };
 
   const headers: TableColumn<LeadData>[] = [
-    { label: "Full Name", key: "firstName" },
+    { label: "Full Name", key: "fullName" },
     { label: "Contact Number", key: "contactNumber" },
     { label: "Email Id", key: "email" },
     {
       label: "Manage Status",
-      key: "statusId",
-      render: (value: string, _row: LeadData, index: number) =>
-        value === "Enrolled" ? (
-          value
-        ) : (
+      key: "status",
+
+      render: (value: string, row: any, index: number) => {
+        return (
           <SelectDropdown
             name={`status${index}`}
-            value={value}
-            onChange={(e) => handleStatusChange(e, index)}
-            options={[
-              { label: "Enrolled", value: "Enrolled" },
-              { label: "Not Enrolled", value: "Not Enrolled" },
-            ]}
+            disabled={value === "Enrolled"} // Disable if the status is "Enrolled"
+            value={manageStatusList[index]?.status || value} // Show the row's status or fallback to original value or "status"
+            onChange={(e) => {
+              const selectedStatus = manageStatusList.find(
+                (status) => status?.name === e.target.value
+              );
+              if (selectedStatus) {
+                if (!manageStatusList[index]) {
+                  manageStatusList[index];
+                }
+                manageStatusList[index].status = selectedStatus?.name;
+                const statusId = selectedStatus.id;
+                handleStatusChange(e, index, statusId, row); // Pass the selected ID
+              }
+            }}
+            options={manageStatusList.map((status) => ({
+              label: status.name,
+              value: status.name, // Use the status name as the dropdown option
+              id: status.id, // Add the ID for later use
+            }))}
           />
-        ),
+        );
+      },
     },
-    { label: "Channel", key: "channelId" },
+
+    { label: "Channel", key: "channel" },
     {
       label: "Counsellor Name",
       key: "assignedTo",
-      render: (value: string, _row: LeadData, index: number) => (
-        <SelectDropdown
-          name={`assignedTo${index}`}
-          value={value}
-          onChange={(e) => handleAssignedToChange(e, index)}
-          options={[
-            { label: "Peter", value: "Peter" },
-            { label: "Not Assigned", value: "Not Assigned" },
-          ]}
-        />
-      ),
+      render: (value: string, row: any, index: number) => {
+        return (
+          <SelectDropdown
+            disabled={value !== "Unassigned"} // Disable if the status is "Enrolled"
+            name={`assignedTo${index}`} // Name is based on the index
+            value={value} // Set value directly to status or fallback to "Unassigned"
+            onChange={(e) => {
+              const selectedCounsellor = counsellorList.find(
+                (counsellor) =>
+                  counsellor?.firstName + " " + counsellor?.lastName ===
+                  e.target.value
+              );
+              if (selectedCounsellor) {
+                if (!counsellorList[index]) {
+                  counsellorList[index];
+                }
+                const counsellorId = selectedCounsellor.id;
+                handleCounsellorChange(counsellorId, row); // Pass the selected ID
+              }
+            }}
+            options={[
+              ...counsellorList.map((counsellor) => ({
+                label: `${counsellor.firstName} ${counsellor.lastName}`,
+                value: `${counsellor.firstName} ${counsellor.lastName}`,
+                id: counsellor.id, // Add the ID for later use
+              })),
+              { label: "Unassigned", value: "Unassigned" },
+            ]}
+          />
+        );
+      },
     },
     {
       label: "Action",
       key: "action",
-      render: (_value: string, row: LeadData) => (
+      render: (_value: string, row: any) => (
         <>
           <IconButton onClick={() => handleEdit(row, false)}>
             <img
