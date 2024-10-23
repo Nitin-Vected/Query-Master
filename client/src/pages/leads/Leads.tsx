@@ -64,8 +64,6 @@ const Lead = () => {
   ) => {
     setPage(value);
   };
-  const allStatus = userData.status.data.statusList;
-  console.log("allStatus", allStatus);
 
   const handleClose = () => {
     setOpen(false);
@@ -174,8 +172,7 @@ const Lead = () => {
     {
       label: "Manage Status",
       key: "status",
-
-      render: (value: string, row: any, index: number) => {
+      render: (value: string, row: LeadData, index: number) => {
         return (
           <SelectDropdown
             name={`status${index}`}
@@ -200,26 +197,6 @@ const Lead = () => {
               id: status.id, // Add the ID for later use
             }))}
           />
-          // <SelectDropdown
-          //   name={`status${index}`}
-          //   disabled={value === "Enrolled"} // Disable if the status is "Enrolled"
-          //   value={allStatus[index]?.status || value || ""} // Show the row's status or fallback to original value or empty string
-          //   onChange={(e) => {
-          //     const selectedStatus = allStatus.find(
-          //       (status) => status.name === e.target.value // Find the selected status
-          //     );
-
-          //     if (selectedStatus) {
-          //       const statusId = selectedStatus.id;
-          //       handleStatusChange(e, index, statusId, row); // Pass the selected ID
-          //     }
-          //   }}
-          //   options={allStatus.map((status) => ({
-          //     label: status.name, // Display name of the status
-          //     value: status.name, // Use the status name as the dropdown option
-          //     id: status.id, // Add the ID for later use
-          //   }))}
-          // />
         );
       },
     },
@@ -228,12 +205,12 @@ const Lead = () => {
     {
       label: "Counsellor Name",
       key: "assignedTo",
-      render: (value: string, row: any, index: number) => {
+      render: (value: string, row: LeadData, index: number) => {
         return (
           <SelectDropdown
-            disabled={value !== "Unassigned"} // Disable if the status is "Enrolled"
-            name={`assignedTo${index}`} // Name is based on the index
-            value={value} // Set value directly to status or fallback to "Unassigned"
+            disabled={value !== "Unassigned"}
+            name={`assignedTo${index}`}
+            value={value}
             onChange={(e) => {
               const selectedCounsellor = counsellorList.find(
                 (counsellor) =>
@@ -292,7 +269,6 @@ const Lead = () => {
         ) : (
           <Box
             sx={{
-              // margin: "auto",
               padding: 2,
               boxShadow: `0px 0px 5px 0px ${theme.palette.primary.dark}`,
             }}

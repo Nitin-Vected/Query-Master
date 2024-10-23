@@ -41,7 +41,7 @@ export const addNewLeadController = async (
         productId,
         description,
       } = leadData;
-      const [firstName, lastName] = fullName.split(" ")
+      const [firstName, lastName] = fullName.split(" ");
       let existingLead = await leadModel.findOne({ email: leadEmail });
 
       if (existingLead) {
@@ -91,7 +91,7 @@ export const getAllLeadsController = async (
 ) => {
   const page = parseInt(request.query.page as string) || 1;
   const limit = parseInt(request.query.limit as string) || 0;
-  const skip = (page - 1) * limit
+  const skip = (page - 1) * limit;
 
   try {
     const leadAggregation: any[] = [
@@ -312,12 +312,10 @@ export const getLeadByIdController = async (
         .json({ message: "Lead " + Messages.THIS_NOT_FOUND });
     }
 
-    response
-      .status(StatusCodes.OK)
-      .json({
-        data: lead[0],
-        message: "Lead " + Messages.FETCHED_SUCCESSFULLY,
-      });
+    response.status(StatusCodes.OK).json({
+      data: lead[0],
+      message: "Lead " + Messages.FETCHED_SUCCESSFULLY,
+    });
   } catch (error) {
     console.log("Error occurred in getLeadById : ", error);
     response
@@ -432,6 +430,7 @@ export const updateLeadController = async (
     }
 
     if (description && description !== existingLead.description) {
+      console.log("description", existingLead.description || "", description);
       addAuditLog("description", existingLead.description || "", description);
       existingLead.description = description;
     }
@@ -454,6 +453,8 @@ export const updateLeadController = async (
       existingLead.assignedTo = assignedTo;
     }
 
+    console.log("auditLogs", auditLogs);
+
     if (auditLogs.length > 0) {
       existingLead.auditLogs.push(...auditLogs);
     }
@@ -471,12 +472,10 @@ export const updateLeadController = async (
     await existingLead.save();
     console.log(existingLead);
 
-    return response
-      .status(StatusCodes.OK)
-      .json({
-        message: "Lead " + Messages.UPDATED_SUCCESSFULLY,
-        lead: existingLead,
-      });
+    return response.status(StatusCodes.OK).json({
+      message: "Lead " + Messages.UPDATED_SUCCESSFULLY,
+      lead: existingLead,
+    });
   } catch (error) {
     console.error("Error occurred in updateLeadController: ", error);
     return response

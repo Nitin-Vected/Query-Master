@@ -4,13 +4,14 @@ export interface LeadData {
   contactNumber: string;
   email: string;
   channel: string;
-  status: number;
-  product: number;
+  status: string;
+  product: string;
   assignedTo: string;
   fullName: string;
   index: number
   action: string;
 }
+
 export interface LeadDataSubmit {
   fullName: string;
   contactNumber: string;
@@ -52,7 +53,7 @@ export interface AllLead {
   contactNumber: string;
   productAmount: number;
   discount: number;
-  channel: string; // Added based on your JSON
+  channel: string;
   status: string;
   productId: string;
   description: string;
