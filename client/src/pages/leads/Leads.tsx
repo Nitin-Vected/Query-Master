@@ -132,10 +132,9 @@ const Lead = () => {
     try {
       console.log("Lead Data -->", leadData);
       const data = await createLead(userData.auth.userData.token, leadData);
-      console.log(data);
-      // if (data) {
-      //   getAllLeads(userData.auth.userData.token);
-      // }
+      if (data) {
+        getAllLeads(userToken, page, limit);
+      }
     } catch (error) {
       console.error("Error occurred during lead creation:", error);
     }

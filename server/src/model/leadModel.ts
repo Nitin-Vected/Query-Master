@@ -66,7 +66,7 @@ const leadSchema = new Schema<Lead>(
   {
     id: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    lastName: { type: String, required: false, default: "" },
     email: { type: String, required: true, lowercase: true },
     contactNumber: { type: String, required: true },
     productAmount: { type: Number, min: 0 },
