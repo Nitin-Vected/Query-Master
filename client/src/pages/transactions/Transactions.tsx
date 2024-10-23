@@ -29,7 +29,7 @@ const Transactions = () => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedProof, setSelectedProof] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const allTransactions = userData.transaction.data.transactionList;
+  const allTransactions = userData?.transaction?.data?.transactionList;
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
@@ -38,9 +38,9 @@ const Transactions = () => {
   }
   
   useEffect(() => {
-    console.log(page)
+    console.log(page);
     getAllTransactions(userData.auth.userData.token, page, limit);
-    setTotalPages(userData.transaction.data.totalPages)
+    setTotalPages(userData.transaction.data.totalPages);
   }, [userData.auth.userData.token, page, limit]);
   const headers: TableColumn<Transaction>[] = [
     { label: "Order ID", key: "orderId" },
@@ -167,12 +167,16 @@ const Transactions = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder="Search Order" onChange={() => { }} />
+            <SearchInput placeholder="Search Order" onChange={() => {}} />
           </Box>
 
           <CustomTable headers={headers} rows={allTransactions} />
 
-          <CustomPagination count={totalPages} page={page} onChange={handlePageChange} />
+          <CustomPagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+          />
         </Box>
       </Box>
 

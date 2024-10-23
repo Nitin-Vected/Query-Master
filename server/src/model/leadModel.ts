@@ -38,7 +38,7 @@ interface Lead extends Document {
 const auditSchema = new Schema<Audit>(
   {
     field: { type: String, required: true },
-    oldValue: { type: String, required: true },
+    oldValue: { type: String },
     newValue: { type: String, required: true },
     editedBy: { type: String, required: true },
     editorRole: { type: String, required: true },

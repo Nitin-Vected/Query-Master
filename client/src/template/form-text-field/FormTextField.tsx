@@ -14,6 +14,8 @@ const FormTextField: React.FC<FormTextFieldProps> = ({
   multiline,
   rows,
   variant,
+  inputProps,
+  handleChange, // Add handleChange prop
 }) => (
   <>
     <Typography variant="subtitle2">
@@ -29,7 +31,7 @@ const FormTextField: React.FC<FormTextFieldProps> = ({
       variant={variant}
       disabled={disabled}
       value={formik.values[name]}
-      onChange={formik.handleChange}
+      onChange={handleChange ? handleChange : formik.handleChange} // Use handleChange if provided
       onBlur={formik.handleBlur}
       placeholder={placeholder}
       error={formik.touched[name] && Boolean(formik.errors[name])}
@@ -41,6 +43,7 @@ const FormTextField: React.FC<FormTextFieldProps> = ({
         },
       }}
       InputProps={InputProps}
+      inputProps={inputProps}
     />
   </>
 );

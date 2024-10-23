@@ -34,11 +34,11 @@ const Orders = () => {
   const [activeOrder, setActiveOrder] = useState<Order | undefined>();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
-  const allOrders = userData.order.data.orderList;
+  const allOrders = userData?.order?.data?.orderList;
 
   useEffect(() => {
     getAllOrders(userData.auth.userData.token, page, limit);
-    setTotalPages(userData.order.data.totalPages)
+    setTotalPages(userData.order.data.totalPages);
   }, [userData.auth.userData.token, page, limit, totalPages]);
 
   const tableHeaders: TableColumn<Order>[] = [
@@ -47,11 +47,7 @@ const Orders = () => {
     {
       label: "Product Name",
       key: "products",
-      render: (
-        _value: string | string[],
-        row: Order,
-        _index: number
-      ) => (
+      render: (_value: string | string[], row: Order, _index: number) => (
         <Button
           variant="outlined"
           onClick={(e) => handleViewProducts(e, row.products)}
@@ -72,11 +68,7 @@ const Orders = () => {
     {
       label: "Action",
       key: "action",
-      render: (
-        _value: string | string[],
-        row: Order,
-        _index: number
-      ) => (
+      render: (_value: string | string[], row: Order, _index: number) => (
         <IconButton onClick={() => openDetailsModal(row)}>
           <RemoveRedEyeOutlined
             sx={{
@@ -111,7 +103,6 @@ const Orders = () => {
     setAnchorEl(event.currentTarget);
     setProducts(productsList); // No changes needed here, just confirm the type
   };
-
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
@@ -188,12 +179,16 @@ const Orders = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder={"Search Order"} onChange={() => { }} />
+            <SearchInput placeholder={"Search Order"} onChange={() => {}} />
           </Box>
 
           <CustomTable headers={tableHeaders} rows={allOrders} />
 
-          <CustomPagination count={totalPages} page={page} onChange={handlePageChange} />
+          <CustomPagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+          />
         </Box>
       </Box>
 
@@ -210,17 +205,16 @@ const Orders = () => {
           horizontal: "center",
         }}
       >
-        {products.length > 0 ? (
-          products.map((product, index) => (
+        {/* {products.length > 0 ? (
+          products?.map((product, index) => (
             <MenuItem key={index} onClick={handleCloseMenu}>
-              {product} {/* Directly render the string value */}
+              {product}  
             </MenuItem>
           ))
         ) : (
           <MenuItem disabled>No products available</MenuItem>
-        )}
+        )} */}
       </Menu>
-
 
       <OrderModal
         OpenOrderModal={open}

@@ -57,5 +57,10 @@ export interface AllLead {
   productId: string;
   description: string;
   assignedTo: string | null;
-  action: string
+  action: string;
+}
+
+export interface ChanelList {
+  id: string;
+  name: string;
 }

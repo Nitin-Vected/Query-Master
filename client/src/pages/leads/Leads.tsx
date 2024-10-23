@@ -11,13 +11,17 @@ import LeadsModal from "../../components/leads-modal";
 import { RemoveRedEyeOutlined } from "@mui/icons-material";
 import editIcon from "../../assets/image/editIcon.png";
 import SelectDropdown from "../../template/select-dropdown";
-import { Counsellor, LeadData, LeadDataSubmit, ManageStatus } from "./interface";
+import {
+  Counsellor,
+  LeadData,
+  LeadDataSubmit,
+  ManageStatus,
+} from "./interface";
 import FileImportButton from "../../template/file-import-button";
 import SearchInput from "../../template/search-input";
 import ComponentHeading from "../../template/component-heading";
 import CustomTable from "../../template/custom-table";
 import CustomPagination from "../../template/custom-pagination";
-import EnrollmentModal from "../../components/enrollment-modal";
 import { TableColumn } from "../../template/custom-table/interface";
 import theme from "../../theme/theme";
 import {
@@ -26,12 +30,13 @@ import {
   getAllLeads,
   getAllLeadsUpdate,
   getallManageStatusApi,
-  getAllProducts,
   getAllStatus,
-  getLeadById,
 } from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import EnrollmentModal from "../../components/enrollment-modal";
+import Spinner from "../../components/Spinner";
+import { ToastContainer } from "react-toastify";
 
 const Lead = () => {
   const [open, setOpen] = useState(false);
@@ -48,6 +53,10 @@ const Lead = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
   const AllLedaData = userData.leads.data.leads;
+  let userToken = userData.auth.userData.token;
+  const [enrollmentModalData, setEnrollmentModalData] =
+    useState<LeadData | null>(null);
+  const SpinnerLoading = useSelector((state: RootState) => state.leads.loading);
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
@@ -55,7 +64,6 @@ const Lead = () => {
   ) => {
     setPage(value);
   };
-  // const allStatus = userData.status.data.statusList;
 
   const handleClose = () => {
     setOpen(false);
@@ -74,7 +82,6 @@ const Lead = () => {
   const fetchCounsellorData = async (token: string) => {
     try {
       const data = await getallCounsellor(token); // Fetch the data
-
       setCounsellorList(data.counsellorList || []); // Ensure to set the counsellorList
     } catch (error) {
       console.error("Failed to fetch counsellor data:", error);
@@ -89,14 +96,12 @@ const Lead = () => {
     }
   };
   useEffect(() => {
-    console.log(userData)
-    getAllStatus(userData.auth.userData.token);
-    getAllProducts(userData.auth.userData.token, page, limit);
-    getAllLeads(userData.auth.userData.token, page, limit);
-    fetchCounsellorData(userData.auth.userData.token);
-    getallManage(userData.auth.userData.token);
-    setTotalPages(userData.leads.data.totalPages)
-  }, [userData.auth.userData.token, page, limit]);
+    getAllStatus(userToken);
+    getAllLeads(userToken, page, limit);
+    fetchCounsellorData(userToken);
+    getallManage(userToken);
+    setTotalPages(userData.leads.data.totalPages);
+  }, [userToken, page, limit]);
 
   const handleLeadChange = (event: SelectChangeEvent<string>) => {
     setSelectedLead(event.target.value);
@@ -110,19 +115,16 @@ const Lead = () => {
   ) => {
     // Get the selected value from the dropdown
     const selectedValue = event.target.value;
-
-    const newRows = [...manageStatusList];
-    newRows[rowIndex].status = selectedValue;
-    setManageStatusList(newRows);
     let data = {
       statusId: statusId,
     };
 
     if (selectedValue === "Enrolled") {
       setIsEnrollmentModalOpen(true);
+      setEnrollmentModalData(row);
     } else {
-      console.log("first")
-      getAllLeadsUpdate(userData.auth.userData.token, row.id, data);
+      getAllLeadsUpdate(userToken, row.id, data);
+      getAllLeads(userToken, page, limit);
     }
   };
 
@@ -130,10 +132,10 @@ const Lead = () => {
     try {
       console.log("Lead Data -->", leadData);
       const data = await createLead(userData.auth.userData.token, leadData);
-      console.log(data)
-      if (data) {
-        // getAllLeads(userData.auth.userData.token);
-      }
+      console.log(data);
+      // if (data) {
+      //   getAllLeads(userData.auth.userData.token);
+      // }
     } catch (error) {
       console.error("Error occurred during lead creation:", error);
     }
@@ -155,13 +157,7 @@ const Lead = () => {
 
     try {
       await getAllLeadsUpdate(userData.auth.userData.token, row.id, data);
-
-      const updatedData = AllLedaData.map((lead: LeadData) =>
-        lead.id === row.id ? { ...lead, assignedTo: counsellorId } : lead
-      );
-
-      // Assuming you are updating the state holding all leads
-      setLeadData(updatedData);
+      getAllLeads(userData.auth.userData.token, page, limit);
     } catch (error) {
       console.error("Error updating counsellor:", error);
     }
@@ -264,88 +260,97 @@ const Lead = () => {
   return (
     <>
       <Box sx={{ flexGrow: 1, p: 3, mt: 10 }}>
+        <ToastContainer />
         <ComponentHeading heading="Leads" />
 
-        <Box
-          sx={{
-            // margin: "auto",
-            padding: 2,
-            boxShadow: `0px 0px 5px 0px ${theme.palette.primary.dark}`,
-          }}
-        >
-          <Grid
-            container
-            spacing={2}
-            sx={{
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-              pb: 2,
-              borderBottom: `1px solid ${theme.palette.primary.dark}`,
-            }}
-          >
-            <Grid item xs={12} sm={6} md={6} display="flex" gap={2}>
-              <SelectDropdown
-                name="leadFilter"
-                value={selectedLead}
-                onChange={handleLeadChange}
-                options={[
-                  { label: "All Leads", value: "All Leads" },
-                  { label: "Enrolled", value: "Enrolled" },
-                ]}
-                sx={{
-                  borderRadius: "8px",
-                  maxWidth: "180px",
-                }}
-                fullWidth={false}
-              />
-
-              <Button
-                sx={{
-                  height: "40px",
-                  color: theme.palette.secondary.main,
-                  textTransform: "none",
-                  borderRadius: "8px",
-                  border: `1px solid ${theme.palette.primary.dark}`,
-                  maxWidth: "180px",
-                }}
-                onClick={() => setIsLeadsModalOpen(true)}
-              >
-                + Create Lead
-              </Button>
-            </Grid>
-
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={6}
-              display="flex"
-              sx={{
-                justifyContent: { xs: "flex-start", sm: "flex-end" },
-              }}
-            >
-              <FileImportButton
-                onFileChange={handleFileChange}
-                fileInputRef={fileInputRef}
-              />
-            </Grid>
-          </Grid >
-
+        {SpinnerLoading ? (
+          <Spinner />
+        ) : (
           <Box
             sx={{
-              mb: 3,
-              display: "flex",
-              justifyContent: "flex-start",
+              // margin: "auto",
+              padding: 2,
+              boxShadow: `0px 0px 5px 0px ${theme.palette.primary.dark}`,
             }}
           >
-            <SearchInput placeholder={"Search Lead"} onChange={() => { }} />
+            <Grid
+              container
+              spacing={2}
+              sx={{
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+                pb: 2,
+                borderBottom: `1px solid ${theme.palette.primary.dark}`,
+              }}
+            >
+              <Grid item xs={12} sm={6} md={6} display="flex" gap={2}>
+                <SelectDropdown
+                  name="leadFilter"
+                  value={selectedLead}
+                  onChange={handleLeadChange}
+                  options={[
+                    { label: "All Leads", value: "All Leads" },
+                    { label: "Enrolled", value: "Enrolled" },
+                  ]}
+                  sx={{
+                    borderRadius: "8px",
+                    maxWidth: "180px",
+                  }}
+                  fullWidth={false}
+                />
+
+                <Button
+                  sx={{
+                    height: "40px",
+                    color: theme.palette.secondary.main,
+                    textTransform: "none",
+                    borderRadius: "8px",
+                    border: `1px solid ${theme.palette.primary.dark}`,
+                    maxWidth: "180px",
+                  }}
+                  onClick={() => setIsLeadsModalOpen(true)}
+                >
+                  + Create Lead
+                </Button>
+              </Grid>
+
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={6}
+                display="flex"
+                sx={{
+                  justifyContent: { xs: "flex-start", sm: "flex-end" },
+                }}
+              >
+                <FileImportButton
+                  onFileChange={handleFileChange}
+                  fileInputRef={fileInputRef}
+                />
+              </Grid>
+            </Grid>
+
+            <Box
+              sx={{
+                mb: 3,
+                display: "flex",
+                justifyContent: "flex-start",
+              }}
+            >
+              <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
+            </Box>
+
+            <CustomTable headers={headers} rows={AllLedaData} />
+
+            <CustomPagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+            />
           </Box>
-
-          <CustomTable headers={headers} rows={AllLedaData} />
-
-          <CustomPagination count={totalPages} page={page} onChange={handlePageChange} />
-        </Box>
+        )}
 
         {isLeadsModalOpen && (
           <LeadsModal
@@ -357,24 +362,24 @@ const Lead = () => {
           />
         )}
 
-        {
-          open && (
-            <LeadPreviewModal
-              open={open}
-              handleClose={handleClose}
-              data={leadData}
-              isEdit={isEdit}
-            />
-          )
-        }
-
-        <EnrollmentModal
-          openEnrollment={isEnrollmentModalOpen}
-          closeModal={() => {
-            setIsEnrollmentModalOpen(false);
-          }}
-        />
-      </Box >
+        {open && (
+          <LeadPreviewModal
+            open={open}
+            handleClose={handleClose}
+            data={leadData}
+            isEdit={isEdit}
+          />
+        )}
+        {isEnrollmentModalOpen && (
+          <EnrollmentModal
+            openEnrollment={isEnrollmentModalOpen}
+            closeModal={() => {
+              setIsEnrollmentModalOpen(false);
+            }}
+            data={enrollmentModalData}
+          />
+        )}
+      </Box>
     </>
   );
 };

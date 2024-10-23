@@ -23,17 +23,16 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { getAllStudents } from "../../services/api/userApi";
 
-
 const Students = () => {
   const [selectedOrder, setSelectedOrder] = useState("All Students");
   const [page, setPage] = useState<number>(1); // Start with page 1
   const [limit, setLimit] = useState<number>(5);
-  const [totalPages, setTotalPages] = useState<number>(1); const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
   const [products, setProducts] = useState<string[]>([]);
-
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const allStudents = userData.student.data.data;
+  const allStudents = userData?.student?.data?.data;
 
   const handleOrderChange = (event: SelectChangeEvent<string>) => {
     setSelectedOrder(event.target.value);
@@ -41,7 +40,6 @@ const Students = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file: File | null = event.target.files?.[0] || null;
-    console.log("file data", file);
   };
 
   const handlePageChange = (
@@ -54,7 +52,6 @@ const Students = () => {
     event: React.MouseEvent<HTMLElement>,
     productsList: string[]
   ) => {
-    console.log("productsList:", productsList);
     setAnchorEl(event.currentTarget);
     setProducts(productsList); // No changes needed here, just confirm the type
   };
@@ -66,7 +63,7 @@ const Students = () => {
   };
   useEffect(() => {
     getAllStudents(userData.auth.userData.token, page, limit);
-    setTotalPages(userData.student.data.totalPages)
+    setTotalPages(userData.student.data.totalPages);
   }, [userData.auth.userData.token, page, limit]);
   const tableHeaders: TableColumn<Student>[] = [
     { label: "Enrollment Number", key: "enrollmentNumber" },
@@ -76,11 +73,7 @@ const Students = () => {
     {
       label: "Product Name",
       key: "products",
-      render: (
-        _value: string | string[],
-        row: Student,
-        _index: number
-      ) => (
+      render: (_value: string | string[], row: Student, _index: number) => (
         <Button
           variant="outlined"
           onClick={(e) => handleViewProducts(e, row.products)}
@@ -185,12 +178,16 @@ const Students = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder={"Search Lead"} onChange={() => { }} />
+            <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
           </Box>
 
           <CustomTable headers={tableHeaders} rows={allStudents} />
 
-          <CustomPagination count={totalPages} page={page} onChange={handlePageChange} />
+          <CustomPagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+          />
         </Box>
       </Box>
       <Menu
