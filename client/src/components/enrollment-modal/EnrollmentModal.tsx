@@ -557,9 +557,10 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
               <FormTextField
-                label="DueAmount *"
+                label="DueAmount "
                 name="dueAmount"
                 placeholder="dueAmount"
+                disabled={true}
                 formik={formik}
                 handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   let value = e.target.value.replace(/\D/g, "");
