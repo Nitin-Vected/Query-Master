@@ -10,7 +10,6 @@ const studentSlice = createSlice({
     reducers: {
         fetchStudentDataStart(state) {
             state.loading = true;
-            state.error = null;
         },
         fetchStudentDataSuccess(state, action) {
             state.loading = false;

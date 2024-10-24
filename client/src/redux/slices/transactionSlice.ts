@@ -10,7 +10,6 @@ const transactionSlice = createSlice({
     reducers: {
         fetchTransactionDataStart(state) {
             state.loading = true;
-            state.error = null;
         },
         fetchTransactionDataSuccess(state, action) {
             state.loading = false;

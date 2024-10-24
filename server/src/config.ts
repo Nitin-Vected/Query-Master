@@ -36,9 +36,9 @@ export const Messages = {
   AUTHORIZATION_TOKEN_MISSING: "Authorization Token is Missing or Invalid!",
   AUTHENTICATION_SUCCESS: "Authentication Successfull!",
   FETCHED_SUCCESSFULLY: "Fetched Successfully.",
-  CREATED_SUCCESSFULLY: "Created SuccessFully.",
-  UPDATED_SUCCESSFULLY: "Updated SuccessFully.",
-  REGISTERED_SUCCESSFULLY: "Registered SuccessFully.",
+  CREATED_SUCCESSFULLY: "Created Successfully.",
+  UPDATED_SUCCESSFULLY: "Updated Successfully.",
+  REGISTERED_SUCCESSFULLY: "Registered Successfully.",
   REGISTRATION_FAILED: "Registration Failed!",
   CREATION_FAILED: "Creation Failed!",
   UPDATION_FAILED: "Updation Failed!",
@@ -75,6 +75,7 @@ export const generateUniqueId = async (
   try {
     const lastEntry = await model.findOne().sort({ _id: -1 });
     
+    
     let newUniqueId: string;
 
     const lastIdentifier = lastEntry?.enrollmentNumber || lastEntry?.id;
@@ -95,4 +96,3 @@ export const generateUniqueId = async (
     throw error;
   }
 };
-

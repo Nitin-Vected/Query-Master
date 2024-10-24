@@ -1,11 +1,6 @@
 import { Request, Response } from "express";
 import transactionModel from "../model/transactionModel";
-import {
-  CustomRequest,
-  generateUniqueId,
-  Messages,
-  StatusCodes,
-} from "../config";
+import { CustomRequest, generateUniqueId, Messages, StatusCodes } from "../config";
 import mongoose from "mongoose";
 import orderModel from "../model/orderModel";
 
@@ -21,14 +16,14 @@ export const createTransactionController = async (
     }
 
     const { email, roleName } = request.payload;
-    const { paymentMode, transactionDate, transactionAmount, orderId } =
+    const { transactionMode, transactionDate, transactionAmount, orderId, dueDate } =
       request.body;
 
-    if (!paymentMode || !transactionDate || !transactionAmount || !orderId) {
-      return response
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: Messages.MISSING_REQUIRED_FIELD + "Transaction" });
-    }
+    // if (!transactionMode || !transactionDate || !transactionAmount || !orderId || !dueDate) {
+    //   return response
+    //     .status(StatusCodes.BAD_REQUEST)
+    //     .json({ error: Messages.MISSING_REQUIRED_FIELD + "Transaction" });
+    // }
 
     const order = await orderModel.findOne({ id: orderId });
     if (!order) {
@@ -36,7 +31,7 @@ export const createTransactionController = async (
         .status(StatusCodes.NOT_FOUND)
         .json({ error: "Order not found." });
     }
-
+    console.log(order)
     const dueAmount = order.dueAmount;
 
     if (transactionAmount > dueAmount) {
@@ -55,7 +50,7 @@ export const createTransactionController = async (
       orderId,
       amount: transactionAmount,
       date: transactionDate,
-      mode: paymentMode,
+      mode: transactionMode,
       proof: request.file?.path || "",
       createdBy: email,
       updatedBy: email,
@@ -87,17 +82,9 @@ export const createTransactionController = async (
 
     return response
       .status(StatusCodes.CREATED)
-      .json({
-        transactionId,
-        message: "Transaction " + Messages.CREATED_SUCCESSFULLY,
-      });
-  } catch (error: unknown) {
+      .json({ transactionId, message: "Transaction " + Messages.CREATED_SUCCESSFULLY });
+  } catch (error) {
     console.log("Error occurred in createTransactionController: ", error);
-    if (error instanceof Error) {
-      return response
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ error: error.message });
-    }
     return response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: Messages.SOMETHING_WENT_WRONG });
@@ -110,7 +97,8 @@ export const createTransaction = async (
   orderId: string,
   session: mongoose.ClientSession
 ) => {
-  const { paymentMode, transactionDate, transactionAmount, email, roleName } =
+  console.log(data.file)
+  const { transactionMode, transactionDate, transactionAmount, email, roleName } =
     data;
 
   const transactionId = await generateUniqueId(transactionModel, "TRANSACTION");
@@ -118,7 +106,7 @@ export const createTransaction = async (
   const transactionData = {
     id: transactionId,
     orderId,
-    mode: paymentMode,
+    mode: transactionMode,
     date: transactionDate,
     amount: transactionAmount,
     proof: data.file?.path || "",
@@ -140,14 +128,10 @@ export const createTransaction = async (
   return transactionId;
 };
 
-export const getTransactionByIdController = async (
-  request: Request,
-  response: Response
-) => {
+export const getTransactionByIdController = async (request: Request, response: Response) => {
   const { transactionId } = request.params;
   try {
-    const transaction = await transactionModel
-      .findOne({ id: transactionId })
+    const transaction = await transactionModel.findOne({ id: transactionId })
       .select("-_id id orderId amount date proof");
     if (!transaction) {
       return response
@@ -156,25 +140,19 @@ export const getTransactionByIdController = async (
     }
     response
       .status(StatusCodes.OK)
-      .json({
-        data: transaction,
-        message: "Transaction " + Messages.FETCHED_SUCCESSFULLY,
-      });
+      .json({ data: transaction, message: "Transaction " + Messages.FETCHED_SUCCESSFULLY });
   } catch (error) {
     console.log("Error occured in getTransactionById : ", error);
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: Messages.SOMETHING_WENT_WRONG });
   }
-};
+}
 
-export const getAllTransactionsController = async (
-  request: Request,
-  response: Response
-) => {
+export const getAllTransactionsController = async (request: Request, response: Response) => {
   const page = parseInt(request.query.page as string) || 1;
   const limit = parseInt(request.query.limit as string) || 0;
-  const skip = (page - 1) * limit;
+  const skip = (page - 1) * limit
 
   try {
     const transactionList = await transactionModel

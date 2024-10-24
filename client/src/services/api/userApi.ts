@@ -46,18 +46,21 @@ export const createLead = async (token: string, data: object) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    toast.success(response.data.message); // Show success toast
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        console.error("Error response:", error.response.data);
+        toast.error(
+          `Error: ${error.response.data.message || "Something went wrong"}`
+        );
       } else if (error.request) {
-        console.error("No response received:", error.request);
+        toast.error("No response from the server");
       } else {
-        console.error("Error message:", error.message);
+        toast.error(`Error: ${error.message}`);
       }
     } else {
-      console.error("An unknown error occurred:", error);
+      toast.error("An unknown error occurred");
     }
     throw error;
   }
@@ -483,5 +486,38 @@ export const getAllTransactions = async (
 
     store.dispatch(fetchTransactionDataFailure(errorMessage)); // Dispatch failure action
     throw error; // Re-throw the error for further handling
+  }
+};
+
+export const addTransaction = async (token: string, data: object) => {
+  try {
+    const response = await axios.post(
+      `${constants.Transaction_Api}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    toast.success(response.data.message);
+    // console.log(response)
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        toast.error(
+          `Error: ${error.response.data.message || "Something went wrong"}`
+        );
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+        toast.error("No response from the server");
+      } else {
+        console.error("Error message:", error.message);
+        toast.error(`Error: ${error.message}`);
+      }
+    } else {
+      toast.error("An unknown error occurred");
+    }
   }
 };

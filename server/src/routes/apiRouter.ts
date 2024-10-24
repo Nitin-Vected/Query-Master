@@ -1006,7 +1006,7 @@ apiRouter.post(
 
 /**
  * @swagger
- * /api/transactions:
+ * /api/transaction:
  *   post:
  *     summary: Create a new transaction
  *     tags: [Api]
@@ -1017,7 +1017,7 @@ apiRouter.post(
  *           schema:
  *             type: object
  *             properties:
- *               paymentMode:
+ *               transactionMode:
  *                 type: string
  *                 example: Cash
  *                 description: The payment method (e.g., Online, Cash).
@@ -1048,7 +1048,7 @@ apiRouter.post(
  *         description: Internal server error.
  */
 apiRouter.post(
-  "/transactions",
+  "/transaction",
   uploadTransactionProof,
   validateTransaction,
   createTransactionController

@@ -106,8 +106,6 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
       console.error("Failed to enroll lead:", error);
     }
   };
-
-  console.log("data.fullName", selectProducts);
   const formik = useFormik({
     initialValues: {
       transactionProof: "",
@@ -130,7 +128,7 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
         lastName: lastName,
         contactNumber: data.contactNumber,
         products: selectProducts,
-        paymentMode: values.transactionMode,
+        transactionMode: values.transactionMode,
         finalAmount: values.finalAmount,
         transactionAmount: values.transactionAmount,
         transactionDate: values.transactionDate,
