@@ -121,7 +121,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
     fontWeight: "400",
   };
   const subTitle: CSSProperties = {
-    color: "#aeacac",
+    color: `${theme.palette.info.main}`,
     marginTop: 5,
     fontSize: 14,
   };
@@ -286,7 +286,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       InputProps={{
                         sx: {
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable ? 0 : `1.1px solid ${theme.palette.info.light}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
@@ -353,10 +353,10 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                           (data.assignedTo === "Unassigned"
                             ? "Unassigned"
                             : counsellorList.find(
-                                (counsellor: any) =>
-                                  `${counsellor.firstName} ${counsellor.lastName}` ===
-                                  data.assignedTo
-                              )?.id || data.assignedTo) // Default to an empty string if no match found
+                              (counsellor: any) =>
+                                `${counsellor.firstName} ${counsellor.lastName}` ===
+                                data.assignedTo
+                            )?.id || data.assignedTo) // Default to an empty string if no match found
                         }
                         onChange={(event) => {
                           const selectedCounsellorId = event.target.value;
@@ -412,7 +412,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       InputProps={{
                         sx: {
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable ? 0 : `1.1px solid ${theme.palette.info.light}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
@@ -472,7 +472,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       InputProps={{
                         sx: {
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable ? 0 : `1.1px solid ${theme.palette.info.light}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
@@ -504,7 +504,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                         sx: {
                           maxLength: 10, // Set your desired max length here
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable ? 0 : `1.1px solid ${theme.palette.info.light}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
@@ -562,7 +562,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       InputProps={{
                         sx: {
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable ? 0 : `1.1px solid ${theme.palette.info.light}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
@@ -871,10 +871,10 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                           return (
                             <Box
                               sx={{
-                                border: "1px solid #e0e0e0",
+                                border: `1px solid ${theme.palette.info.dark}`,
                                 borderRadius: "8px",
                                 padding: "10px",
-                                backgroundColor: "#fafafa",
+                                backgroundColor: `${theme.palette.info.dark}`,
                                 flexDirection: "row",
                                 alignItems: "center",
                                 justifyContent: "space-between",

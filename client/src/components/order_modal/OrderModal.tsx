@@ -18,7 +18,7 @@ import {
 import { Add } from "@mui/icons-material";
 import theme from "../../theme/theme";
 import { CSSProperties } from "styled-components";
-import { Formik, Form } from "formik";
+import { Formik, Form, useFormik } from "formik";
 import * as Yup from "yup";
 import SelectDropdown from "../../template/select-dropdown";
 import { OderFormModalProps } from "./interface";
@@ -29,6 +29,7 @@ import FormSelectField from "../../template/form-select-field";
 import { Order, Product, Transaction } from "../../pages/orders/interface";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import { addTransaction } from "../../services/api/userApi";
 
 const OrderModal: React.FC<OderFormModalProps> = ({
   OpenOrderModal,
@@ -39,22 +40,69 @@ const OrderModal: React.FC<OderFormModalProps> = ({
   const userData: any = useSelector((state: RootState) => state);
   const allProducts = userData.product.data.productList;
   const allTransactions = userData.transaction.data.transactionList;
+  const [isLoading, setIsLoading] = useState(false); // To manage loading state
+  const [products, setProducts] = useState<Product[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const orderLabel: CSSProperties = {
     color: theme.palette.secondary.main,
     fontSize: "21.5px",
     fontWeight: "600",
   };
-  const [products, setProducts] = useState<Product[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  // Validation schema using Yup
+  const validationSchema = Yup.object({
+    transactionAmount: Yup.string().required("Transaction Amount is required"),
+    transactionMode: Yup.string().required("Transaction Mode is required"),
+    transactionDate: Yup.string().required("Transaction Date is required"),
+    // dueAmount: Yup.string().required("Due Amount is required"),
+    // dueDate: Yup.string().required("Due Date is required"),
+    transactionProof: Yup.string().required("Transaction proof is required"),
+  });
+  const submitTransaction = async (newData: any) => {
+    try {
+      setIsLoading(true);
+      await addTransaction(userData.auth.userData.token, newData);
+      setIsLoading(false);
+      handleClose();
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Failed to Add Transaction:", error);
+    }
+  };
+  const formik = useFormik({
+    initialValues: {
+      transactionMode: "Online",
+      transactionAmount: "",
+      transactionDate: "",
+      transactionProof: "",
+      dueDate: "",
+      dueAmount: ""
+    },
+    validationSchema: validationSchema,
+    onSubmit: (values) => {
+      let orderTransaction = {
+        orderId: orderData.id,
+        transactionMode: values.transactionMode,
+        transactionAmount: values.transactionAmount,
+        transactionDate: values.transactionDate,
+        // dueAmount: values.dueAmount,
+        // dueDate: values.dueDate,
+        transactionProof: values.transactionProof,
+      }
+      submitTransaction(orderTransaction)
+    },
+  });
 
-  console.log(orderData?.transactions)
-  console.log(userData)
-  useEffect(() => {
+  // console.log(orderData?.transactions)
+  // console.log(orderData)
+  const fillTable = () => {
     setTransactions(allTransactions.filter((transaction: Transaction) =>
       orderData?.transactions.includes(transaction.id)))
     setProducts(allProducts.filter((product: Product) => orderData?.products.includes(product.id)))
+  }
+  useEffect(() => {
+    fillTable()
   }, [orderData])
-  console.log(transactions)
+  // console.log(transactions)
   const orderTitle: CSSProperties = {
     color: theme.palette.secondary.main,
     fontSize: "15px",
@@ -90,13 +138,7 @@ const OrderModal: React.FC<OderFormModalProps> = ({
     padding: "none",
     marginTop: 10,
   };
-  // Validation schema using Yup
-  const validationSchema = Yup.object({
-    transactionAmount: Yup.string().required("Transaction Mode is required"),
-    transactionMode: Yup.string().required("Transaction Mode is required"),
-    transactionDate: Yup.string().required("Transaction Date is required"),
-    transactionProof: Yup.string().required("Transaction proof is required"),
-  });
+
   return (
     <Dialog
       sx={{
@@ -202,7 +244,7 @@ const OrderModal: React.FC<OderFormModalProps> = ({
 
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={4} marginTop={1.5}>
-            <Typography sx={{ ...orderTitle }}>Total Amount :</Typography>
+            <Typography sx={{ ...orderTitle }}>Final Amount :</Typography>
             <Typography sx={{ ...orderTitle }}>
               {orderData?.amount}
             </Typography>
@@ -252,7 +294,6 @@ const OrderModal: React.FC<OderFormModalProps> = ({
             </TableBody>
           </Table>
         </TableContainer>
-        {/* Transaction Details */}
         {!isFieldVisible ? (
           <ButtonView
             startIcon={<Add />}
@@ -270,105 +311,104 @@ const OrderModal: React.FC<OderFormModalProps> = ({
             Add Transaction
           </ButtonView>
         ) : (
-          <Formik
-            initialValues={{
-              transactionMode: "Online",
-              transactionAmount: "",
-              transactionDate: "",
-              transactionProof: "",
-            }}
-            validationSchema={validationSchema}
-            onSubmit={(values) => {
-              console.log(values);
-            }}
-          >
-            {(formik) => (
-              <Form>
-                <Grid container spacing={2} direction="row" marginTop={0.9}>
-                  <Grid item xs={12} md={4} marginTop={1}>
-                    <FormSelectField
-                      label="Transaction Mode"
-                      name="transactionMode"
-                      options={[
-                        { label: "Cash", value: "Cash" },
-                        { label: "Online", value: "Online" },
-                      ]}
-                      formik={formik}
-                      required
-                    />
-                  </Grid>
+          <form onSubmit={formik.handleSubmit}>
+            {/* <Form> */}
+            <Grid container spacing={2} direction="row" marginTop={0.9}>
+              <Grid item xs={12} md={4} marginTop={1}>
+                <FormSelectField
+                  label="Transaction Mode"
+                  name="transactionMode"
+                  options={[
+                    { label: "Cash", value: "Cash" },
+                    { label: "Online", value: "Online" },
+                  ]}
+                  formik={formik}
+                />
+              </Grid>
 
-                  <Grid item xs={12} md={4} lg={3.8} marginTop={1}>
-                    <FormTextField
-                      label="Transaction Amount"
-                      name="transactionAmount"
-                      placeholder="Rs"
-                      formik={formik}
-                      required
-                    />
-                  </Grid>
+              <Grid item xs={12} md={4} marginTop={1}>
+                <FormTextField
+                  label="Transaction Amount"
+                  name="transactionAmount"
+                  placeholder="Rs"
+                  formik={formik}
+                  type="number"
+                />
+              </Grid>
 
-                  <Grid item xs={12} md={4} marginTop={1}>
-                    <FormTextField
-                      label="Transaction Date *"
-                      name="transactionDate"
-                      formik={formik}
-                      type="date"
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Typography sx={{ ...orderTitle }}>
-                      Transaction Proof<span style={{ color: "red" }}>*</span>
-                    </Typography>
-                    <TextField
-                      fullWidth
-                      required
-                      name="transactionProof"
-                      type="file"
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          height: 40,
-                        },
-                      }}
-                    />
-                    {formik.touched.transactionProof &&
-                      formik.errors.transactionProof && (
-                        <FormHelperText error>
-                          {formik.errors.transactionProof}
-                        </FormHelperText>
-                      )}
-                  </Grid>
-                </Grid>
-                <Grid
-                  container
-                  spacing={2}
-                  alignItems="center"
-                  marginTop={0.9}
-                  flexDirection={"row"}
-                  justifyContent={"end"}
-                  alignContent={"center"}
-                >
-                  <ButtonView
-                    type="submit"
-                    isEditable={true}
-                    style={{ marginTop: 8 }}
-                    sx={{ left: -11 }}
-                    onClick={() => {
-                      handleClose();
-                      setIsFieldVisible(false);
+              <Grid item xs={12} md={4} marginTop={1}>
+                <FormTextField
+                  label="Transaction Date"
+                  name="transactionDate"
+                  formik={formik}
+                  type="date"
+                />
+              </Grid>
+              {formik.values.transactionMode === "Online" ? (
+                <Grid item xs={12} md={4}>
+                  <Typography sx={{ ...orderTitle }}>
+                    Transaction Proof<span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    name="transactionProof"
+                    type="file"
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: 40,
+                      },
                     }}
-                  >
-                    Submit
-                  </ButtonView>
+                  />
+                  {formik.touched.transactionProof &&
+                    formik.errors.transactionProof && (
+                      <FormHelperText error>
+                        {formik.errors.transactionProof}
+                      </FormHelperText>
+                    )}
                 </Grid>
-              </Form>
-            )}
-          </Formik>
+              ) : null}
+              <Grid item xs={12} md={4}>
+                <FormTextField
+                  label="Due Amount"
+                  disabled={true}
+                  name="dueAmount"
+                  placeholder="dueAmount"
+                  formik={formik}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <FormTextField
+                  label="Due Date"
+                  name="dueDate"
+                  formik={formik}
+                  type="date"
+                />
+              </Grid>
+            </Grid>
+            <Grid
+              container
+              spacing={2}
+              alignItems="center"
+              marginTop={0.9}
+              flexDirection={"row"}
+              justifyContent={"end"}
+              alignContent={"center"}
+            >
+              <ButtonView
+                type="submit"
+                isEditable={true}
+                style={{ marginTop: 8 }}
+                sx={{ left: -11 }}
+              >
+                Submit
+              </ButtonView>
+            </Grid>
+          </form>
         )}
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 };
 

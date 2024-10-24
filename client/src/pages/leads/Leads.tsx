@@ -52,6 +52,7 @@ const Lead = () => {
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
+  const [loading, setLoading] = useState(false); // Loader state
   const AllLedaData = userData.leads.data.leads;
   let userToken = userData.auth.userData.token;
   const [enrollmentModalData, setEnrollmentModalData] =
@@ -130,14 +131,13 @@ const Lead = () => {
 
   const leadDataSubmit = async (leadData: LeadDataSubmit) => {
     try {
-      console.log("Lead Data -->", leadData);
-      const data = await createLead(userData.auth.userData.token, leadData);
-      console.log(data);
-      // if (data) {
-      //   getAllLeads(userData.auth.userData.token);
-      // }
+      setLoading(true); // Show loader
+      await createLead(userData.auth.userData.token, leadData);
+      getAllLeads(userToken, page, limit);
     } catch (error) {
       console.error("Error occurred during lead creation:", error);
+    } finally {
+      setLoading(false);
     }
   };
   const options = counsellorList.map((user) => ({
@@ -220,14 +220,14 @@ const Lead = () => {
                   counsellorList[index];
                 }
                 const counsellorId = selectedCounsellor.id;
-                handleCounsellorChange(counsellorId, row); // Pass the selected ID
+                handleCounsellorChange(counsellorId, row);
               }
             }}
             options={[
               ...counsellorList.map((counsellor) => ({
                 label: `${counsellor.firstName} ${counsellor.lastName}`,
                 value: `${counsellor.firstName} ${counsellor.lastName}`,
-                id: counsellor.id, // Add the ID for later use
+                id: counsellor.id,
               })),
               { label: "Unassigned", value: "Unassigned" },
             ]}
@@ -339,7 +339,7 @@ const Lead = () => {
                 justifyContent: "flex-start",
               }}
             >
-              <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
+              <SearchInput placeholder={"Search Lead"} onChange={() => { }} />
             </Box>
 
             <CustomTable headers={headers} rows={AllLedaData} />

@@ -9,6 +9,7 @@ const ProofImageModal: React.FC<ProofImageModalProps> = ({
   proofImage,
   onClose,
 }) => {
+  console.log("proofImage",proofImage)
   const [zoom, setZoom] = useState(1);
 
   const handleZoomIn = () => {
@@ -42,7 +43,7 @@ const ProofImageModal: React.FC<ProofImageModalProps> = ({
           >
             {proofImage && (
               <img
-                src={editIcon}
+                src={proofImage}
                 alt="Transaction Proof"
                 style={{
                   transform: `scale(${zoom})`,

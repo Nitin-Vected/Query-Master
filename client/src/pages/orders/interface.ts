@@ -19,8 +19,10 @@ export interface Product {
 }
 
 export interface Transaction {
-  id: string
-  mode: string
-  amount: number
-  date: string
+  id: string;
+  mode: string;
+  amount: number;
+  date: string;
+  orderid: string;
+  proof: string;
 }

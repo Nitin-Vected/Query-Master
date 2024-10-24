@@ -56,7 +56,7 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
     setSelectProducts(updatedSelectedProducts);
   };
   const validationSchema = Yup.object({
-    // transactionProof: Yup.string().required("Transaction proof is required"),
+    transactionProof: Yup.string().required("Transaction proof is required"),
     discount: Yup.string().required("Discount is required"),
     // products: Yup.array()
     //   .of(Yup.string().required("Each product is required")) // Each product must be a string and is required
@@ -99,8 +99,6 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
       console.error("Failed to enroll lead:", error);
     }
   };
-
-  console.log("data.fullName", data.fullName);
   const formik = useFormik({
     initialValues: {
       transactionProof: "",
@@ -124,7 +122,7 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
         lastName: lastName,
         contactNumber: data.contactNumber,
         products: selectProducts,
-        paymentMode: values.transactionMode,
+        transactionMode: values.transactionMode,
         finalAmount: values.finalAmount,
         transactionAmount: values.transactionAmount,
         transactionDate: values.transactionDate,

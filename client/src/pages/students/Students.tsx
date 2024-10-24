@@ -22,6 +22,7 @@ import { Student } from "./interface";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { getAllStudents } from "../../services/api/userApi";
+import Spinner from "../../components/Spinner";
 
 const Students = () => {
   const [selectedOrder, setSelectedOrder] = useState("All Students");
@@ -32,6 +33,8 @@ const Students = () => {
   const userData: any = useSelector((state: RootState) => state);
   const [products, setProducts] = useState<string[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const SpinnerLoading = useSelector((state: RootState) => state.student.loading);
+
   const allStudents = userData?.student?.data?.data;
 
   const handleOrderChange = (event: SelectChangeEvent<string>) => {
@@ -119,7 +122,7 @@ const Students = () => {
       <Box sx={{ flexGrow: 1, p: 3, mt: 10 }}>
         <ComponentHeading heading="Students" />
 
-        <Box
+        {SpinnerLoading ? <Spinner /> : <Box
           sx={{
             margin: "auto",
             padding: 2,
@@ -178,7 +181,7 @@ const Students = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder={"Search Lead"} onChange={() => {}} />
+            <SearchInput placeholder={"Search Lead"} onChange={() => { }} />
           </Box>
 
           <CustomTable headers={tableHeaders} rows={allStudents} />
@@ -188,7 +191,7 @@ const Students = () => {
             page={page}
             onChange={handlePageChange}
           />
-        </Box>
+        </Box>}
       </Box>
       <Menu
         anchorEl={anchorEl}

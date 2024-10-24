@@ -6,6 +6,7 @@ import {
   Menu,
   MenuItem,
   SelectChangeEvent,
+  Typography,
 } from "@mui/material";
 import { RemoveRedEyeOutlined } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
@@ -22,6 +23,8 @@ import theme from "../../theme/theme";
 import { getAllOrders } from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import Spinner from "../../components/Spinner";
+import { ToastContainer } from "react-toastify";
 
 const Orders = () => {
   const [page, setPage] = useState<number>(1); // Start with page 1
@@ -31,10 +34,12 @@ const Orders = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [products, setProducts] = useState<string[]>([]);
   const [open, setOpen] = useState<boolean>(false);
-  const [activeOrder, setActiveOrder] = useState<Order | undefined>();
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const userData: any = useSelector((state: RootState) => state);
+  const [loading, setLoading] = useState(false); // Loader state
   const allOrders = userData?.order?.data?.orderList;
+  const SpinnerLoading = useSelector((state: RootState) => state.order.loading);
 
   useEffect(() => {
     getAllOrders(userData.auth.userData.token, page, limit);
@@ -107,7 +112,6 @@ const Orders = () => {
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
-
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
@@ -118,9 +122,12 @@ const Orders = () => {
   return (
     <>
       <Box sx={{ flexGrow: 1, p: 3, mt: 10 }}>
+        <ToastContainer />
         <ComponentHeading heading="Orders" />
 
-        <Box
+        {SpinnerLoading ? (
+          <Spinner />
+        ) : (<Box
           sx={{
             margin: "auto",
             padding: 2,
@@ -179,7 +186,7 @@ const Orders = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder={"Search Order"} onChange={() => {}} />
+            <SearchInput placeholder={"Search Order"} onChange={() => { }} />
           </Box>
 
           <CustomTable headers={tableHeaders} rows={allOrders} />
@@ -189,7 +196,7 @@ const Orders = () => {
             page={page}
             onChange={handlePageChange}
           />
-        </Box>
+        </Box>)}
       </Box>
 
       <Menu
@@ -205,15 +212,15 @@ const Orders = () => {
           horizontal: "center",
         }}
       >
-        {/* {products.length > 0 ? (
+        {products.length > 0 ? (
           products?.map((product, index) => (
             <MenuItem key={index} onClick={handleCloseMenu}>
-              {product}  
+              {product}
             </MenuItem>
           ))
         ) : (
           <MenuItem disabled>No products available</MenuItem>
-        )} */}
+        )}
       </Menu>
 
       <OrderModal

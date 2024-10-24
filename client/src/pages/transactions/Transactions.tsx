@@ -19,6 +19,7 @@ import { Transaction } from "./interface";
 import { getAllTransactions } from "../../services/api/userApi";
 import { RootState } from "../../redux/store";
 import { useSelector } from "react-redux";
+import Spinner from "../../components/Spinner";
 
 const Transactions = () => {
   const [selectedOrder, setSelectedOrder] = useState("All Transactions");
@@ -29,6 +30,8 @@ const Transactions = () => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedProof, setSelectedProof] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const SpinnerLoading = useSelector((state: RootState) => state.transaction.loading);
+
   const allTransactions = userData?.transaction?.data?.transactionList;
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
@@ -36,9 +39,8 @@ const Transactions = () => {
   ) => {
     setPage(value);
   }
-  
+
   useEffect(() => {
-    console.log(page);
     getAllTransactions(userData.auth.userData.token, page, limit);
     setTotalPages(userData.transaction.data.totalPages);
   }, [userData.auth.userData.token, page, limit]);
@@ -91,7 +93,7 @@ const Transactions = () => {
   };
 
   const handleViewProducts = (proofImage: string) => {
-    if (proofImage) {
+     if (proofImage) {
       setSelectedProof(proofImage);
       setOpenModal(true);
     } else {
@@ -109,7 +111,7 @@ const Transactions = () => {
       <Box sx={{ flexGrow: 1, p: 3, mt: 10 }}>
         <ComponentHeading heading="Transactions" />
 
-        <Box
+        {SpinnerLoading ? <Spinner /> : <Box
           sx={{
             margin: "auto",
             padding: 2,
@@ -167,7 +169,7 @@ const Transactions = () => {
               justifyContent: "flex-start",
             }}
           >
-            <SearchInput placeholder="Search Order" onChange={() => {}} />
+            <SearchInput placeholder="Search Order" onChange={() => { }} />
           </Box>
 
           <CustomTable headers={headers} rows={allTransactions} />
@@ -177,7 +179,7 @@ const Transactions = () => {
             page={page}
             onChange={handlePageChange}
           />
-        </Box>
+        </Box>}
       </Box>
 
       <ProofImageModal
