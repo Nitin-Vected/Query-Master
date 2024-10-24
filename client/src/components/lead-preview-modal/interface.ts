@@ -33,3 +33,24 @@ export interface FormValues {
   description: string;
   fullName: string;
 }
+
+ export interface ProductAssets {
+  image: string;      // URL or path to the product image
+  document: string;   // URL or path to the document (e.g., syllabus)
+}
+
+export interface Product {
+  assets: ProductAssets; // Assets associated with the product
+  id: string;           // Unique identifier for the product
+  name: string;         // Name of the product
+  category: string;     // Category of the product
+  price: number;        // Regular price of the product
+  discountPrice: number; // Discounted price of the product
+  description: string;  // Description of the product
+}
+
+
+export  interface AllStatus {
+  id: string; // Unique identifier for the status
+  name: string; // Name of the status
+}

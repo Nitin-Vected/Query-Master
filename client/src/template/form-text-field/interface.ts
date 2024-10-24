@@ -26,4 +26,5 @@ export interface FormTextFieldProps {
   rows?: string;
   variant?: TextFieldProps["variant"]; // Define variant type from Material-UI
   handleChange?: (e: ChangeEvent<HTMLInputElement>) => void; // Define type for handleChange
+  isEditable?: boolean;
 }

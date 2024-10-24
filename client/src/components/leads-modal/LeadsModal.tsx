@@ -66,7 +66,7 @@ const LeadFormModal: React.FC<LeadFormModalProps> = ({
     validationSchema: validationSchema,
     onSubmit: (values) => {
       if (onSubmit) {
-         onSubmit(values);
+        onSubmit(values);
         onClose();
       }
     },

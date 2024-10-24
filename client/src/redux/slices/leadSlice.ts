@@ -10,7 +10,6 @@ const leadSlice = createSlice({
   reducers: {
     fetchLeadDataStart(state) {
       state.loading = true;
-
     },
     fetchLeadDataSuccess(state, action) {
       state.loading = false;

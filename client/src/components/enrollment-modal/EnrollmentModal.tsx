@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,7 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
   const allProducts = userData.product.data.productList;
   const [selectProducts, setSelectProducts] = useState<string[]>([""]);
   const [isLoading, setIsLoading] = useState(false); // To manage loading state
+  const [totalAmount, setTotalAmount] = useState<number>();
 
   const addRow = () => {
     setSelectProducts([...selectProducts, ""]);
@@ -50,23 +51,29 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
     const newProducts = selectProducts.filter((_, i) => i !== index);
     setSelectProducts(newProducts);
   };
-  const handleProductChange = (index: number, value: string) => {
-    const updatedSelectedProducts = [...selectProducts];
-    updatedSelectedProducts[index] = value; // Update the selected product id at the specific index
-    setSelectProducts(updatedSelectedProducts);
+
+  const handleProductChange = (index: number, newValue: string) => {
+    const updatedProducts = [...selectProducts];
+    updatedProducts[index] = newValue;
+    setSelectProducts(updatedProducts);
   };
   const validationSchema = Yup.object({
-    // transactionProof: Yup.string().required("Transaction proof is required"),
-    discount: Yup.string().required("Discount is required"),
-    // products: Yup.array()
-    //   .of(Yup.string().required("Each product is required")) // Each product must be a string and is required
-    //   .min(1, "At least one product is required"), // At least one product must be present    transactionAmount: Yup.string().required("Transaction Amount is required"),
-    finalAmount: Yup.string().required("Final Amount is required"),
+    transactionProof: Yup.string().required("Transaction proof is required"),
+    discount: Yup.number()
+      .typeError("Discount must be a number")
+      .nullable() // Allow it to be null or undefined
+      .max(3000, "Discount cannot be more than 3000"),
+    products: Yup.array()
+      .of(
+        Yup.string().required("Each product is required") // Validation for each product
+      )
+      .min(1, "At least one product is required"), // Ensure at least one product is select    finalAmount: Yup.string().required("Final Amount is required"),
     amount: Yup.string().required("Amount is required"),
     transactionMode: Yup.string().required("Transaction Mode is required"),
     transactionDate: Yup.string().required("Transaction Date is required"),
     enrollmentDate: Yup.string().required("Enrollment Date is required"),
     dueAmount: Yup.string().required(" DueAmount is required"),
+    transactionAmount: Yup.string().required(" transactionAmount is required"),
   });
   const tableHead: CSSProperties = {
     border: `1px solid ${theme.palette.info.dark}`,
@@ -88,7 +95,7 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
     textAlign: "center",
   };
 
-  const onSubmitApi = async (newData: any) => {
+  const onSubmitApi = async (newData: object) => {
     try {
       setIsLoading(true); // Set loading state to true when API call starts
       await enrollLead(userData.auth.userData.token, newData); // Wait for the API call
@@ -100,12 +107,12 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
     }
   };
 
-  console.log("data.fullName", data.fullName);
+  console.log("data.fullName", selectProducts);
   const formik = useFormik({
     initialValues: {
       transactionProof: "",
       amount: "",
-      products: selectProducts || "",
+      products: selectProducts,
       discount: "",
       finalAmount: "",
       transactionMode: "Online",
@@ -117,7 +124,6 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
     validationSchema: validationSchema,
     onSubmit: (values) => {
       let [firstName, lastName] = data.fullName.split(" ");
-
       let newData = {
         leadEmail: data.email,
         firstName: firstName,
@@ -132,10 +138,67 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
         dueAmount: values.dueAmount,
         dueDate: values.enrollmentDate,
       };
-      console.log("newData - update api call", newData);
       onSubmitApi(newData);
     },
   });
+  useEffect(() => {
+    // Calculate total based on selected products
+    const total = selectProducts.reduce((acc, selectedProductId) => {
+      const selectedProduct = allProducts.find(
+        (p) => p.id === selectedProductId
+      );
+      return acc + (selectedProduct?.price || 0);
+    }, 0);
+
+    formik.setFieldValue("amount", total);
+    const discountValue = parseFloat(formik.values.discount || "0");
+    const finalAmount = total - discountValue;
+    setTotalAmount(total);
+    formik.setFieldValue("finalAmount", finalAmount); // Update finalAmount in formik
+    const transactionAmount = parseFloat(
+      formik.values.transactionAmount || "0"
+    );
+    if (!formik.values.discount || formik.values.discount === "") {
+      const dueAmount = finalAmount - transactionAmount;
+      formik.setFieldValue("dueAmount", dueAmount);
+    } else {
+      const dueAmount = finalAmount - transactionAmount;
+      formik.setFieldValue("dueAmount", dueAmount);
+    }
+  }, [
+    selectProducts,
+    allProducts,
+    formik.values.discount,
+    formik.values.transactionAmount,
+    formik.setFieldValue,
+  ]);
+
+  // useEffect(() => {
+  //   const total = selectProducts.reduce((acc, selectedProductId) => {
+  //     const selectedProduct = allProducts.find(
+  //       (p) => p.id === selectedProductId
+  //     );
+  //     return acc + (selectedProduct?.price || 0);
+  //   }, 0);
+
+  //   formik.setFieldValue("amount", total);
+  //   const discountValue: string = formik.values.discount;
+  //   formik.setFieldValue("discount", discountValue);
+  //   const finalAmount: number = total - discountValue;
+  //   setTotalAmount(total);
+  //   formik.setFieldValue("finalAmount", finalAmount); // Update finalAmount in formik
+  //   const transactionAmount = formik.values.transactionAmount;
+
+  //   if (!formik.values.discount) {
+  //     const allValue = finalAmount - transactionAmount;
+  //     formik.setFieldValue("dueAmount", allValue);
+  //   }
+  // }, [
+  //   selectProducts,
+  //   allProducts,
+  //   formik.values.discount,
+  //   formik.values.transactionAmount,
+  // ]); // Dependency array includes discount for updates
 
   const enrollmentLable: CSSProperties = {
     color: theme.palette.secondary.main,
@@ -247,18 +310,29 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 </TableRow>
                 {selectProducts.map((selectedProductId, index) => {
                   const selectedProduct = allProducts.find(
-                    (p: any) => p.id === selectedProductId
+                    (p) => p.id === selectedProductId
                   );
+                  console.log("allProducts", allProducts);
+
                   return (
                     <TableRow key={index}>
                       <TableCell style={tableLable}>
                         {selectProducts.length > 0 && (
                           <SelectDropdown
                             name={`products${index}`}
-                            value={selectedProductId}
-                            onChange={(e) =>
-                              handleProductChange(index, e.target.value)
+                            // value={selectedProductId}
+                            value={
+                              formik.values.products || // Use Formik's value for channelId
+                              allProducts
+                                .find((channel: any) => channel.id)
+                                ?.id?.toString() || // Fallback to find ID by channel name
+                              "" // Fallback to empty string if not found
                             }
+                            onChange={(e) => {
+                              handleProductChange(index, e.target.value);
+                              const selectedId = e.target.value; // Get selected ID
+                              formik.setFieldValue("products", [selectedId]); // Set the value as an array with the selected ID
+                            }}
                             options={allProducts.map((product: any) => ({
                               label: product.name,
                               value: product.id,
@@ -287,6 +361,7 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                       <TableCell style={tableLable}>
                         {selectedProduct ? selectedProduct.description : ""}
                       </TableCell>
+
                       <TableCell style={tableLable}>
                         <IconButton
                           aria-label="remove"
@@ -317,7 +392,9 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
               <FormTextField
                 label="Total Amount"
                 name="amount"
+                disabled={true}
                 placeholder="Total Amount"
+                type="number"
                 formik={formik}
                 handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   let value = e.target.value.replace(/\D/g, "");
@@ -329,10 +406,14 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
               <FormTextField
                 label="Discount"
                 name="discount"
-                placeholder=" Total Discount"
+                placeholder="Total Discount"
+                type="number"
                 formik={formik}
                 handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  let value = e.target.value.replace(/\D/g, "");
+                  let value = e.target.value.replace(/\D/g, ""); // Remove non-digit characters
+                  if (Number(value) > 3000) {
+                    value = "3000"; // Set maximum value to 3000
+                  }
                   formik.setFieldValue("discount", value);
                 }}
               />
@@ -342,6 +423,8 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
               <FormTextField
                 label="Final Amount"
                 name="finalAmount"
+                type="number"
+                disabled={true}
                 placeholder="Rs"
                 formik={formik}
                 handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -377,11 +460,16 @@ const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
               <FormTextField
                 label="Transaction Amount"
                 name="transactionAmount"
+                type="number"
                 placeholder="Rs"
                 formik={formik}
                 handleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  let value = e.target.value.replace(/\D/g, "");
-                  formik.setFieldValue("transactionAmount", value);
+                  let value = e.target.value.replace(/\D/g, ""); // Ensure only numbers
+                  const finalAmount = Number(formik.values.finalAmount); // Get final amount from formik state
+                  if (Number(value) > finalAmount) {
+                    value = finalAmount.toString(); // Limit transactionAmount to finalAmount
+                  }
+                  formik.setFieldValue("transactionAmount", value); // Set the transaction amount in formik state
                 }}
               />
             </Grid>

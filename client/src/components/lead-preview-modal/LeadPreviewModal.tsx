@@ -17,7 +17,12 @@ import {
 import image from "../../assets/image";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { FormValues, LeadPreviewModalProps } from "./interface";
+import {
+  AllStatus,
+  FormValues,
+  LeadPreviewModalProps,
+  Product,
+} from "./interface";
 import {
   AccessTime,
   EventNote,
@@ -53,6 +58,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   const [isEditable, setIsEditable] = useState(false);
   const [reminder, setReminder] = useState(false);
   const [history, setHistory] = useState(false);
+  const [commentHistory, setCommentHistory] = useState(false);
   const userData: any = useSelector((state: RootState) => state);
   const allProducts = userData.product.data.productList;
   const [counsellorList, setCounsellorList] = useState<Counsellor[]>([]);
@@ -75,6 +81,9 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   };
   const handleToggleHistory = () => {
     setHistory((prev) => !prev);
+  };
+  const handleCommentHistory = () => {
+    setCommentHistory((prev) => !prev);
   };
 
   const validationSchema = Yup.object({
@@ -115,27 +124,29 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
     getAllChannelsData(userData.auth.userData.token);
   }, []);
 
-  const lableTitle: CSSProperties = {
+  const labelTitle: CSSProperties = {
     color: theme.palette.secondary.main,
     fontSize: "15px",
     fontWeight: "400",
   };
   const subTitle: CSSProperties = {
-    color: "#aeacac",
+    color: theme.palette.info.main,
     marginTop: 5,
     fontSize: 14,
   };
   const initialProductId =
-    allProducts.find((product: any) => product.name === data.product)?.id || ""; // Fallback to empty string if not found
+    allProducts.find((product: Product) => product.name === data.product)?.id ||
+    "";
   const initialAllStatusId =
-    allStatus.find((product: any) => product.name === data.status)?.id || ""; // Fallback to empty string if not found
+    allStatus.find((Status: AllStatus) => Status.name === data.status)?.id ||
+    ""; // Fallback to empty string if not found
   const assignedToById =
     counsellorList.find(
       (counsellor: Counsellor) =>
         `${counsellor.firstName} ${counsellor.lastName}` === data.assignedTo
     )?.id || "";
   const initialChannelId =
-    channelList.find((product: ChanelList) => product.name === data.channel)
+    channelList.find((chanel: ChanelList) => chanel.name === data.channel)
       ?.id || "";
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -198,6 +209,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
     fetchCounsellorData(userData.auth.userData.token);
   }, [userData.auth.userData.token]);
 
+  console.log("all comment", data?.comments);
   return (
     <Dialog
       sx={{
@@ -286,16 +298,19 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       InputProps={{
                         sx: {
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable
+                            ? 0
+                            : `1.1px solid ${theme.palette.info.main}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
                         },
                       }}
+                      isEditable={isEditable} // Pass the isEditable prop
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography sx={{ ...lableTitle }}>
+                    <Typography sx={{ ...labelTitle }}>
                       Product Name *
                     </Typography>
                     {isEditable ? (
@@ -305,13 +320,13 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                         name="productId"
                         value={
                           allProducts.find(
-                            (product: any) =>
+                            (product: Product) =>
                               product.id === formik.values.productId
                           )?.name || formik.values.productId
                         }
                         onChange={(event) => {
-                          const selectedProduct: any = allProducts.find(
-                            (product: any) =>
+                          const selectedProduct: Product = allProducts.find(
+                            (product: Product) =>
                               product.name === event.target.value
                           );
                           formik.setFieldValue(
@@ -319,7 +334,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                             selectedProduct ? selectedProduct.id : ""
                           );
                         }}
-                        options={allProducts.map((product: any) => ({
+                        options={allProducts.map((product: Product) => ({
                           label: product.name,
                           value: product.name, // Display product name in the dropdown
                         }))}
@@ -338,7 +353,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
 
                   {/* Counsellor Name */}
                   <Grid item xs={12} md={4}>
-                    <Typography sx={{ ...lableTitle }}>
+                    <Typography sx={{ ...labelTitle }}>
                       Counsellor Name *
                     </Typography>
                     {isEditable ? (
@@ -412,17 +427,20 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       InputProps={{
                         sx: {
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable
+                            ? 0
+                            : `1.1px solid ${theme.palette.info.main}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
                         },
                       }}
+                      isEditable={isEditable}
                     />
                   </Grid>
 
                   <Grid item xs={12} md={4}>
-                    <Typography sx={{ ...lableTitle }}>Status * </Typography>
+                    <Typography sx={{ ...labelTitle }}>Status * </Typography>
                     {isEditable ? (
                       <Typography style={subTitle}>{data.status}</Typography>
                     ) : (
@@ -431,7 +449,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                         value={
                           formik.values.statusId ||
                           allStatus.find(
-                            (status: any) => status.name === data.status
+                            (status: AllStatus) => status.name === data.status
                           )?.id ||
                           "" // Map status name to ID
                         }
@@ -440,11 +458,9 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                           if (selectedId == "STATUS0002") {
                             setIsEnrollmentModalOpen(true);
                           }
-                          console.log("selectedId 120", selectedId);
-
                           formik.setFieldValue("statusId", selectedId); // Set the ID in Formik state
                         }}
-                        options={allStatus.map((status: any) => ({
+                        options={allStatus.map((status: AllStatus) => ({
                           label: status.name, // Display the status name in the dropdown
                           value: status.id, // Use status.id as the value for each option
                         }))}
@@ -472,12 +488,15 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       InputProps={{
                         sx: {
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable
+                            ? 0
+                            : `1.1px solid ${theme.palette.info.light}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
                         },
                       }}
+                      isEditable={isEditable}
                     />
                   </Grid>
                 </Grid>
@@ -504,17 +523,20 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                         sx: {
                           maxLength: 10, // Set your desired max length here
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable
+                            ? 0
+                            : `1.1px solid ${theme.palette.info.light}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
                         },
                       }}
+                      isEditable={isEditable}
                     />
                   </Grid>
 
                   <Grid item xs={12} md={4}>
-                    <Typography sx={{ ...lableTitle }}>
+                    <Typography sx={{ ...labelTitle }}>
                       Channel Name *
                     </Typography>
                     {isEditable ? (
@@ -533,10 +555,9 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                         }
                         onChange={(event) => {
                           const selectedId = event.target.value; // Get selected ID
-                          console.log("selectedId =12", selectedId); // Debugging line
                           formik.setFieldValue("channelId", selectedId); // Set the ID in Formik state
                         }}
-                        options={channelList.map((channel: any) => ({
+                        options={channelList.map((channel: ChanelList) => ({
                           label: channel.name, // Display the channel name in the dropdown
                           value: channel.id?.toString(), // Ensure the value is a string
                         }))}
@@ -562,12 +583,15 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                       InputProps={{
                         sx: {
                           marginLeft: isEditable ? -1.5 : 0,
-                          border: isEditable ? 0 : "1.1px solid #dddcdc",
+                          border: isEditable
+                            ? 0
+                            : `1.1px solid ${theme.palette.info.light}`,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderWidth: 0,
                           },
                         },
                       }}
+                      isEditable={isEditable}
                     />
                   </Grid>
 
@@ -629,7 +653,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <CommentIcon style={{ height: 20 }} />
-                <Typography sx={{ ...lableTitle }}>Comment</Typography>
+                <Typography sx={{ ...labelTitle }}>Comment</Typography>
               </Box>
               <FormTextField
                 name="comment"
@@ -658,10 +682,145 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                 </ButtonView>
               </Box> */}
             </Box>
-
-            <Box marginTop={3}>
+            <Box marginTop={4}>
               <Box
-                marginTop={1}
+                style={{
+                  padding: "0.9px",
+                  border: theme.palette.info.main,
+                  borderRadius: "8px",
+                  borderWidth: 0.5,
+                  borderStyle: "solid",
+                }}
+              >
+                <Accordion
+                  sx={{
+                    boxShadow: "none",
+                  }}
+                  expanded={commentHistory}
+                  onChange={handleCommentHistory}
+                >
+                  <AccordionSummary
+                    expandIcon={
+                      <ExpandMoreIcon
+                        sx={{ color: theme.palette.action.hover }}
+                      />
+                    }
+                    aria-controls="reminder-content"
+                    id="reminder-header"
+                  >
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", gap: "8px" }}
+                    >
+                      <CommentIcon style={{ height: 20 }} />
+                      <Typography sx={{ ...labelTitle }}>
+                        Comment Logs
+                      </Typography>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Accordion
+                      sx={{
+                        boxShadow: "none",
+                      }}
+                      expanded={commentHistory}
+                      onChange={handleCommentHistory}
+                    >
+                      <AccordionDetails>
+                        {data?.comments?.length > 0 ? (
+                          data.comments.map((item: any) => {
+                            const formattedDate = moment(item.createdAt).format(
+                              "MMMM D, YYYY h:mm A"
+                            );
+
+                            return (
+                              <Box
+                                sx={{
+                                  border: `1.1px solid ${theme.palette.info.dark}`,
+                                  borderRadius: "8px",
+                                  padding: "9px",
+                                  backgroundColor:
+                                    theme.palette.info.contrastText,
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  marginBottom: 1.5,
+                                }}
+                              >
+                                <Box
+                                  sx={{ display: "flex", alignItems: "center" }}
+                                >
+                                  <Avatar
+                                    sx={{
+                                      backgroundColor:
+                                        theme.palette.primary.light,
+                                      marginRight: "8px",
+                                      height: 25,
+                                      width: 25,
+                                    }}
+                                  ></Avatar>
+                                  <Box
+                                    flexDirection={"row"}
+                                    display={"flex"}
+                                    alignItems={"center"}
+                                  >
+                                    <Typography
+                                      variant="body1"
+                                      sx={{
+                                        fontWeight: "500",
+                                        color: theme.palette.secondary.main,
+                                        fontSize: 17,
+                                      }}
+                                    >
+                                      {item?.commentedBy}
+                                    </Typography>
+                                  </Box>
+                                  <Typography
+                                    variant="body1"
+                                    sx={{
+                                      fontWeight: "500",
+                                      color: theme.palette.secondary.main,
+                                      fontSize: 17,
+                                      textAlign: "left",
+                                      marginLeft: 1,
+                                    }}
+                                  >
+                                    {formattedDate}
+                                  </Typography>
+                                </Box>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    marginLeft: "45px",
+                                  }}
+                                >
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                    sx={{
+                                      marginRight: "8px",
+                                      fontWeight: "500",
+                                      color: theme.palette.secondary.main,
+                                      fontSize: 17,
+                                    }}
+                                  >
+                                    {item?.comment}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            );
+                          })
+                        ) : (
+                          <Typography>No Comment available.</Typography>
+                        )}
+                      </AccordionDetails>
+                    </Accordion>
+                  </AccordionDetails>
+                </Accordion>
+              </Box>
+            </Box>
+            <Box marginTop={1}>
+              <Box
                 style={{
                   padding: "1px",
                   border: theme.palette.info.main,
@@ -709,7 +868,6 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                           fontWeight: "600",
                           fontSize: 15,
                           color: theme.palette.secondary.main,
-                          marginTop: 1,
                         }}
                       >
                         Reminder
@@ -871,10 +1029,11 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                           return (
                             <Box
                               sx={{
-                                border: "1px solid #e0e0e0",
+                                border: `1.1px solid ${theme.palette.info.dark}`,
                                 borderRadius: "8px",
                                 padding: "10px",
-                                backgroundColor: "#fafafa",
+                                backgroundColor:
+                                  theme.palette.info.contrastText,
                                 flexDirection: "row",
                                 alignItems: "center",
                                 justifyContent: "space-between",
@@ -889,8 +1048,8 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
                                     backgroundColor:
                                       theme.palette.primary.light,
                                     marginRight: "8px",
-                                    height: 35,
-                                    width: 35,
+                                    height: 25,
+                                    width: 25,
                                   }}
                                 ></Avatar>
                                 <Box

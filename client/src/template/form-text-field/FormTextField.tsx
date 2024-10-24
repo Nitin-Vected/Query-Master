@@ -16,6 +16,7 @@ const FormTextField: React.FC<FormTextFieldProps> = ({
   variant,
   inputProps,
   handleChange, // Add handleChange prop
+  isEditable = false, // Add isEditable prop
 }) => (
   <>
     <Typography variant="subtitle2">
@@ -35,7 +36,11 @@ const FormTextField: React.FC<FormTextFieldProps> = ({
       onBlur={formik.handleBlur}
       placeholder={placeholder}
       error={formik.touched[name] && Boolean(formik.errors[name])}
-      helperText={formik.touched[name] && formik.errors[name]}
+      helperText={
+        !isEditable && formik.touched[name] && formik.errors[name] // Conditional error message display
+          ? formik.errors[name]
+          : undefined
+      }
       type={type}
       sx={{
         "& .MuiInputBase-root": {

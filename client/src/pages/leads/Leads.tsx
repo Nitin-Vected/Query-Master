@@ -113,12 +113,10 @@ const Lead = () => {
     statusId: string,
     row: object | any
   ) => {
-    // Get the selected value from the dropdown
-    const selectedValue = event.target.value;
+     const selectedValue = event.target.value;
     let data = {
       statusId: statusId,
     };
-
     if (selectedValue === "Enrolled") {
       setIsEnrollmentModalOpen(true);
       setEnrollmentModalData(row);
@@ -130,7 +128,6 @@ const Lead = () => {
 
   const leadDataSubmit = async (leadData: LeadDataSubmit) => {
     try {
-      console.log("Lead Data -->", leadData);
       const data = await createLead(userData.auth.userData.token, leadData);
       if (data) {
         getAllLeads(userToken, page, limit);
